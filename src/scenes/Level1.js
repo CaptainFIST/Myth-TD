@@ -1,4 +1,4 @@
-import { mapData } from "../MapManager";
+import { mapData } from '../managers/MapManager.js';
 
 
 

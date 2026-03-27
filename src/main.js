@@ -1,5 +1,5 @@
 import MainMenu from './scenes/MainMenu.js';
-import Level1 from './scenes/Level1.js';
+import Level1 from './scenes/level1.js';
 
 const config = {
     type: Phaser.AUTO,
