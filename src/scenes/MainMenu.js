@@ -63,8 +63,24 @@ export default class MainMenu extends Phaser.Scene {
             box.setDepth(1);
             button.setDepth(2);
         }); 
+
+        this.createAudioUI();
     }
-    
+        
+    createAudioUI() {
+        const { width } = this.scale;
+        const iconX = width - 160;
+        const iconY = 50;
+        this.add.circle(iconX, iconY, 20, 0x7c3aed);
+        this.add.text(iconX, iconY, '🔊', { fontSize: '18px' }).setOrigin(0.5);
+
+        const sliderX = width - 150; 
+        const sliderY = 50;
+        this.add.rectangle(sliderX + 70, sliderY, 100, 6, 0x333333);  
+        this.add.rectangle(sliderX + 20, sliderY, 40, 6, 0x7c3aed).setOrigin(0, 0.5); 
+        this.add.circle(sliderX + 60, sliderY, 8, 0x7c3aed);       
+    }
+
     update() {
         this.bgGraphics.clear();
         this.bgGraphics.fillStyle(0x66ccff, 0.05);
