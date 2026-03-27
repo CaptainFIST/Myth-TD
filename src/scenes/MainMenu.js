@@ -52,6 +52,12 @@ export default class MainMenu extends Phaser.Scene {
             button.on('pointerover', () => button.setStyle({fill: "#7c3aed" }));
             button.on('pointerout', () => button.setStyle({fill: '#06b6d4'}));
 
+            button.on('pointerdown', () => {
+                if (btn.text === 'PLAY') {
+                    this.scene.start('Level1');
+                }
+            });
+
             const box = this.add.rectangle(leftx, ypos, 280, 60, 0x0f1534, 0.7)
             .setStrokeStyle(3, 0x000000).setOrigin(0.5, 0.5);
             box.setDepth(1);

@@ -1,4 +1,5 @@
 import MainMenu from './scenes/MainMenu.js';
+import Level1 from './scenes/level1.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -9,8 +10,10 @@ const config = {
     height: 720,
     backgroundColor: '#000000',
     pixelArt: false,
+    parent: 'game-container',
     scene: [
-        MainMenu
+        MainMenu,
+        Level1
     ],
     scale: {
         mode: Phaser.Scale.FIT,
