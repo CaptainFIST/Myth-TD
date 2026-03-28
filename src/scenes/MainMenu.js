@@ -58,10 +58,10 @@ export default class MainMenu extends Phaser.Scene {
                         this.scene.start('Level1');
                         break;
                     case 'TUTORIAL':
-
+                        this.scene.start();
                         break;
                     case 'ACHIEVEMENTS':
-
+                        this.scene.start();
                         break;
 
                     case 'SETTINGS':
@@ -70,13 +70,12 @@ export default class MainMenu extends Phaser.Scene {
                     
                     case 'EXIT':
                         //Both here for testing / seeing which works better
-                        //window.close();
+                        window.close();
                         //this.scene.stop();
                         //AppWindow.closeAllWindows();
                         //nw.Window.get().close(true);
                         break;
                         
-
                     default:
                         break;
 

@@ -53,7 +53,6 @@ export default class SettingsMenu extends Phaser.Scene {
             fontFamily: 'Arial, sans-serif'
         }).setOrigin(0,0).setInteractive({ useHandCursor: true });
 
-        
         // ---------- AUDIO SECTION ----------
         const audioY = height / 2 - 60;
         this.add.text(width / 2 - 500, audioY - 50, 'AUDIO SETTINGS', {
@@ -79,8 +78,6 @@ export default class SettingsMenu extends Phaser.Scene {
             fontFamily: 'Arial, sans-serif'
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
-
-
         // ---------- BACK BUTTON ----------
         const backBtn = this.add.text(width / 2, height - 40, 'BACK TO MENU', {
             fontSize: '32px',
@@ -94,10 +91,26 @@ export default class SettingsMenu extends Phaser.Scene {
             this.scene.start('MainMenu');
         });
 
+        this.createAudioUI();
 
+    }
 
+    createAudioUI() {
+        const { width } = this.scale;
+        const iconX = width - 160;
+        const iconY = 50;
+        this.add.circle(iconX, iconY, 20, 0x7c3aed);
+        this.add.text(iconX, iconY, '🔊', { fontSize: '18px' }).setOrigin(0.5);
 
+        const sliderX = width - 150; 
+        const sliderY = 50;
+        this.add.rectangle(sliderX + 70, sliderY, 100, 6, 0x333333);  
+        this.add.rectangle(sliderX + 20, sliderY, 40, 6, 0x7c3aed).setOrigin(0, 0.5); 
+        this.add.circle(sliderX + 60, sliderY, 8, 0x7c3aed);       
+    }
 
+    createVolumeControl() {
+        
     }
 
 
