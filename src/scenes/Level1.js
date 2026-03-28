@@ -8,8 +8,11 @@ export default class Level1 extends Phaser.Scene {
   }
 
   preload() {
+    // object 0
     this.load.image('grass', 'assets/tiles/grass_new.png');
+    // object 1
     this.load.image('path', 'assets/tiles/dirt_path.png');
+    // object 2
     this.load.image('tree', 'assets/decorations/tree1.png');
   }
   create() {
