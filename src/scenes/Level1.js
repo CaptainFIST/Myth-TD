@@ -17,6 +17,7 @@ export default class Level1 extends Phaser.Scene {
     this.load.image('corner_tr','assets/tiles/corner_tr.png');
     this.load.image('corner_bl','assets/tiles/corner_bl.png');
     this.load.image('corner_br','assets/tiles/corner_br.png');
+    this.load.image('dirt_path','assets/tiles/dirt_path.png');
 
   }
   create() {
@@ -31,7 +32,7 @@ export default class Level1 extends Phaser.Scene {
             if (tileType === 0) {
                 this.add.image(x, y, 'grass_new').setOrigin(0);
             } else if (tileType === 1) {
-                this.add.image(x, y, 'stone_horizontal').setOrigin(0);
+                this.add.image(x, y, 'dirt_path').setOrigin(0);
             }
         }
     }
