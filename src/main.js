@@ -1,4 +1,5 @@
 import MainMenu from './scenes/MainMenu.js';
+import SettingsMenu from './scenes/SettingsMenu.js';
 import Level1 from './scenes/level1.js';
 
 const config = {
@@ -13,7 +14,8 @@ const config = {
     parent: 'game-container',
     scene: [
         MainMenu,
-        Level1
+        SettingsMenu,
+        Level1,
     ],
     scale: {
         mode: Phaser.Scale.FIT,
