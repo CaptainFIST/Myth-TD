@@ -25,7 +25,7 @@ export default class Level1 extends Phaser.Scene {
             if (tileType === 0) {
                 this.add.image(x, y, 'grass').setOrigin(0);
                 if (decoType === 2) {
-                  this.add.image(x, y, 'tree').setOrigin(0);
+                  this.add.image(x, y, 'tree').setOrigin(0.5);
                 }
             } else if (tileType === 1) {
                 this.add.image(x, y, 'path').setOrigin(0);
