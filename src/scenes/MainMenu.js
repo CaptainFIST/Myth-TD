@@ -53,8 +53,33 @@ export default class MainMenu extends Phaser.Scene {
             button.on('pointerout', () => button.setStyle({fill: '#06b6d4'}));
 
             button.on('pointerdown', () => {
-                if (btn.text === 'PLAY') {
-                    this.scene.start('Level1');
+                switch(btn.text) {
+                    case 'PLAY':
+                        this.scene.start('Level1');
+                        break;
+                    case 'TUTORIAL':
+
+                        break;
+                    case 'ACHIEVEMENTS':
+
+                        break;
+
+                    case 'SETTINGS':
+                        this.scene.start('SettingsMenu');
+                        break;
+                    
+                    case 'EXIT':
+                        //Both here for testing / seeing which works better
+                        //window.close();
+                        //this.scene.stop();
+                        //AppWindow.closeAllWindows();
+                        //nw.Window.get().close(true);
+                        break;
+                        
+
+                    default:
+                        break;
+
                 }
             });
 
