@@ -1,6 +1,7 @@
 import MainMenu from './scenes/MainMenu.js';
 import SettingsMenu from './scenes/SettingsMenu.js';
-import Level1 from './scenes/level1.js';
+import Level1 from './scenes/Level1.js';
+import Tutorial from './scenes/Tutorial.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -16,6 +17,7 @@ const config = {
         MainMenu,
         SettingsMenu,
         Level1,
+        Tutorial
     ],
     scale: {
         mode: Phaser.Scale.FIT,
