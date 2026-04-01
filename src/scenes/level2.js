@@ -43,6 +43,6 @@ export default class Level2 extends Phaser.Scene {
         this.load.image('rock', 'assets/decorations/level2/snowy_rock.png');
     }
     create() {
-        this.scene.start('MapManager', { level: this.constructor });
+        this.scene.launch('MapManager', { level: this.constructor });
     }
 }

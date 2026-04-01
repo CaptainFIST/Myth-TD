@@ -5,6 +5,7 @@ import MapManager from './managers/MapManager.js';
 import Level1 from './scenes/Level1.js';
 import Level2 from './scenes/Level2.js';
 import LevelSelect from './scenes/LevelSelect.js'
+import TimeManager from './managers/TimeManager.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -22,6 +23,7 @@ const config = {
         SettingsMenu,
         Tutorial,
         MapManager,
+        TimeManager,
         Level1,
         Level2
     ],
