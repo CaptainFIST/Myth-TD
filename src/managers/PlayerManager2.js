@@ -1,20 +1,16 @@
-export default class PlayerManage {
-    constructor(scene, x, y, config = {}, audioManager = null) {
+export default class PlayerManager2 {
+    constructor(scene) {
         this.scene = scene;
         
-        
-
-        
-
         //Player Manager stats
-        this.inventory = [];
-        this.gold = 0;
+        //this.inventory = [];
+        this.gold = 150;
         this.playerHealth = 20;
 
         //Gold Stats
-        this.goldPerSec = 5;
-        this.incInterval = 2000;
-        this.incomeStart();
+        this.goldPerSec = 2;
+        this.incInterval = 1000;
+        //this.incomeStart();
 
 
     }
@@ -77,12 +73,12 @@ export default class PlayerManage {
     }
 
 
-    resetStats() {
-        this.inventory = [];
-        this.gold = 0;
-        this.playerHealth = 20;
-        console.log('✓ Progress reset!');
-    }
+    // resetStats() {
+    //     this.inventory = [];
+    //     this.gold = 0;
+    //     this.playerHealth = 20;
+    //     console.log('✓ Stats reset!');
+    // }
 
     
 
