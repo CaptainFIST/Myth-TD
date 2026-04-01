@@ -32,6 +32,4 @@ export default class TimeManager extends Phaser.Scene {
     }
 
 
-
-
 }

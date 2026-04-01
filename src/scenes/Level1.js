@@ -50,7 +50,7 @@ export default class Level1 extends Phaser.Scene {
 
         this.timerText = this.add.text(16, 16, 'Time: 0.00s', {
             fontSize: '18px',
-            color: '#ffffff',
+            color: '#000000',
             fontStyle: 'bold',
             fontFamily: 'Arial, sans-serif'
         }).setDepth(10);
