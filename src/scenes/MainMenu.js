@@ -11,13 +11,12 @@ export default class MainMenu extends Phaser.Scene {
     create() {
         const { width, height } = this.scale;
         this.add.rectangle(width / 2, height / 2, width, height, 0x0d1128).setOrigin(0.5);
-        
         this.add.image(width / 2, 120, 'gameTitle');
         this.add.image(width / 2, 280, 'subtitleImage');
         this.createBackground();
 
         const buttonData = [
-            {text: 'PLAY', icon: '▶', action: () => this.scene.start('Level1')},
+            {text: 'PLAY', icon: '▶', action: () => this.scene.start('LevelSelect')},
             {text: 'TUTORIAL', icon: '📚', action: () => this.scene.start('Tutorial') },
             {text: 'ACHIEVEMENTS', icon: '🏆'},
             {text: 'SETTINGS', icon: '⚙', action: () => this.scene.start('SettingsMenu')},
@@ -46,6 +45,7 @@ export default class MainMenu extends Phaser.Scene {
             box.setDepth(1);
             button.setDepth(2);
         }); 
+
         this.createAudioUI();
     }
 
