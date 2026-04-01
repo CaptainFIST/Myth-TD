@@ -1,5 +1,3 @@
-
-
 export default class SettingsMenu extends Phaser.Scene {
 
     constructor() {
@@ -103,10 +101,11 @@ export default class SettingsMenu extends Phaser.Scene {
             this.scene.start('MainMenu');
         });
 
-        this.createAudioUI();
+        //this.createAudioUI();
 
     }
 
+    /*
     createAudioUI() {
         const { width } = this.scale;
         const iconX = width - 160;
@@ -120,6 +119,7 @@ export default class SettingsMenu extends Phaser.Scene {
         this.add.rectangle(sliderX + 20, sliderY, 40, 6, 0x7c3aed).setOrigin(0, 0.5); 
         this.add.circle(sliderX + 60, sliderY, 8, 0x7c3aed);       
     }
+    */
 
     createVolumeControl(x, y, label,  initialValue, callback) { 
         // Label

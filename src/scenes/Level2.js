@@ -33,6 +33,7 @@ export default class Level2 extends Phaser.Scene {
         0: 'grass',
         1: 'path'
     };
+    
     static decoTypes = {
         2: 'tree'
     };
@@ -42,7 +43,8 @@ export default class Level2 extends Phaser.Scene {
         this.load.image('path', 'assets/tiles/dirt_path.png');
         this.load.image('tree', 'assets/decorations/tree1.png');
     }
+
     create() {
-        this.scene.start('MapManager', { level: this.constructor });
+        this.scene.launch('MapManager', { level: this.constructor });
     }
 }

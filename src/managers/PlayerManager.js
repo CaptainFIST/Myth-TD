@@ -1,122 +1,145 @@
 export default class PlayerManager {
-    STORAGE_KEY = 'stage_stats';
-    //static SAVE_GAME_KEY = 'mythological_defense_save';
+    constructor(scene) {
+        this.scene = scene;
+        
+        //Player Manager stats
+        //this.inventory = [];
+        this.gold = 150;
+        this.playerHealth = 20;
 
-    initStats() {
-        if (!localStorage.getItem(this.STORAGE_KEY)) {
-            const defaultp = {
-                //inventory: [],
-                gold: 150,
-                playerHealth: 20
-            };
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(defaultp));
-        }
+        //Gold Stats
+        this.goldPerSec = 2;
+        this.incInterval = 1000;
+        //this.incomeStart();
+
+
     }
 
-    getStats() {
-        const data = localStorage.getItem(this.STORAGE_KEY);
-        try {
-            return data ? JSON.parse(data) : null;
-        } catch (e) {
-            console.error('❌ Failed to parse player data:', e);
-            return null;
-        }
+    incomeStart() {
+        this.incomeTimer = this.scene.time.addEvent({
+            delay: this.incInterval,
+            callback: this.income,
+            callbackScope: this,
+            loop: true
+        });
     }
 
-    saveStats(data) {
-        try {
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
-        } catch (e) {
-            console.error('❌ Failed to save stats:', e);
+    income() {
+        this.gold += this.goldPerSec;
+        if (this.scene.debug) {
+            console.log(`🌾 Farm income: +${this.goldPerSec} gold (Total: ${this.scene.gold})`);
         }
+        
     }
 
     updateHealth(damage) {
-        const stats = this.getStats();
+        
 
-        if(stats.playerHealth != 0)
+        if(this.playerHealth != 0)
         {
-            if(damage >= stats.playerHealth)
+            if(damage >= this.playerHealth)
             {
-                stats.playerHealth -= damage;
+                this.playerHealth -= damage;
                 console.log(`Player took ${damage} damage!`);
             }
             else
             {
-                stats.playerHealth -= stats.playerHealth;
-                console.log(`Player took ${stats.playerHealth} damage!`);
+                this.playerHealth -= this.playerHealth;
+                console.log(`Player took ${this.playerHealth} damage!`);
             }
         }
     }
 
     isHealthZero() {
-        const stats = this.getStats();
-        return stats.playerHealth == 0 ? true : false;
+        
+        return this.playerHealth == 0 ? true : false;
     }
 
     updateGold(change) {
-        const stats = this.getStats();
+        
 
         if(change > 0)
         {
-            stats.gold += change;
+            this.gold += change;
         }
         else if(change < 0)
         {
-            if(Math.abs(change) <= stats.gold)
+            if(Math.abs(change) <= this.gold)
             {
-                stats.gold -= change;
+                this.gold -= change;
             }
             
         }
     }
 
 
-    resetStats() {
-        localStorage.removeItem(this.STORAGE_KEY);
-        //localStorage.removeItem(this.SAVE_GAME_KEY);
-        this.initStats();
-        console.log('✓ Progress reset!');
-    }
-
-
-
-
-
-
-    // --------------------------------------
-    // For Reference
-    // --------------------------------------
-
+    // resetStats() {
+    //     this.inventory = [];
+    //     this.gold = 0;
+    //     this.playerHealth = 20;
+    //     console.log('✓ Stats reset!');
+    // }
 
     
 
-    // Game save/load system
-    // static saveGameState(gameState) {
-    //     try {
-    //         localStorage.setItem(this.SAVE_GAME_KEY, JSON.stringify(gameState));
-    //         console.log('✓ Game saved!');
-    //     } catch (e) {
-    //         console.error('❌ Failed to save game state:', e);
-    //     }
-    // }
+    
 
-    // static loadGameState() {
-    //     const data = localStorage.getItem(this.SAVE_GAME_KEY);
-    //     try {
-    //         return data ? JSON.parse(data) : null;
-    //     } catch (e) {
-    //         console.error('❌ Failed to load game state:', e);
-    //         return null;
-    //     }
-    // }
+    
 
-    // static hasSavedGame() {
-    //     return localStorage.getItem(this.SAVE_GAME_KEY) !== null;
-    // }
+        
 
-    // static clearSavedGame() {
-    //     localStorage.removeItem(this.SAVE_GAME_KEY);
-    //     console.log('✓ Saved game cleared!');
-    // }
+    
+
+    
+
+    
+
+    
+
+    
+
+    createFloatingText(x, y, text, color) {
+        const floatingText = this.scene.add.text(x, y, text, {
+            fontSize: '28px',
+            fill: color,
+            fontStyle: 'bold',
+            fontFamily: 'Arial',
+            stroke: '#000000',
+            strokeThickness: 3,
+            shadow: {
+                offsetX: 2,
+                offsetY: 2,
+                color: '#000000',
+                blur: 5,
+                fill: true
+            }
+        }).setOrigin(0.5).setDepth(2000);
+
+        const shadowOffset = 4;
+        const shadow = this.scene.add.text(x + shadowOffset, y + shadowOffset, text, {
+            fontSize: '28px',
+            fill: '#000000',
+            fontStyle: 'bold',
+            fontFamily: 'Arial',
+            alpha: 0.3
+        }).setOrigin(0.5).setDepth(1999);
+
+        this.scene.tweens.add({
+            targets: [floatingText, shadow],
+            y: y - 80,
+            alpha: 0,
+            duration: 1200,
+            ease: 'Quad.easeOut',
+                       useFrames: false,
+            onComplete: () => {
+                floatingText.destroy();
+                shadow.destroy();
+            }
+        });
+    }
+
+    
+    
+
+    
 }

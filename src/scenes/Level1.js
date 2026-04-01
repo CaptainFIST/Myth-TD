@@ -1,7 +1,3 @@
-//import PlayerManager from './managers/PlayerManager.js';
-//import PlayerManager2 from './managers/PlayerManager2.js';
-
-
 export default class Level1 extends Phaser.Scene {
     constructor() {
         super({ key: 'Level1' });
@@ -47,6 +43,6 @@ export default class Level1 extends Phaser.Scene {
         this.load.image('tree', 'assets/decorations/tree1.png');
     }
     create() {
-        this.scene.start('MapManager', { level: this.constructor });
+        this.scene.launch('MapManager', { level: this.constructor });
     }
 }

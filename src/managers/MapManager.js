@@ -1,5 +1,4 @@
-//import PlayerManager from '../managers/PlayerManager.js';
-import PlayerManager2 from '../managers/PlayerManager2.js';
+import PlayerManager from '../managers/PlayerManager.js';
 
 export default class MapManager extends Phaser.Scene {
     constructor() {
@@ -7,7 +6,7 @@ export default class MapManager extends Phaser.Scene {
     }
 
     create(data) {
-        this.player = new PlayerManager2();
+        this.player = new PlayerManager();
         console.log(`player health is ${this.player.playerHealth}`);
 
         const level = data.level;
