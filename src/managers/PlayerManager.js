@@ -37,7 +37,7 @@ export default class PlayerManager {
 
         if(this.playerHealth != 0)
         {
-            if(damage >= this.playerHealth)
+            if(damage <= this.playerHealth)
             {
                 this.playerHealth -= damage;
                 console.log(`Player took ${damage} damage!`);
@@ -61,12 +61,14 @@ export default class PlayerManager {
         if(change > 0)
         {
             this.gold += change;
+            console.log(`${change} gold added`);
         }
         else if(change < 0)
         {
             if(Math.abs(change) <= this.gold)
             {
                 this.gold -= change;
+                console.log(`${change} used`);
             }
             
         }
