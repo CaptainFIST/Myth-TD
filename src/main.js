@@ -2,10 +2,17 @@ import MainMenu from './scenes/MainMenu.js';
 import SettingsMenu from './scenes/SettingsMenu.js';
 import Tutorial from './scenes/Tutorial.js';
 import MapManager from './managers/MapManager.js';
+<<<<<<< HEAD
 import PlayerManager from './managers/PlayerManager.js';
 import Level1 from './scenes/Level1.js';
 import Level2 from './scenes/Level2.js';
 import LevelSelect from './scenes/LevelSelect.js';
+=======
+import Level1 from './scenes/Level1.js';
+import Level2 from './scenes/Level2.js';
+import LevelSelect from './scenes/LevelSelect.js'
+import TimeManager from './managers/TimeManager.js';
+>>>>>>> main
 
 const config = {
     type: Phaser.AUTO,
@@ -23,7 +30,11 @@ const config = {
         SettingsMenu,
         Tutorial,
         MapManager,
+<<<<<<< HEAD
         PlayerManager,
+=======
+        TimeManager,
+>>>>>>> main
         Level1,
         Level2
     ],

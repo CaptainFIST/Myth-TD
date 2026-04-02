@@ -6,7 +6,6 @@ export default class SettingsMenu extends Phaser.Scene {
     }
 
     create() {
-
         const { width, height } = this.scale;
 
         //audio here
@@ -100,9 +99,13 @@ export default class SettingsMenu extends Phaser.Scene {
         backBtn.on('pointerdown', () => {
             this.scene.start('MainMenu');
         });
+<<<<<<< HEAD
 
         //this.createAudioUI();
 
+=======
+        this.createAudioUI();
+>>>>>>> main
     }
 
     /*
@@ -119,6 +122,7 @@ export default class SettingsMenu extends Phaser.Scene {
         this.add.rectangle(sliderX + 20, sliderY, 40, 6, 0x7c3aed).setOrigin(0, 0.5); 
         this.add.circle(sliderX + 60, sliderY, 8, 0x7c3aed);       
     }
+<<<<<<< HEAD
     */
 
     createVolumeControl(x, y, label,  initialValue, callback) { 
@@ -178,8 +182,10 @@ export default class SettingsMenu extends Phaser.Scene {
         if (callback) {
             callback(volumePercent);
         }
+=======
+    createVolumeControl() {  
+>>>>>>> main
     }
-
 
     update() {
         // Animate background circles
@@ -191,9 +197,4 @@ export default class SettingsMenu extends Phaser.Scene {
             this.bgGraphics.fillCircle(c.x, c.y, c.radius);
         });
     }
-    
-
-
-
-
 }
