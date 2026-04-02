@@ -20,11 +20,9 @@ export default class MainMenu extends Phaser.Scene {
             {text: 'TUTORIAL', icon: '📚', action: () => this.scene.start('Tutorial') },
             {text: 'ACHIEVEMENTS', icon: '🏆'},
             {text: 'SETTINGS', icon: '⚙', action: () => this.scene.start('SettingsMenu')},
-<<<<<<< HEAD
             {text: 'EXIT', icon: '✕', action: () => window.close()}
-=======
-            {text: 'EXIT', icon: '✕'}
->>>>>>> main
+
+
         ];
         const startY = 350;
         const leftx = 200;
@@ -69,10 +67,10 @@ export default class MainMenu extends Phaser.Scene {
         }
     }
 
-<<<<<<< HEAD
+
     /*
 =======
->>>>>>> main
+
     createAudioUI() {
         const { width } = this.scale;
         const iconX = width - 160;

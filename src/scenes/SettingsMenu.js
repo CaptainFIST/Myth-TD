@@ -99,13 +99,13 @@ export default class SettingsMenu extends Phaser.Scene {
         backBtn.on('pointerdown', () => {
             this.scene.start('MainMenu');
         });
-<<<<<<< HEAD
+
 
         //this.createAudioUI();
 
-=======
-        this.createAudioUI();
->>>>>>> main
+
+        //this.createAudioUI();
+
     }
 
     /*
@@ -122,7 +122,7 @@ export default class SettingsMenu extends Phaser.Scene {
         this.add.rectangle(sliderX + 20, sliderY, 40, 6, 0x7c3aed).setOrigin(0, 0.5); 
         this.add.circle(sliderX + 60, sliderY, 8, 0x7c3aed);       
     }
-<<<<<<< HEAD
+
     */
 
     createVolumeControl(x, y, label,  initialValue, callback) { 
@@ -182,19 +182,7 @@ export default class SettingsMenu extends Phaser.Scene {
         if (callback) {
             callback(volumePercent);
         }
-=======
-    createVolumeControl() {  
->>>>>>> main
-    }
 
-    update() {
-        // Animate background circles
-        this.bgGraphics.clear();
-        this.bgGraphics.fillStyle(0x66ccff, 0.05);
-        this.circles.forEach(c => {
-            c.y -= c.speed;
-            if (c.y + c.radius < 0) c.y = this.scale.height + c.radius;
-            this.bgGraphics.fillCircle(c.x, c.y, c.radius);
-        });
+    
     }
 }
