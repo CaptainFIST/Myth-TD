@@ -1,16 +1,18 @@
 export default class PlayerManager {
-    constructor(scene) {
-        this.scene = scene;
-        
+    constructor() {
+        //this.scene = scene;
+        //this.level = level;
         //Player Manager stats
         //this.inventory = [];
         this.gold = 150;
         this.playerHealth = 20;
-
+        
         //Gold Stats
         this.goldPerSec = 2;
         this.incInterval = 1000;
         //this.incomeStart();
+        
+        
 
 
     }

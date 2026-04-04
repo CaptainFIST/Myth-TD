@@ -11,8 +11,9 @@ export default class MapManager extends Phaser.Scene {
 
         this.player = new PlayerManager();
 
+        //this.displayHealth();
         this.testingPlayerMethods();
-        this.testingPlayerMethods();
+        //this.testingPlayerMethods();
 
 
 
@@ -37,6 +38,8 @@ export default class MapManager extends Phaser.Scene {
                 }
             }
         }
+
+        this.displayHealth();
     }
 
 
@@ -52,6 +55,15 @@ export default class MapManager extends Phaser.Scene {
         console.log(`player health is ${this.player.playerHealth}`);
         console.log(`Is health zero: ${this.player.isHealthZero()}`);
 
+    }
+
+    displayHealth() {
+        this.healthText = this.add.text(256, 16, `Health: ${this.player.playerHealth}`, {
+            fontSize: '18px',
+            color: '#000000',
+            fontStyle: 'bold',
+            fontFamily: 'Arial, sans-serif'
+        }).setDepth(10);
     }
 
 }
