@@ -1,3 +1,4 @@
+
 import TimeManager from '../managers/TimeManager.js';
 
 export default class Level1 extends Phaser.Scene {
@@ -50,7 +51,7 @@ export default class Level1 extends Phaser.Scene {
 
         this.timerText = this.add.text(16, 16, 'Time: 0.00s', {
             fontSize: '18px',
-            color: '#ffffff',
+            color: '#000000',
             fontStyle: 'bold',
             fontFamily: 'Arial, sans-serif'
         }).setDepth(10);
@@ -60,5 +61,6 @@ export default class Level1 extends Phaser.Scene {
         const elapsedTime = this.timeManager.getTime().toFixed(2);
         this.timerText.setText(`Time: ${elapsedTime}s`);
     }
+
 
 }
