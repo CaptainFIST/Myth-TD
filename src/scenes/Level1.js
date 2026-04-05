@@ -44,10 +44,12 @@ export default class Level1 extends Phaser.Scene {
         this.load.image('grass', 'assets/tiles/level1/grass_new.png');
         this.load.image('path', 'assets/tiles/level1/dirt_path.png');
         this.load.image('tree', 'assets/decorations/tree1.png');
+        this.load.image('UI', 'assets/UI/UI.png');
     }
     create() {
         this.scene.launch('MapManager', { level: this.constructor });
         this.timeManager = new TimeManager();
+        this.add.image(1280/2, 720-49, 'UI');
 
         this.timerText = this.add.text(16, 16, 'Time: 0.00s', {
             fontSize: '18px',
