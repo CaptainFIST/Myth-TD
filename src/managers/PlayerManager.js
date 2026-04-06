@@ -1,6 +1,8 @@
+import TimeManager from './TimeManager.js';
+
 export default class PlayerManager {
-    constructor() {
-        //this.scene = scene;
+    constructor(scene) {
+        this.scene = scene;
         //this.level = level;
         //Player Manager stats
         //this.inventory = [];
@@ -18,19 +20,28 @@ export default class PlayerManager {
     }
 
     incomeStart() {
-        this.incomeTimer = this.scene.time.addEvent({
-            delay: this.incInterval,
-            callback: this.income,
-            callbackScope: this,
-            loop: true
-        });
+        // this.incomeTimer = this.TimeManager.getTime.addEvent({
+        //     delay: this.incInterval,
+        //     callback: this.income,
+        //     callbackScope: this,
+        //     loop: true
+        // });
+        
+        // this.incomeTimer = this.elapsed.addEvent({
+        //     delay: this.incInterval,
+        //     callback: this.income,
+        //     callbackScope: this,
+        //     loop: true
+        // });
+
+
     }
 
     income() {
         this.gold += this.goldPerSec;
-        if (this.scene.debug) {
-            console.log(`🌾 Farm income: +${this.goldPerSec} gold (Total: ${this.scene.gold})`);
-        }
+        
+        console.log(`🌾 Farm income: +${this.goldPerSec} gold (Total: ${this.gold})`);
+        
         
     }
 
@@ -74,6 +85,15 @@ export default class PlayerManager {
             }
             
         }
+    }
+
+    displayHealth() {
+        healthText = add.text(256, 16, `Health: ${this.playerHealth}`, {
+            fontSize: '18px',
+            color: '#000000',
+            fontStyle: 'bold',
+            fontFamily: 'Arial, sans-serif'
+        }).setDepth(10);
     }
 
 

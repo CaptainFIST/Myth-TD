@@ -1,6 +1,6 @@
 
 import PlayerManager from '../managers/PlayerManager.js';
-
+import TimeManager from '../managers/TimeManager.js';
 
 export default class MapManager extends Phaser.Scene {
     constructor() {
@@ -9,11 +9,16 @@ export default class MapManager extends Phaser.Scene {
 
     create(data) {
 
-        this.player = new PlayerManager();
+        this.player = new PlayerManager(this);
+        this.timeManager = new TimeManager();
 
         //this.displayHealth();
         this.testingPlayerMethods();
         //this.testingPlayerMethods();
+        //this.player.incomeStart();
+        this.c = 0;
+
+
 
 
 
@@ -40,6 +45,9 @@ export default class MapManager extends Phaser.Scene {
         }
 
         this.displayHealth();
+        this.displayGold();
+        this.displayTime();
+        //this.testingPlayerMethods();
     }
 
 
@@ -65,5 +73,57 @@ export default class MapManager extends Phaser.Scene {
             fontFamily: 'Arial, sans-serif'
         }).setDepth(10);
     }
+
+    displayGold() {
+        this.goldText = this.add.text(360, 16, `Gold: ${this.player.gold}`, {
+            fontSize: '18px',
+            color: '#000000',
+            fontStyle: 'bold',
+            fontFamily: 'Arial, sans-serif'
+        }).setDepth(10);
+    }
+
+    displayTime() {
+                this.timerText = this.add.text(16, 16, 'Time: 0.00s', {
+                    fontSize: '18px',
+                    color: '#000000',
+                    fontStyle: 'bold',
+                    fontFamily: 'Arial, sans-serif'
+                }).setDepth(10);
+    }
+
+    update(time, delta) {
+        this.timeManager.update(delta);
+        const elapsedTime = this.timeManager.getTime().toFixed(2);
+
+        if(elapsedTime % 2 == 0){
+            this.player.income();
+            console.log(`${++this.c} and ${elapsedTime}`);
+        }
+        
+        this.timerText.setText(`Time: ${elapsedTime}s`);
+        this.goldText.setText(`Gold: ${this.player.gold}`);
+        this.healthText.setText(`Health: ${this.player.playerHealth}`);
+    }
+
+    //incomeStart() {
+        // this.incomeTimer = this.TimeManager.getTime.addEvent({
+        //     delay: this.incInterval,
+        //     callback: this.income,
+        //     callbackScope: this,
+        //     loop: true
+        // });
+        //
+        // this.incomeTimer = this.elapsed.addEvent({
+        //     delay: this.incInterval,
+        //     callback: this.income,
+        //     callbackScope: this,
+        //     loop: true
+        // });
+
+
+    //}
+
+    
 
 }
