@@ -1,18 +1,11 @@
 export default class PlayerManager {
     constructor(scene) {
         this.scene = scene;
-        
-        //Player Manager stats
-        //this.inventory = [];
         this.gold = 150;
         this.playerHealth = 20;
 
-        //Gold Stats
         this.goldPerSec = 2;
         this.incInterval = 1000;
-        //this.incomeStart();
-
-
     }
 
     incomeStart() {
@@ -33,8 +26,6 @@ export default class PlayerManager {
     }
 
     updateHealth(damage) {
-        
-
         if(this.playerHealth != 0)
         {
             if(damage <= this.playerHealth)
@@ -51,13 +42,11 @@ export default class PlayerManager {
     }
 
     isHealthZero() {
-        
         return this.playerHealth == 0 ? true : false;
     }
 
     updateGold(change) {
         
-
         if(change > 0)
         {
             this.gold += change;
@@ -70,35 +59,8 @@ export default class PlayerManager {
                 this.gold -= change;
                 console.log(`${change} used`);
             }
-            
         }
     }
-
-
-    // resetStats() {
-    //     this.inventory = [];
-    //     this.gold = 0;
-    //     this.playerHealth = 20;
-    //     console.log('✓ Stats reset!');
-    // }
-
-    
-
-    
-
-    
-
-        
-
-    
-
-    
-
-    
-
-    
-
-    
 
     createFloatingText(x, y, text, color) {
         const floatingText = this.scene.add.text(x, y, text, {
@@ -138,10 +100,5 @@ export default class PlayerManager {
                 shadow.destroy();
             }
         });
-    }
-
-    
-    
-
-    
+    } 
 }

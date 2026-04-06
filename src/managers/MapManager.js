@@ -1,6 +1,4 @@
-
 import PlayerManager from '../managers/PlayerManager.js';
-
 
 export default class MapManager extends Phaser.Scene {
     constructor() {
@@ -8,14 +6,7 @@ export default class MapManager extends Phaser.Scene {
     }
 
     create(data) {
-
         this.player = new PlayerManager();
-
-        this.testingPlayerMethods();
-        this.testingPlayerMethods();
-
-
-
         const level = data.level;
         const mapData = level.mapData;
         const decoData = level.decoData;
@@ -38,20 +29,4 @@ export default class MapManager extends Phaser.Scene {
             }
         }
     }
-
-
-    testingPlayerMethods() {
-        console.log(`player health is ${this.player.playerHealth}`);
-        console.log(`Player gold is ${this.player.gold}`);
-        console.log(`Is health zero: ${this.player.isHealthZero()}`);
-
-        console.log(`Testing functions:`);
-        this.player.updateGold(50);
-        console.log(`Player gold is ${this.player.gold}`);
-        this.player.updateHealth(10);
-        console.log(`player health is ${this.player.playerHealth}`);
-        console.log(`Is health zero: ${this.player.isHealthZero()}`);
-
-    }
-
 }
