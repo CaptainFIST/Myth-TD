@@ -19,7 +19,7 @@ export default class Level1 extends Phaser.Scene {
     ];
 
     static decoData = [
-<<<<<<< HEAD
+
     [0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0],
@@ -30,18 +30,7 @@ export default class Level1 extends Phaser.Scene {
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0],
     [0,2,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-=======
-        [0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0],
-        [0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0],
-        [0,2,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
->>>>>>> experimental-EE
+
     ];
 
     static tileTypes = {
@@ -60,31 +49,7 @@ export default class Level1 extends Phaser.Scene {
         this.load.image('UI', 'assets/UI/UI.png');
     }
 
-<<<<<<< HEAD
-    create() {
-        this.scene.launch('MapManager', { level: this.constructor });
 
-        // this.timeManager = new TimeManager();
-        this.scene.launch('UIManager');
-
-        // this.timerText = this.add.text(16, 16, 'Time: 0.00s', {
-        //     fontSize: '18px',
-        //     color: '#000000',
-        //     fontStyle: 'bold',
-        //     fontFamily: 'Arial, sans-serif'
-        // }).setDepth(10);
-    }
-    // update(time, delta) {
-    //     this.timeManager.update(delta);
-    //     const elapsedTime = this.timeManager.getTime().toFixed(2);
-    //     this.timerText.setText(`Time: ${elapsedTime}s`);
-    // }
-
-
-
-        
-
-=======
     createButton(x, y, label, onClick) {
         const bg = this.add.rectangle(x, y, 160, 80, 0x000000)
             .setOrigin(0).setStrokeStyle(2, 0xffffff)
@@ -103,16 +68,12 @@ export default class Level1 extends Phaser.Scene {
 
     create() {
         this.scene.launch('MapManager', { level: this.constructor });
-        this.timeManager = new TimeManager();
-        this.add.image(1280 / 2, 720 - 49, 'UI');
 
-        this.timerText = this.add.text(16, 16, 'Time: 0.00s', {
-            fontSize: '18px',
-            color: '#000000',
-            fontStyle: 'bold',
-            fontFamily: 'Arial, sans-serif'
-        }).setDepth(10);
-        
+        // this.timeManager = new TimeManager();
+        this.scene.launch('UIManager');
+
+
+
         const startY = 655;
         this.createButton(20, startY, 'Purchase Tower\n50 g', () => { this.isPlacingTower = true;});
         const rightStartX = this.scale.width - 360; 
@@ -124,12 +85,28 @@ export default class Level1 extends Phaser.Scene {
         rightButtons.forEach((btn, i) => {
             this.createButton(rightStartX + i * (buttonWidth + 10), startY, btn.label, btn.action);
         });
-    }
 
-    update(time, delta) {
-        this.timeManager.update(delta);
-        const elapsedTime = this.timeManager.getTime().toFixed(2);
-        this.timerText.setText(`Time: ${elapsedTime}s`);
+
+
+        // this.timerText = this.add.text(16, 16, 'Time: 0.00s', {
+        //     fontSize: '18px',
+        //     color: '#000000',
+        //     fontStyle: 'bold',
+        //     fontFamily: 'Arial, sans-serif'
+        // }).setDepth(10);
     }
->>>>>>> experimental-EE
+    // update(time, delta) {
+    //     this.timeManager.update(delta);
+    //     const elapsedTime = this.timeManager.getTime().toFixed(2);
+    //     this.timerText.setText(`Time: ${elapsedTime}s`);
+    // }
+
+
+
+        
+
+    
+
+    
+
 }

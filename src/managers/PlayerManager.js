@@ -3,7 +3,7 @@ import TimeManager from './TimeManager.js';
 export default class PlayerManager {
     constructor(scene) {
         this.scene = scene;
-<<<<<<< HEAD
+
         //this.level = level;
         //Player Manager stats
         //this.inventory = [];
@@ -18,13 +18,7 @@ export default class PlayerManager {
         
 
 
-=======
-        this.gold = 150;
-        this.playerHealth = 20;
 
-        this.goldPerSec = 2;
-        this.incInterval = 1000;
->>>>>>> experimental-EE
     }
 
     incomeStart() {
@@ -90,7 +84,7 @@ export default class PlayerManager {
         }
     }
 
-<<<<<<< HEAD
+
     displayHealth() {
         healthText = add.text(256, 16, `Health: ${this.playerHealth}`, {
             fontSize: '18px',
@@ -109,25 +103,9 @@ export default class PlayerManager {
     // }
 
     
-
     
 
-    
 
-        
-
-    
-
-    
-
-    
-
-    
-
-    
-
-=======
->>>>>>> experimental-EE
     createFloatingText(x, y, text, color) {
         const floatingText = this.scene.add.text(x, y, text, {
             fontSize: '28px',
