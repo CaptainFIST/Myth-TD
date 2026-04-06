@@ -56,6 +56,7 @@ export default class UIManager extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(3);
 
         this.updateHealthCircle(playerHP);
+        this.testingPlayerMethods();
     }
 
     updateHealthCircle(currentHP) {

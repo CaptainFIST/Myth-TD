@@ -1,8 +1,10 @@
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> experimental-EE
 import PlayerManager from '../managers/PlayerManager.js';
 import TimeManager from '../managers/TimeManager.js';
-
 
 export default class MapManager extends Phaser.Scene {
     constructor() {
@@ -10,6 +12,7 @@ export default class MapManager extends Phaser.Scene {
     }
 
     create(data) {
+<<<<<<< HEAD
 
 
         this.player = new PlayerManager(this);
@@ -26,6 +29,9 @@ export default class MapManager extends Phaser.Scene {
 
 
 
+=======
+        this.player = new PlayerManager();
+>>>>>>> experimental-EE
         const level = data.level;
         const mapData = level.mapData;
         const decoData = level.decoData;
@@ -53,6 +59,7 @@ export default class MapManager extends Phaser.Scene {
         this.displayTime();
         //this.testingPlayerMethods();
     }
+<<<<<<< HEAD
 
 
 
@@ -132,4 +139,6 @@ export default class MapManager extends Phaser.Scene {
     
 
 
+=======
+>>>>>>> experimental-EE
 }

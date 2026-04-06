@@ -30,6 +30,4 @@ export default class TimeManager extends Phaser.Scene {
     resume(){
         this.paused = false;
     }
-
-
 }
