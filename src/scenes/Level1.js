@@ -48,8 +48,9 @@ export default class Level1 extends Phaser.Scene {
 
     create() {
         this.scene.launch('MapManager', { level: this.constructor });
-<<<<<<< HEAD
+
         // this.timeManager = new TimeManager();
+        this.scene.launch('UIManager');
 
         // this.timerText = this.add.text(16, 16, 'Time: 0.00s', {
         //     fontSize: '18px',
@@ -65,22 +66,7 @@ export default class Level1 extends Phaser.Scene {
     // }
 
 
-=======
-        this.scene.launch('UIManager');
-        this.timeManager = new TimeManager();
 
-        this.timerText = this.add.text(16, 16, 'Time: 0.00s', {
-            fontSize: '18px',
-            color: '#000000',
-            fontStyle: 'bold',
-            fontFamily: 'Arial, sans-serif'
-        }).setDepth(10);
-    }
+        
 
-    update(time, delta) {
-        this.timeManager.update(delta);
-        const elapsedTime = this.timeManager.getTime().toFixed(2);
-        this.timerText.setText(`Time: ${elapsedTime}s`);
-    }
->>>>>>> experimental-JR
 }
