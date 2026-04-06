@@ -20,7 +20,9 @@ export default class MainMenu extends Phaser.Scene {
             {text: 'TUTORIAL', icon: '📚', action: () => this.scene.start('Tutorial') },
             {text: 'ACHIEVEMENTS', icon: '🏆'},
             {text: 'SETTINGS', icon: '⚙', action: () => this.scene.start('SettingsMenu')},
-            {text: 'EXIT', icon: '✕'}
+            {text: 'EXIT', icon: '✕', action: () => window.close()}
+
+
         ];
         const startY = 350;
         const leftx = 200;
@@ -46,7 +48,7 @@ export default class MainMenu extends Phaser.Scene {
             button.setDepth(2);
         }); 
 
-        this.createAudioUI();
+        //this.createAudioUI();
     }
 
     createBackground() {
@@ -65,6 +67,10 @@ export default class MainMenu extends Phaser.Scene {
         }
     }
 
+
+    /*
+=======
+
     createAudioUI() {
         const { width } = this.scale;
         const iconX = width - 160;
@@ -79,6 +85,7 @@ export default class MainMenu extends Phaser.Scene {
         this.add.rectangle(sliderX + 20, sliderY, 40, 6, 0x7c3aed).setOrigin(0, 0.5); 
         this.add.circle(sliderX + 60, sliderY, 8, 0x7c3aed);       
     }
+    */
 
     update() {
         this.bgGraphics.clear();
