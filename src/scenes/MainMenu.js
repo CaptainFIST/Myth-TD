@@ -11,17 +11,30 @@ export default class MainMenu extends Phaser.Scene {
     create() {
         const { width, height } = this.scale;
         this.add.rectangle(width / 2, height / 2, width, height, 0x0d1128).setOrigin(0.5);
+<<<<<<< HEAD
         
+=======
+>>>>>>> 4e25e2fc37588c7ab2d247af757f5a90534c52a3
         this.add.image(width / 2, 120, 'gameTitle');
         this.add.image(width / 2, 280, 'subtitleImage');
         this.createBackground();
 
         const buttonData = [
+<<<<<<< HEAD
             {text: 'PLAY', icon: '▶', action: () => this.scene.start('Level1')},
             {text: 'TUTORIAL', icon: '📚', action: () => this.scene.start('Tutorial') },
             {text: 'ACHIEVEMENTS', icon: '🏆'},
             {text: 'SETTINGS', icon: '⚙', action: () => this.scene.start('SettingsMenu')},
             {text: 'EXIT', icon: '✕'}
+=======
+            {text: 'PLAY', icon: '▶', action: () => this.scene.start('LevelSelect')},
+            {text: 'TUTORIAL', icon: '📚', action: () => this.scene.start('Tutorial') },
+            {text: 'ACHIEVEMENTS', icon: '🏆'},
+            {text: 'SETTINGS', icon: '⚙', action: () => this.scene.start('SettingsMenu')},
+            {text: 'EXIT', icon: '✕', action: () => window.close()}
+
+
+>>>>>>> 4e25e2fc37588c7ab2d247af757f5a90534c52a3
         ];
         const startY = 350;
         const leftx = 200;
@@ -46,7 +59,12 @@ export default class MainMenu extends Phaser.Scene {
             box.setDepth(1);
             button.setDepth(2);
         }); 
+<<<<<<< HEAD
         this.createAudioUI();
+=======
+
+        //this.createAudioUI();
+>>>>>>> 4e25e2fc37588c7ab2d247af757f5a90534c52a3
     }
 
     createBackground() {
@@ -65,6 +83,13 @@ export default class MainMenu extends Phaser.Scene {
         }
     }
 
+<<<<<<< HEAD
+=======
+
+    /*
+=======
+
+>>>>>>> 4e25e2fc37588c7ab2d247af757f5a90534c52a3
     createAudioUI() {
         const { width } = this.scale;
         const iconX = width - 160;
@@ -79,6 +104,7 @@ export default class MainMenu extends Phaser.Scene {
         this.add.rectangle(sliderX + 20, sliderY, 40, 6, 0x7c3aed).setOrigin(0, 0.5); 
         this.add.circle(sliderX + 60, sliderY, 8, 0x7c3aed);       
     }
+    */
 
     update() {
         this.bgGraphics.clear();
