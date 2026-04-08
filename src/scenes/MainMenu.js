@@ -17,13 +17,12 @@ export default class MainMenu extends Phaser.Scene {
         this.createBackground();
 
         const buttonData = [
-            {text: 'PLAY', icon: '▶'},
-            {text: 'TUTORIAL', icon: '📚' },
+            {text: 'PLAY', icon: '▶', action: () => this.scene.start('Level1')},
+            {text: 'TUTORIAL', icon: '📚', action: () => this.scene.start('Tutorial') },
             {text: 'ACHIEVEMENTS', icon: '🏆'},
-            {text: 'SETTINGS', icon: '⚙'},
+            {text: 'SETTINGS', icon: '⚙', action: () => this.scene.start('SettingsMenu')},
             {text: 'EXIT', icon: '✕'}
         ];
-        
         const startY = 350;
         const leftx = 200;
         const spacing = 80;
@@ -40,25 +39,9 @@ export default class MainMenu extends Phaser.Scene {
 
             button.on('pointerover', () => button.setStyle({fill: "#7c3aed"}));
             button.on('pointerout', () => button.setStyle({fill: '#06b6d4'}));
-            button.on('pointerdown', () => {
-                switch(btn.text) {
-                    case 'PLAY':
-                        this.scene.start('Level1');
-                        break;
-                    case 'TUTORIAL':
-                        this.scene.start('Tutorial');
-                        break;
-                    case 'ACHIEVEMENTS':
-                        this.scene.start();
-                        break;
-                    case 'SETTINGS':
-                        this.scene.start('SettingsMenu');
-                        break;
-                    case 'EXIT':
-                        window.close();
-                        break;
-                }
-            });
+            if (btn.action) {
+                button.on('pointerdown', btn.action);
+            }
             const box = this.add.rectangle(leftx, ypos, 280, 60, 0x0f1534, 0.7).setStrokeStyle(3, 0x000000).setOrigin(0.5);
             box.setDepth(1);
             button.setDepth(2);
@@ -70,6 +53,7 @@ export default class MainMenu extends Phaser.Scene {
         const { width, height } = this.scale;
         this.bgGraphics = this.add.graphics();
         this.circles = [];
+
         for (let i = 0; i < 20; i++) {
             this.circles.push({
                 x: Phaser.Math.Between(0, width),
@@ -90,6 +74,7 @@ export default class MainMenu extends Phaser.Scene {
         this.add.text(iconX, iconY, '🔊', { fontSize: '18px' }).setOrigin(0.5);
         const sliderX = width - 150; 
         const sliderY = 50;
+
         this.add.rectangle(sliderX + 70, sliderY, 100, 6, 0x333333);  
         this.add.rectangle(sliderX + 20, sliderY, 40, 6, 0x7c3aed).setOrigin(0, 0.5); 
         this.add.circle(sliderX + 60, sliderY, 8, 0x7c3aed);       
@@ -98,6 +83,7 @@ export default class MainMenu extends Phaser.Scene {
     update() {
         this.bgGraphics.clear();
         this.bgGraphics.fillStyle(0x66ccff, 0.05);
+
         this.circles.forEach(c => {
             c.y -= c.speed;
             if (c.y + c.radius < 0) {
