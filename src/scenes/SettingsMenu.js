@@ -59,12 +59,24 @@ export default class SettingsMenu extends Phaser.Scene {
             fontFamily: 'Arial, sans-serif'
         }).setOrigin(0, 0);
         // Master Volume Slider
-
+        this.masterVolCont = this.createVolumeControl(width / 2 - 450, audioY, 'MASTER VOLUME', 0.3);
         // Sound Volume Slider
-
+        this.soundVolCont = this.createVolumeControl(width / 2 - 450, audioY + 50, 'SOUND VOLUME', 0.4);
         // Music Volume Slider
-
+        this.musicVolCont = this.createVolumeControl(width / 2 - 450, audioY + 100, 'MUSIC VOLUME', 0.4);
+        
+        
         // Mute Button
+        const muteY = audioY + 160;
+        const isMuted = false;
+        this.muteBtn = this.add.text(width / 2 - 450, muteY, `MUTE: ${isMuted ? 'ON' : 'OFF'}`, {
+            fontSize: '20px',
+            color: isMuted ? '#ff6b6b' : '#64d5ff',
+            fontStyle: 'bold',
+            backgroundColor: isMuted ? '#4a2a2a' : '#1a3a3e',
+            padding: { x: 15, y: 10 },
+            fontFamily: 'Arial, sans-serif'
+        }).setOrigin(0, 0).setInteractive({ useHandCursor: true });
 
         // ---------- DELETE DATA BUTTON ----------
         const deleteBtn = this.add.text(width / 2, height - 120, 'DELETE ALL DATA', {
@@ -87,9 +99,16 @@ export default class SettingsMenu extends Phaser.Scene {
         backBtn.on('pointerdown', () => {
             this.scene.start('MainMenu');
         });
-        this.createAudioUI();
+
+
+        //this.createAudioUI();
+
+
+        //this.createAudioUI();
+
     }
 
+    /*
     createAudioUI() {
         const { width } = this.scale;
         const iconX = width - 160;
@@ -103,17 +122,67 @@ export default class SettingsMenu extends Phaser.Scene {
         this.add.rectangle(sliderX + 20, sliderY, 40, 6, 0x7c3aed).setOrigin(0, 0.5); 
         this.add.circle(sliderX + 60, sliderY, 8, 0x7c3aed);       
     }
-    createVolumeControl() {  
+
+    */
+
+    createVolumeControl(x, y, label,  initialValue, callback) { 
+        // Label
+        this.add.text(x, y, label, {
+            fontSize: '18px',
+            color: '#ffffff',
+            fontFamily: 'Arial, sans-serif'
+        }).setOrigin(0, 0);
+
+        // Background bar
+        const barWidth = 200;
+        const barHeight = 20;
+        const barX = x + 200;
+        const bar = this.add.rectangle(barX, y + 9, barWidth, barHeight, 0x333333)
+            .setOrigin(0, 0.5)
+            .setStrokeStyle(2, 0x64d5ff, 1);
+
+        // Filled portion
+        const fill = this.add.rectangle(barX, y + 9, barWidth * initialValue, barHeight, 0x64d5ff)
+            .setOrigin(0, 0.5);
+
+        // Value display
+        const valueText = this.add.text(barX + barWidth + 20, y, Math.round(initialValue * 100) + '%', {
+            fontSize: '16px',
+            color: '#64d5ff',
+            fontFamily: 'Arial, sans-serif'
+        }).setOrigin(0, 0);
+
+        // Make bar interactive
+        bar.setInteractive({ useHandCursor: true });
+
+        bar.on('pointerdown', (pointer) => {
+            this.updateVolumeSlider(pointer, bar, fill, barX, barWidth, valueText, callback);
+        });
+
+        bar.on('pointermove', (pointer) => {
+            if (pointer.isDown) {
+                this.updateVolumeSlider(pointer, bar, fill, barX, barWidth, valueText, callback);
+            }
+        });
+
+        // Return references for updating
+        return { fill, valueText };
     }
 
-    update() {
-        // Animate background circles
-        this.bgGraphics.clear();
-        this.bgGraphics.fillStyle(0x66ccff, 0.05);
-        this.circles.forEach(c => {
-            c.y -= c.speed;
-            if (c.y + c.radius < 0) c.y = this.scale.height + c.radius;
-            this.bgGraphics.fillCircle(c.x, c.y, c.radius);
-        });
+    updateVolumeSlider(pointer, bar, fill, barX, barWidth, valueText, callback) {
+        const relativeX = pointer.x - barX;
+        const clampedX = Math.max(0, Math.min(barWidth, relativeX));
+        const volumePercent = clampedX / barWidth;
+
+        // Update fill bar width (don't change origin)
+        fill.setSize(clampedX, fill.height);
+
+        valueText.setText(Math.round(volumePercent * 100) + '%');
+
+        if (callback) {
+            callback(volumePercent);
+        }
+
+    
     }
 }
