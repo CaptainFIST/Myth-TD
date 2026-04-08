@@ -5,8 +5,8 @@ export default class LevelSelect extends Phaser.Scene {
 
     create() {
         const { width, height } = this.scale;
-        this.add.text(width / 2, 80, 'SELECT LEVEL', {
-            fontSize: '64px',
+        this.add.text(width / 2, 100, 'SELECT LEVEL', {
+            fontSize: '80px',
             color: '#64d5ff',
             fontStyle: 'bold',
             stroke: '#0a3f5c',
@@ -21,23 +21,23 @@ export default class LevelSelect extends Phaser.Scene {
         ];
 
         levels.forEach((lvl, i) => {
-            const x = width / 2 + (i - 1) * 300;
+            const x = width / 2 + (i - 1) * 400;
             const y = height / 2;
-            const card = this.add.rectangle(x, y, 200, 150, 0x1a3f5e).setStrokeStyle(3, 0x64d5ff).setInteractive({ useHandCursor: true });
+            const card = this.add.rectangle(x, y, 300, 200, 0x1a3f5e).setStrokeStyle(3, 0x64d5ff).setInteractive({ useHandCursor: true });
             this.add.text(x, y - 20, lvl.name, {
-                fontSize: '28px',
+                fontSize: '36px',
                 color: '#64d5ff',
                 fontFamily: 'Arial',
                 fontStyle: 'bold'
             }).setOrigin(0.5);
 
-            card.on('pointerover', () => card.setScale(1.05));
+            card.on('pointerover', () => card.setScale(1.08));
             card.on('pointerout', () => card.setScale(1));
             card.on('pointerdown', () => this.scene.start(lvl.scene));
         });
 
-        const back = this.add.text(50, height - 50, '← BACK', {
-            fontSize: '24px',
+        const back = this.add.text(80, height - 80, '← BACK', {
+            fontSize: '32px',
             color: '#64d5ff',
             fontFamily: 'Arial',
             fontStyle: 'bold'
