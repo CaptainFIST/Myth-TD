@@ -1,4 +1,5 @@
 import PlayerManager from '../managers/PlayerManager.js';
+import TimeManager from './TimeManager.js';
 
 export default class UIManager extends Phaser.Scene {
     constructor() {
@@ -11,6 +12,16 @@ export default class UIManager extends Phaser.Scene {
     }
 
     create() {
+        // Time manager
+        this.TimeManager = new TimeManager();
+
+        this.timerText = this.add.text(16, 16, 'Time: 0.00s', {
+            fontSize: '18px',
+            color: '#000000',
+            fontStyle: 'bold',
+            fontFamily: 'Arial, sans-serif'
+        }).setDepth(10);
+
         // ui positioning
         const gameWidth = this.scale.width;
         const gameHeight = this.scale.height;
@@ -56,6 +67,12 @@ export default class UIManager extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(3);
 
         this.updateHealthCircle(playerHP);
+    }
+
+    update(time, delta) {
+        this.TimeManager.update(delta);
+        const elapsedTime = this.TimeManager.getTime().toFixed(2);
+        this.timerText.setText(`Time: ${elapsedTime}s`);
     }
 
     updateHealthCircle(currentHP) {

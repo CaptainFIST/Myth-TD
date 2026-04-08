@@ -1,4 +1,5 @@
 import TimeManager from '../managers/TimeManager.js';
+import UIManager from '../managers/UIManager.js';
 
 export default class Level1 extends Phaser.Scene {
     constructor() {
@@ -49,19 +50,11 @@ export default class Level1 extends Phaser.Scene {
     create() {
         this.scene.launch('MapManager', { level: this.constructor });
         this.scene.launch('UIManager');
-        this.timeManager = new TimeManager();
 
-        this.timerText = this.add.text(16, 16, 'Time: 0.00s', {
-            fontSize: '18px',
-            color: '#000000',
-            fontStyle: 'bold',
-            fontFamily: 'Arial, sans-serif'
-        }).setDepth(10);
+        this.ui = this.scene.get('UIManager');
+        this.TimeManager = this.ui.TimeManager;
+
     }
 
-    update(time, delta) {
-        this.timeManager.update(delta);
-        const elapsedTime = this.timeManager.getTime().toFixed(2);
-        this.timerText.setText(`Time: ${elapsedTime}s`);
-    }
+
 }
