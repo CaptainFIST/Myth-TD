@@ -1,4 +1,3 @@
-import TimeManager from '../managers/TimeManager.js';
 import PlayerManager from '../managers/PlayerManager.js';
 
 export default class Level1 extends Phaser.Scene {
@@ -74,12 +73,10 @@ export default class Level1 extends Phaser.Scene {
         this.scene.launch('MapManager', { level: this.constructor });
         this.player = new PlayerManager(this);
         this.inventory = [];
-        this.timeManager = new TimeManager();
 
         this.scene.launch('UIManager', {
             player: this.player,
             inventory: this.inventory,
-            timeManager: this.timeManager
         });
 
         const startY = this.scale.height - 80;
@@ -98,9 +95,5 @@ export default class Level1 extends Phaser.Scene {
         this.createButton(rightStartX + 170, startY, 'Inventory', () => {
             this.scene.get('UIManager').toggleInventory();
         });
-    }
-
-    update(time, delta) {
-        this.timeManager.update(delta);
     }
 }

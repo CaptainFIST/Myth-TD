@@ -1,4 +1,5 @@
 import PlayerManager from '../managers/PlayerManager.js';
+import TimeManager from '../managers/TimeManager.js';
 
 export default class UIManager extends Phaser.Scene {
     constructor() {
@@ -51,7 +52,8 @@ export default class UIManager extends Phaser.Scene {
             color: '#ffd700',
             fontStyle: 'bold'
         }).setDepth(3);
-
+        
+        this.timeManager = new TimeManager();
         this.timerText = this.add.text(uiX, uiY + 10, '', {
             fontSize: '20px',
             color: '#ffffff'
@@ -83,7 +85,7 @@ export default class UIManager extends Phaser.Scene {
         this.goldText.setText(`Gold: ${this.player.gold}`);
 
         if (this.timeManager) {
-            const time = this.timeManager.getTime().toFixed(1);
+            const time = this.timeManager.getTime().toFixed(2);
             this.timerText.setText(`Time: ${time}s`);
         }
 
@@ -136,5 +138,10 @@ export default class UIManager extends Phaser.Scene {
             fillHeight
         );
         this.healthText.setText(`${currentHP} / ${this.hpMax}`);
+    }
+    
+    update(time, delta) {
+        this.timeManager.update(delta);
+        this.updateUI();
     }
 }
