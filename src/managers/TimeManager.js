@@ -1,12 +1,11 @@
-export default class TimeManager extends Phaser.Scene {
+export default class TimeManager {    
     constructor() {
-        super({ key: 'TimeManager' });
         this.time = 0; 
         this.scale = 1; 
         this.paused = false;
     }
 
-    update(delta){
+    update(delta) {
         if(this.paused) return;
         this.time += (delta / 1000) * this.scale;
     }
@@ -19,8 +18,8 @@ export default class TimeManager extends Phaser.Scene {
         this.time = 0;
     }
 
-    getScale(){
-        this.scale = this.scale;
+    getScale() {
+        return this.scale;
     }
 
     pause() {

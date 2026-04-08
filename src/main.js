@@ -7,15 +7,15 @@ import Level1 from './scenes/Level1.js';
 import Level2 from './scenes/Level2.js';
 import LevelSelect from './scenes/LevelSelect.js';
 import TimeManager from './managers/TimeManager.js';
-
+import UIManager from './managers/UIManager.js';
 
 const config = {
     type: Phaser.AUTO,
     title: 'Mythological Tower Defense Game',
     description: '',
     parent: 'game-container',
-    width: 1280,
-    height: 720,
+    width: 1500,
+    height: 1000,
     backgroundColor: '#000000',
     pixelArt: false,
     parent: 'game-container',
@@ -27,6 +27,7 @@ const config = {
         MapManager,
         PlayerManager,
         TimeManager,
+        UIManager,
         Level1,
         Level2
     ],

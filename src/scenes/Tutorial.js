@@ -20,9 +20,9 @@ export default class Tutorial extends Phaser.Scene {
             ['🏆 TIPS', 'Build towers ahead of the path for better coverage']
         ];
 
-        const cardW = 340, cardH = 140, gap = 30;
+        const cardW = 480, cardH = 180, gap = 40;        
         const startX = width / 2 - cardW - gap / 2;
-        const startY = 170;
+        const startY = 200;
         
         tutorialData.forEach(([titleText, descText], i) => {
             const row = Math.floor(i / 2);
@@ -31,14 +31,14 @@ export default class Tutorial extends Phaser.Scene {
             const y = startY + row * (cardH + gap);
 
             const card = this.add.rectangle(x, y, cardW, cardH, 0x0f1534, 0.7).setStrokeStyle(2, 0x64d5ff);
-            const title = this.add.text(x - cardW / 2 + 15, y - cardH / 2 + 15, titleText, {
-                fontSize: '14px',
+            const title = this.add.text(x - cardW / 2 + 20, y - cardH / 2 + 20, titleText, {
+                fontSize: '24px',
                 color: '#64d5ff',
                 fontStyle: 'bold'
             });
 
             const desc = this.add.text(x - cardW / 2 + 15, y - cardH / 2 + 50, descText, {
-                fontSize: '12px',
+                fontSize: '20px',
                 color: '#a8daff',
                 wordWrap: { width: cardW - 30 }
             });
@@ -46,7 +46,7 @@ export default class Tutorial extends Phaser.Scene {
         });
 
         const mainTitle = this.add.text(width / 2, 50, 'HOW TO PLAY', {
-            fontSize: '56px',
+            fontSize: '72px',
             color: '#64d5ff',
             fontStyle: 'bold',
             stroke: '#0a3f5c',
@@ -67,9 +67,9 @@ export default class Tutorial extends Phaser.Scene {
         this.input.keyboard.on('keydown-DOWN', () => updateScroll(scroll + 40));
 
         const btnY = startY + Math.ceil(tutorialData.length / 2) * (cardH + gap) + 60;
-        const btn = this.add.rectangle(width / 2, btnY, 180, 45, 0x1a5f3e).setStrokeStyle(2, 0x64d5ff).setInteractive({ useHandCursor: true });
+        const btn = this.add.rectangle(width / 2, btnY, 260, 50, 0x1a5f3e).setStrokeStyle(2, 0x64d5ff).setInteractive({ useHandCursor: true });
         const txt = this.add.text(width / 2, btnY, 'START GAME', {
-            fontSize: '18px',
+            fontSize: '24px',
             color: '#fff',
             fontStyle: 'bold'
         }).setOrigin(0.5);

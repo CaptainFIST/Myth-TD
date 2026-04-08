@@ -20,43 +20,31 @@ export default class PlayerManager {
     income() {
         this.gold += this.goldPerSec;
         if (this.scene.debug) {
-            console.log(`🌾 Farm income: +${this.goldPerSec} gold (Total: ${this.scene.gold})`);
+            console.log(`🌾 Farm income: +${this.goldPerSec} gold (Total: ${this.gold})`);
         }
         
     }
 
     updateHealth(damage) {
-        if(this.playerHealth != 0)
-        {
-            if(damage <= this.playerHealth)
-            {
-                this.playerHealth -= damage;
-                console.log(`Player took ${damage} damage!`);
-            }
-            else
-            {
-                this.playerHealth -= this.playerHealth;
-                console.log(`Player took ${this.playerHealth} damage!`);
-            }
-        }
+        this.playerHealth = Math.max(0, this.playerHealth - damage);
     }
 
     isHealthZero() {
-        return this.playerHealth == 0 ? true : false;
+        return this.playerHealth === 0;    
     }
 
     updateGold(change) {
         
         if(change > 0)
         {
-            this.gold += change;
+            this.gold -= change;
             console.log(`${change} gold added`);
         }
         else if(change < 0)
         {
             if(Math.abs(change) <= this.gold)
             {
-                this.gold -= change;
+                this.gold += change;
                 console.log(`${change} used`);
             }
         }
