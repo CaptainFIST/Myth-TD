@@ -1,4 +1,4 @@
-import TimeManager from '../managers/TimeManager.js';
+import PlayerManager from '../managers/PlayerManager.js';
 
 export default class Level1 extends Phaser.Scene {
     constructor() {
@@ -6,19 +6,24 @@ export default class Level1 extends Phaser.Scene {
     }
 
     static mapData = [
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,0,0,0],
-        [0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0],
-        [0,1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,1,1,1,1],
-        [0,0,0,0,0,0,1,0,1,1,1,1,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [0,0,0,0,0,0,1,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     ];
 
     static decoData = [
+<<<<<<< HEAD
 
     [0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0],
@@ -31,43 +36,61 @@ export default class Level1 extends Phaser.Scene {
     [0,2,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
+=======
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,2,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
+        [0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+>>>>>>> main
     ];
 
-    static tileTypes = {
-        0: 'grass',
-        1: 'path'
+    static tileTypes = { 
+        0: 'grass', 
+        1: 'path' 
     };
-
-    static decoTypes = {
-        2: 'tree'
+    static decoTypes = { 
+        2: 'tree' 
     };
 
     preload() {
         this.load.image('grass', 'assets/tiles/level1/grass_new.png');
         this.load.image('path', 'assets/tiles/level1/dirt_path.png');
         this.load.image('tree', 'assets/decorations/tree1.png');
-        this.load.image('UI', 'assets/UI/UI.png');
     }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
     createButton(x, y, label, onClick) {
         const bg = this.add.rectangle(x, y, 160, 80, 0x000000)
             .setOrigin(0).setStrokeStyle(2, 0xffffff)
             .setInteractive({ useHandCursor: true }).setDepth(20);
+
         const text = this.add.text(x + 80, y + 40, label, {
             fontSize: '16px',
             color: '#ffffff',
             fontStyle: 'bold',
-            align: 'center',
-            lineSpacing: 3
+            align: 'center'
         }).setOrigin(0.5).setDepth(21);
-        bg.on('pointerover', () => bg.setFillStyle(0x222222));
-        bg.on('pointerout', () => bg.setFillStyle(0x000000));
+
+        bg.on('pointerdown', onClick);
         return { bg, text };
     }
 
     create() {
         this.scene.launch('MapManager', { level: this.constructor });
+<<<<<<< HEAD
 
         // this.timeManager = new TimeManager();
         this.scene.launch('UIManager');
@@ -109,4 +132,31 @@ export default class Level1 extends Phaser.Scene {
 
     
 
+=======
+        this.player = new PlayerManager(this);
+        this.inventory = [];
+
+        this.scene.launch('UIManager', {
+            player: this.player,
+            inventory: this.inventory,
+        });
+
+        const startY = this.scale.height - 80;
+        this.createButton(20, startY, 'Purchase Tower\n50 g', () => {
+            if (this.player.gold >= 50) {
+                this.player.updateGold(-50);
+
+                this.inventory.push({ type: 'unknown' });
+
+                this.scene.get('UIManager').updateInventoryUI();
+            }
+        });
+
+        const rightStartX = this.scale.width - 340;
+        this.createButton(rightStartX, startY, 'Merge', () => {});
+        this.createButton(rightStartX + 170, startY, 'Inventory', () => {
+            this.scene.get('UIManager').toggleInventory();
+        });
+    }
+>>>>>>> main
 }

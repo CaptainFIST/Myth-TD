@@ -1,4 +1,5 @@
 import PlayerManager from '../managers/PlayerManager.js';
+import TimeManager from '../managers/TimeManager.js';
 
 export default class UIManager extends Phaser.Scene {
     constructor() {
@@ -8,109 +9,144 @@ export default class UIManager extends Phaser.Scene {
     preload() {
         this.load.image('UI', 'assets/UI/UI.png');
         this.load.image('UIHP', 'assets/UI/UIHP.png');
+        this.load.image('Inventory', 'assets/UI/Inventory.png');
+        this.load.image('TowerIcon', 'assets/UI/tower_icon.png');
     }
 
-    create() {
-        // ui positioning
-        const gameWidth = this.scale.width;
-        const gameHeight = this.scale.height;
-        const uiXPos = gameWidth / 2;
-        const uiYPos = gameHeight - 49;
-        this.add.image(uiXPos, uiYPos, 'UI');
+    create(data) {
+        this.player = data.player;
+        this.inventory = data.inventory;
+        this.timeManager = data.timeManager;
 
-        // hp bauble
+        const width = this.scale.width;
+        const height = this.scale.height;
+        const uiX = width / 2;
+        const uiY = height - 49;
+        this.add.image(uiX, uiY, 'UI').setScale(1.7);
+
         this.hpMax = 20;
-        this.hpFrameX = 0 + 49;
-        this.hpFrameY = uiYPos -6;
-        const hpFrame = this.add.image(this.hpFrameX, this.hpFrameY, 'UIHP');
-        hpFrame.setDepth(2);
+        this.hpFrameX = 250;
+        this.hpFrameY = uiY + 10;
+        this.add.image(this.hpFrameX, this.hpFrameY, 'UIHP').setDepth(2);
         this.hpRadius = 78 / 2;
+        this.hpContainer = this.add.container(0, 0).setDepth(1);
 
-        // hp blood fill
         this.hpFill = this.add.graphics();
-        this.hpFill.setDepth(1);
+        this.hpContainer.add(this.hpFill);
+        this.hpMaskShape = this.add.graphics();
+        this.hpMaskShape.fillStyle(0xffffff);
+        this.hpMaskShape.fillCircle(this.hpFrameX, this.hpFrameY, this.hpRadius);
+        this.hpMaskShape.setVisible(false);
 
-        this.hpCircleMask = this.add.graphics();
-        this.hpCircleMask.fillStyle(0xffffff);
-        this.hpCircleMask.fillCircle(this.hpFrameX, this.hpFrameY, this.hpRadius);
-        this.hpCircleMask.setVisible(false);
+        const mask = this.hpMaskShape.createGeometryMask();
+        this.hpContainer.setMask(mask);
 
-        // hp fill logic
-        const mask = this.hpCircleMask.createGeometryMask();
-        this.hpFill.setMask(mask);
-
-
-        // player data
-        this.player = new PlayerManager();
-        this.testingPlayerMethods();
-        //this.testingPlayerMethods();
-
-        const playerHP = this.player.playerHealth;
-        const playerGold = this.player.gold;
-
-        this.healthText = this.add.text(this.hpFrameX, this.hpFrameY, `${playerHP} / ${this.hpMax}`, {
-            fontSize: '18px',
-            color: '#000000',
-            fontStyle: 'bold',
-            fontFamily: 'Arial, sans-serif'
+        this.healthText = this.add.text(this.hpFrameX, this.hpFrameY, '', {
+            fontSize: '16px',
+            color: '#000',
+            fontStyle: 'bold'
         }).setOrigin(0.5).setDepth(3);
 
+<<<<<<< HEAD
         this.updateHealthCircle(playerHP);
         this.testingPlayerMethods();
+=======
+        this.goldText = this.add.text(uiX - 250, uiY + 10, '', {
+            fontSize: '20px',
+            color: '#ffd700',
+            fontStyle: 'bold'
+        }).setDepth(3);
+        
+        this.timeManager = new TimeManager();
+        this.timerText = this.add.text(uiX, uiY + 10, '', {
+            fontSize: '20px',
+            color: '#ffffff'
+        }).setOrigin(0.5).setDepth(3);
+
+        this.wave = 1;
+        this.waveText = this.add.text(uiX + 150, uiY + 10, '', {
+            fontSize: '20px',
+            color: '#64d5ff'
+        }).setDepth(3);
+
+        this.inventoryImage = this.add.image(width - 430, height - 340, 'Inventory')
+            .setOrigin(0)
+            .setDepth(50)
+            .setVisible(false);
+
+        this.towerIcons = this.add.group();
+
+        this.updateUI();
+    }
+
+    update() {
+        this.updateUI();
+    }
+
+    updateUI() {
+        if (!this.player) return;
+
+        this.goldText.setText(`Gold: ${this.player.gold}`);
+
+        if (this.timeManager) {
+            const time = this.timeManager.getTime().toFixed(2);
+            this.timerText.setText(`Time: ${time}s`);
+        }
+
+        this.waveText.setText(`Wave: ${this.wave}`);
+
+        this.updateHealthCircle(this.player.playerHealth);
+    }
+
+    toggleInventory() {
+        const visible = !this.inventoryImage.visible;
+        this.inventoryImage.setVisible(visible);
+        this.updateInventoryUI();
+    }
+
+    updateInventoryUI() {
+        this.towerIcons.clear(true, true);
+        if (!this.inventoryImage.visible) return;
+
+        const startX = this.inventoryImage.x + 20;
+        const startY = this.inventoryImage.y + 20;
+        const size = 50;
+        const gap = 10;
+
+        this.inventory.forEach((tower, i) => {
+            const row = Math.floor(i / 9);
+            const col = i % 9;
+            const x = startX + col * (size + gap);
+            const y = startY + row * (size + gap);
+
+            const icon = this.add.image(x, y, 'TowerIcon').setScale(0.7) .setDepth(51);
+            this.towerIcons.add(icon);
+        });
+>>>>>>> main
     }
 
     updateHealthCircle(currentHP) {
-        // init values and coordinates
-        const centerX = this.hpFrameX; 
+        const centerX = this.hpFrameX;
         const centerY = this.hpFrameY;
+        const radius = this.hpRadius;
 
-        // % scaling of mask
-        let healthPercent = currentHP / this.hpMax;
-        healthPercent = Phaser.Math.Clamp(healthPercent, 0, 1);
-
-        // clear mask
+        let healthPercent = Phaser.Math.Clamp(currentHP / this.hpMax, 0, 1);
         this.hpFill.clear();
-        
-        // fill hp
-        this.hpFill.fillStyle(0xCD1C18, 1);
-        const totalHeight = this.hpRadius * 2;
+        const totalHeight = radius * 2;
         const fillHeight = totalHeight * healthPercent;
+        this.hpFill.fillStyle(0xCD1C18, 1);
 
-        // hp "liquid" object (rectangle)
         this.hpFill.fillRect(
-            centerX - this.hpRadius,                 // X (left edge)
-            (centerY + this.hpRadius) - fillHeight,  // Y (top of the liquid)
-            totalHeight,                        // Width (covers the whole orb)
-            fillHeight                          // Height (the liquid itself)
+            centerX - radius,
+            (centerY + radius) - fillHeight,
+            radius * 2,
+            fillHeight
         );
-
-        // "glowing" liquid edge
-        // Only draw the line if health is between 1% and 99%
-        if (healthPercent > 0.01 && healthPercent < 0.99) {
-            this.hpFill.lineStyle(2, 0xff0000, 1); 
-            const lineY = (centerY + this.hpRadius) - fillHeight;
-        
-            // This math calculates the width of the circle at the current liquid height
-            // so the red line doesn't poke out of the sides
-            const dy = Math.abs(lineY - centerY);
-            const lineWidth = Math.sqrt(Math.pow(this.hpRadius, 2) - Math.pow(dy, 2)) * 2;
-        
-            this.hpFill.lineBetween(centerX - (lineWidth/2), lineY, centerX + (lineWidth/2), lineY);
-        }
-
         this.healthText.setText(`${currentHP} / ${this.hpMax}`);
     }
-
-    testingPlayerMethods() {
-        console.log(`player health is ${this.player.playerHealth}`);
-        console.log(`Player gold is ${this.player.gold}`);
-        console.log(`Is health zero: ${this.player.isHealthZero()}`);
-
-        console.log(`Testing functions:`);
-        this.player.updateGold(50);
-        console.log(`Player gold is ${this.player.gold}`);
-        this.player.updateHealth(10);
-        console.log(`player health is ${this.player.playerHealth}`);
-        console.log(`Is health zero: ${this.player.isHealthZero()}`);
+    
+    update(time, delta) {
+        this.timeManager.update(delta);
+        this.updateUI();
     }
 }
