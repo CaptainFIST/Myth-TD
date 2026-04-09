@@ -1,16 +1,15 @@
-<<<<<<< HEAD
+
 import PlayerManager from '../managers/PlayerManager.js';
 import TimeManager from '../managers/TimeManager.js';
 
-=======
->>>>>>> main
+
 export default class MapManager extends Phaser.Scene {
     constructor() {
         super({ key: 'MapManager' });
     }
 
     create(data) {
-<<<<<<< HEAD
+
 
 
 
@@ -25,8 +24,7 @@ export default class MapManager extends Phaser.Scene {
 
 
 
-=======
->>>>>>> main
+
         const level = data.level;
         const mapData = level.mapData;
         const decoData = level.decoData;

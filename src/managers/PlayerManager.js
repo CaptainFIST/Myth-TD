@@ -41,15 +41,11 @@ export default class PlayerManager {
 
     income() {
         this.gold += this.goldPerSec;
-<<<<<<< HEAD
+
         
         console.log(`🌾 Farm income: +${this.goldPerSec} gold (Total: ${this.gold})`);
         
-=======
-        if (this.scene.debug) {
-            console.log(`🌾 Farm income: +${this.goldPerSec} gold (Total: ${this.gold})`);
-        }
->>>>>>> main
+
         
     }
 

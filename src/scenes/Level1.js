@@ -23,20 +23,7 @@ export default class Level1 extends Phaser.Scene {
     ];
 
     static decoData = [
-<<<<<<< HEAD
 
-    [0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0],
-    [0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0],
-    [0,2,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-
-=======
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -51,7 +38,7 @@ export default class Level1 extends Phaser.Scene {
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
         [0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
->>>>>>> main
+
     ];
 
     static tileTypes = { 
@@ -68,10 +55,7 @@ export default class Level1 extends Phaser.Scene {
         this.load.image('tree', 'assets/decorations/tree1.png');
     }
 
-<<<<<<< HEAD
 
-=======
->>>>>>> main
     createButton(x, y, label, onClick) {
         const bg = this.add.rectangle(x, y, 160, 80, 0x000000)
             .setOrigin(0).setStrokeStyle(2, 0xffffff)
@@ -90,49 +74,7 @@ export default class Level1 extends Phaser.Scene {
 
     create() {
         this.scene.launch('MapManager', { level: this.constructor });
-<<<<<<< HEAD
 
-        // this.timeManager = new TimeManager();
-        this.scene.launch('UIManager');
-
-
-
-        const startY = 655;
-        this.createButton(20, startY, 'Purchase Tower\n50 g', () => { this.isPlacingTower = true;});
-        const rightStartX = this.scale.width - 360; 
-        const buttonWidth = 160;
-        const rightButtons = [
-            { label: 'Merge', action: () => {}},
-            { label: 'Inventory', action: () => {}}
-        ];
-        rightButtons.forEach((btn, i) => {
-            this.createButton(rightStartX + i * (buttonWidth + 10), startY, btn.label, btn.action);
-        });
-
-
-
-        // this.timerText = this.add.text(16, 16, 'Time: 0.00s', {
-        //     fontSize: '18px',
-        //     color: '#000000',
-        //     fontStyle: 'bold',
-        //     fontFamily: 'Arial, sans-serif'
-        // }).setDepth(10);
-    }
-    // update(time, delta) {
-    //     this.timeManager.update(delta);
-    //     const elapsedTime = this.timeManager.getTime().toFixed(2);
-    //     this.timerText.setText(`Time: ${elapsedTime}s`);
-    // }
-
-
-
-        
-
-    
-
-    
-
-=======
         this.player = new PlayerManager(this);
         this.inventory = [];
 
@@ -158,5 +100,5 @@ export default class Level1 extends Phaser.Scene {
             this.scene.get('UIManager').toggleInventory();
         });
     }
->>>>>>> main
+
 }
