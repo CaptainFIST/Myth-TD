@@ -19,9 +19,15 @@ export default class TowerManager {
         this.other = [
             ['Shrine', 2]
         ];
+
+        // index array for tower rolling
+        this.towerIndex = [
+            'p0','p1',
+            'o0'
+        ];
     }
 
-    tower() {
+    tower(data) {
 
     }
 
