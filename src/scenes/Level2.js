@@ -44,7 +44,7 @@ export default class Level2 extends Phaser.Scene {
         this.load.image('snow', 'assets/tiles/level2/snow.png');
         this.load.image('path', 'assets/tiles/level2/snow_path.png');
         this.load.image('rock', 'assets/decorations/level2/snowy_rock.png');
-        this.load.image('UI', 'assets/UI/UI.png');
+        this.load.image('UI', 'assets/UI/UI.png'); 
 
     }
     create() {
