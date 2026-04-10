@@ -1,4 +1,5 @@
 import TimeManager from '../managers/TimeManager.js';
+
 export default class Level2 extends Phaser.Scene {
     constructor() {
         super({ key: 'Level2' });
@@ -36,6 +37,7 @@ export default class Level2 extends Phaser.Scene {
         2: 'path',
         3: 'path'
     };
+
     static decoTypes = {
         2: 'rock'
     };
@@ -45,12 +47,10 @@ export default class Level2 extends Phaser.Scene {
         this.load.image('path', 'assets/tiles/level2/snow_path.png');
         this.load.image('rock', 'assets/decorations/level2/snowy_rock.png');
         this.load.image('UI', 'assets/UI/UI.png');
-
     }
+
     create() {
         this.scene.launch('MapManager', { level: this.constructor });
-
-
 
         // this.timeManager = new TimeManager();
         
@@ -67,6 +67,4 @@ export default class Level2 extends Phaser.Scene {
     //     const elapsedTime = this.timeManager.getTime().toFixed(2);
     //     this.timerText.setText(`Time: ${elapsedTime}s`);
     // }
-
-
 }
