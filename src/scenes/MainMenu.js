@@ -21,8 +21,6 @@ export default class MainMenu extends Phaser.Scene {
             {text: 'ACHIEVEMENTS', icon: '🏆'},
             {text: 'SETTINGS', icon: '⚙', action: () => this.scene.start('SettingsMenu')},
             {text: 'EXIT', icon: '✕', action: () => window.close()}
-
-
         ];
         const startY = 520;
         const leftx = 250;

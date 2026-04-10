@@ -1,4 +1,4 @@
-import PlayerManager from '../managers/PlayerManager.js';
+import TimeManager from '../managers/TimeManager.js';
 
 export default class UIManager extends Phaser.Scene {
     constructor() {
@@ -15,7 +15,7 @@ export default class UIManager extends Phaser.Scene {
     create(data) {
         this.player = data.player;
         this.inventory = data.inventory;
-        this.timeManager = data.timeManager;
+        this.timeManager = new TimeManager();
 
         const width = this.scale.width;
         const height = this.scale.height;
@@ -27,11 +27,12 @@ export default class UIManager extends Phaser.Scene {
         this.hpFrameX = 250;
         this.hpFrameY = uiY + 10;
         this.add.image(this.hpFrameX, this.hpFrameY, 'UIHP').setDepth(2);
+
         this.hpRadius = 78 / 2;
         this.hpContainer = this.add.container(0, 0).setDepth(1);
-
         this.hpFill = this.add.graphics();
         this.hpContainer.add(this.hpFill);
+
         this.hpMaskShape = this.add.graphics();
         this.hpMaskShape.fillStyle(0xffffff);
         this.hpMaskShape.fillCircle(this.hpFrameX, this.hpFrameY, this.hpRadius);
@@ -39,12 +40,12 @@ export default class UIManager extends Phaser.Scene {
 
         const mask = this.hpMaskShape.createGeometryMask();
         this.hpContainer.setMask(mask);
-
         this.healthText = this.add.text(this.hpFrameX, this.hpFrameY, '', {
             fontSize: '16px',
             color: '#000',
             fontStyle: 'bold'
         }).setOrigin(0.5).setDepth(3);
+
 
         this.goldText = this.add.text(uiX - 250, uiY + 10, '', {
             fontSize: '20px',
@@ -64,31 +65,57 @@ export default class UIManager extends Phaser.Scene {
         }).setDepth(3);
 
         this.inventoryImage = this.add.image(width - 430, height - 340, 'Inventory')
-            .setOrigin(0)
-            .setDepth(50)
-            .setVisible(false);
-
+            .setOrigin(0).setDepth(50).setVisible(false);
         this.towerIcons = this.add.group();
 
+        const startY = height - 80;
+        this.createButton(20, startY, 'Purchase Tower\n50 g', () => {
+            if (this.player.gold >= 50) {
+                this.player.updateGold(-50);
+                this.inventory.push({ type: 'unknown' });
+                this.updateInventoryUI();
+            }
+        });
+        const rightStartX = width - 340;
+        this.createButton(rightStartX, startY, 'Merge', () => {
+        });
+
+        this.createButton(rightStartX + 170, startY, 'Inventory', () => {
+            this.toggleInventory();
+        });
         this.updateUI();
     }
 
-    update() {
+    createButton(x, y, label, onClick) {
+        const bg = this.add.rectangle(x, y, 160, 80, 0x000000)
+            .setOrigin(0).setStrokeStyle(2, 0xffffff)
+            .setInteractive({ useHandCursor: true }).setDepth(60);
+
+        const text = this.add.text(x + 80, y + 40, label, {
+            fontSize: '16px',
+            color: '#ffffff',
+            fontStyle: 'bold',
+            align: 'center'
+        }).setOrigin(0.5).setDepth(61);
+
+        bg.on('pointerover', () => bg.setFillStyle(0x222222));
+        bg.on('pointerout', () => bg.setFillStyle(0x000000));
+        bg.on('pointerdown', onClick);
+        return { bg, text };
+    }
+
+    update(time, delta) {
+        this.timeManager.update(delta);
         this.updateUI();
     }
 
     updateUI() {
         if (!this.player) return;
-
         this.goldText.setText(`Gold: ${this.player.gold}`);
-
-        if (this.timeManager) {
-            const time = this.timeManager.getTime().toFixed(1);
-            this.timerText.setText(`Time: ${time}s`);
-        }
-
+        
+        const time = this.timeManager.getTime().toFixed(2);
+        this.timerText.setText(`Time: ${time}s`);
         this.waveText.setText(`Wave: ${this.wave}`);
-
         this.updateHealthCircle(this.player.playerHealth);
     }
 
@@ -101,21 +128,22 @@ export default class UIManager extends Phaser.Scene {
     updateInventoryUI() {
         this.towerIcons.clear(true, true);
         if (!this.inventoryImage.visible) return;
-
         const startX = this.inventoryImage.x + 20;
         const startY = this.inventoryImage.y + 20;
+
         const size = 50;
         const gap = 10;
-
         this.inventory.forEach((tower, i) => {
             const row = Math.floor(i / 9);
             const col = i % 9;
             const x = startX + col * (size + gap);
             const y = startY + row * (size + gap);
 
-            const icon = this.add.image(x, y, 'TowerIcon').setScale(0.7) .setDepth(51);
+            const icon = this.add.image(x, y, 'TowerIcon')
+                .setScale(0.7).setDepth(51);
             this.towerIcons.add(icon);
         });
+
     }
 
     updateHealthCircle(currentHP) {
@@ -127,8 +155,8 @@ export default class UIManager extends Phaser.Scene {
         this.hpFill.clear();
         const totalHeight = radius * 2;
         const fillHeight = totalHeight * healthPercent;
-        this.hpFill.fillStyle(0xCD1C18, 1);
 
+        this.hpFill.fillStyle(0xCD1C18, 1);
         this.hpFill.fillRect(
             centerX - radius,
             (centerY + radius) - fillHeight,
