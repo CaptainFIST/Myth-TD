@@ -1,5 +1,3 @@
-import TimeManager from './TimeManager.js';
-
 export default class PlayerManager {
     constructor(scene) {
         this.scene = scene;

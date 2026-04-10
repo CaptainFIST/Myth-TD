@@ -1,4 +1,3 @@
-
 import PlayerManager from '../managers/PlayerManager.js';
 import TimeManager from '../managers/TimeManager.js';
 
@@ -13,18 +12,6 @@ export default class MapManager extends Phaser.Scene {
 
 
 
-        this.player = new PlayerManager(this);
-        this.timeManager = new TimeManager();
-
-        //this.displayHealth();
-        this.testingPlayerMethods();
-        //this.testingPlayerMethods();
-        //this.player.incomeStart();
-        this.c = 0;
-
-
-
-
         const level = data.level;
         const mapData = level.mapData;
         const decoData = level.decoData;
@@ -34,10 +21,14 @@ export default class MapManager extends Phaser.Scene {
             const tileSize = this.tileSize || 64;        
             for (let row = 0; row < mapData.length; row++) {
             for (let col = 0; col < mapData[row].length; col++) {
+
                 const tileKey = tileTypes[mapData[row][col]];
                 const decoKey = decoTypes[decoData[row][col]];
                 const x = col * tileSize;
                 const y = row * tileSize;
+
+                
+
                 if (tileKey) {
                     this.add.image(x, y, tileKey).setOrigin(0);
                 }
@@ -47,87 +38,104 @@ export default class MapManager extends Phaser.Scene {
             }
         }
 
-        this.displayHealth();
-        this.displayGold();
-        this.displayTime();
-        //this.testingPlayerMethods();
-    }
-
-
-
-
-    testingPlayerMethods() {
-        console.log(`player health is ${this.player.playerHealth}`);
-        console.log(`Player gold is ${this.player.gold}`);
-        console.log(`Is health zero: ${this.player.isHealthZero()}`);
-
-        console.log(`Testing functions:`);
-        this.player.updateGold(50);
-        console.log(`Player gold is ${this.player.gold}`);
-        this.player.updateHealth(10);
-        console.log(`player health is ${this.player.playerHealth}`);
-        console.log(`Is health zero: ${this.player.isHealthZero()}`);
-
-    }
-
-    displayHealth() {
-        this.healthText = this.add.text(256, 16, `Health: ${this.player.playerHealth}`, {
-            fontSize: '18px',
-            color: '#000000',
-            fontStyle: 'bold',
-            fontFamily: 'Arial, sans-serif'
-        }).setDepth(10);
-    }
-
-    displayGold() {
-        this.goldText = this.add.text(360, 16, `Gold: ${this.player.gold}`, {
-            fontSize: '18px',
-            color: '#000000',
-            fontStyle: 'bold',
-            fontFamily: 'Arial, sans-serif'
-        }).setDepth(10);
-    }
-
-    displayTime() {
-                this.timerText = this.add.text(16, 16, 'Time: 0.00s', {
-                    fontSize: '18px',
-                    color: '#000000',
-                    fontStyle: 'bold',
-                    fontFamily: 'Arial, sans-serif'
-                }).setDepth(10);
-    }
-
-    update(time, delta) {
-        this.timeManager.update(delta);
-        const elapsedTime = this.timeManager.getTime().toFixed(2);
-
-        if(elapsedTime % 2 == 0){
-            this.player.income();
-            console.log(`${++this.c} and ${elapsedTime}`);
-        }
+        //this.findOpening(mapData, 'Ent');
+        this.findOpening(mapData, 'Ex');
         
-        this.timerText.setText(`Time: ${elapsedTime}s`);
-        this.goldText.setText(`Gold: ${this.player.gold}`);
-        this.healthText.setText(`Health: ${this.player.playerHealth}`);
+
+        this.tPath = this.findPath(mapData);
+        this.wPath = this.toWP(this.tPath);
+
+
+
+        
     }
 
-    //incomeStart() {
-        // this.incomeTimer = this.TimeManager.getTime.addEvent({
-        //     delay: this.incInterval,
-        //     callback: this.income,
-        //     callbackScope: this,
-        //     loop: true
-        // });
-        //
-        // this.incomeTimer = this.elapsed.addEvent({
-        //     delay: this.incInterval,
-        //     callback: this.income,
-        //     callbackScope: this,
-        //     loop: true
-        // });
+    findOpening(map, e) {
+        
+        for(let y = 0; y < map.length; y++) {
+            for(let x = 0; x < map[0].length; x++) {
 
 
-    //}
+                    if(map[y][x] === 2 && e === 'Ent') {
+                        console.log(`Entrance is at: {${x}, ${y}}`);
+                        return {x, y};
+                    }
+                    else if(map[y][x] === 3 && e === 'Ex') {
+                        console.log(`Exit is at: {${x}, ${y}}`);
+                        return {x, y};
+                    }
+
+            }
+
+        }
+
+        if(e === 'Ent'){
+            console.log("Missing Entrance");
+        }
+        else if(e === 'Ex'){
+            console.log("Missing Exit");
+        }
+        return null;
+    }
+
+    findPath(map) {
+        const path = [];
+        const visited = new Set();
+
+        let cur = this.findOpening(map, 'Ent');
+
+        const key = (x,y) => `${x},${y}`;
+
+        while(cur) {
+            path.push(cur);
+            visited.add(key(cur.x, cur.y));
+            console.log(cur);
+
+            if(map[cur.y][cur.x] === 3) {
+                break;
+            }
+
+            let next = null;
+
+            const directions = [
+                {x: 0, y: -1},
+                {x: 1, y: 0},
+                {x: 0, y: 1},
+                {x: -1, y: 0}
+            ];
+
+            for(let dir of directions) {
+                let nx = cur.x + dir.x;
+                let ny = cur.y + dir.y;
+
+                if(map[ny] && (map[ny][nx] === 1 || map[ny][nx] === 3) && !visited.has(key(nx, ny))) {
+                    next = { x: nx, y: ny };
+                    break;
+                }
+            }
+            cur = next;
+
+
+        }
+
+        return path;
+    }
+
+    toWP(tileP) {
+        const tileSize = this.tileSize || 64;
+
+        return tileP.map(tile => ({
+            x: tile.x * tileSize + tileSize / 2,
+            y: tile.y * tileSize + tileSize / 2,
+        }));
+    }
+
+    
+
+
+
+
+    
 
     
 
