@@ -7,11 +7,11 @@ export default class Level1 extends Phaser.Scene {
 
     static mapData = [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [2,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [0,1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,3],
         [0,0,0,0,0,0,1,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -23,6 +23,7 @@ export default class Level1 extends Phaser.Scene {
     ];
 
     static decoData = [
+
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -37,11 +38,14 @@ export default class Level1 extends Phaser.Scene {
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
         [0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+
     ];
 
     static tileTypes = { 
         0: 'grass', 
-        1: 'path' 
+        1: 'path',
+        2: 'path',
+        3: 'path'
     };
     static decoTypes = { 
         2: 'tree' 
@@ -52,6 +56,7 @@ export default class Level1 extends Phaser.Scene {
         this.load.image('path', 'assets/tiles/level1/dirt_path.png');
         this.load.image('tree', 'assets/decorations/tree1.png');
     }
+
 
     createButton(x, y, label, onClick) {
         const bg = this.add.rectangle(x, y, 160, 80, 0x000000)
@@ -71,6 +76,7 @@ export default class Level1 extends Phaser.Scene {
 
     create() {
         this.scene.launch('MapManager', { level: this.constructor });
+
         this.player = new PlayerManager(this);
         this.inventory = [];
 
@@ -95,5 +101,8 @@ export default class Level1 extends Phaser.Scene {
         this.createButton(rightStartX + 170, startY, 'Inventory', () => {
             this.scene.get('UIManager').toggleInventory();
         });
+
+        
     }
+
 }

@@ -33,9 +33,32 @@ export default class SettingsMenu extends Phaser.Scene {
             fontStyle: 'bold',
             fontFamily: 'Arial, sans-serif'
         }).setOrigin(0, 0);
-        this.masterVolCont = this.createVolumeControl(width / 2 - 450, audioY, 'MASTER VOLUME', 0.3);
-        this.soundVolCont = this.createVolumeControl(width / 2 - 450, audioY + 50, 'SOUND VOLUME', 0.4);
-        this.musicVolCont = this.createVolumeControl(width / 2 - 450, audioY + 100, 'MUSIC VOLUME', 0.4);
+
+        // Master Volume Slider
+        this.masterVolCont = this.createVolumeControl(width / 2 - 450, audioY, 'MASTER VOLUME',
+         this.masterVol || 0.3,
+         (val) => {
+            console.log('Setting master volume to: ', val);
+            this.masterVol = val;
+         }
+         );
+        // Sound Volume Slider
+        this.soundVolCont = this.createVolumeControl(width / 2 - 450, audioY + 50, 'SOUND VOLUME', 
+        this.soundVol || 0.4,
+        (val) => {
+            console.log('Setting sound volume to: ', val);
+            this.soundVol = val;
+        }
+        );
+        // Music Volume Slider
+        this.musicVolCont = this.createVolumeControl(width / 2 - 450, audioY + 100, 'MUSIC VOLUME', 
+        this.musicVol || 0.4,
+        (val) => {
+            console.log('Setting music volume to: ', val);
+            this.musicVol = val;
+        }
+        );
+
         
         const muteY = audioY + 160;
         const isMuted = false;

@@ -47,6 +47,7 @@ export default class UIManager extends Phaser.Scene {
             fontStyle: 'bold'
         }).setOrigin(0.5).setDepth(3);
 
+
         this.goldText = this.add.text(uiX - 250, uiY + 10, '', {
             fontSize: '20px',
             color: '#ffd700',
@@ -118,6 +119,7 @@ export default class UIManager extends Phaser.Scene {
             const icon = this.add.image(x, y, 'TowerIcon').setScale(0.7) .setDepth(51);
             this.towerIcons.add(icon);
         });
+
     }
 
     updateHealthCircle(currentHP) {
