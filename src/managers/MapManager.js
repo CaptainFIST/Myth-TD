@@ -1,16 +1,9 @@
-import PlayerManager from '../managers/PlayerManager.js';
-import TimeManager from '../managers/TimeManager.js';
-
-
 export default class MapManager extends Phaser.Scene {
     constructor() {
         super({ key: 'MapManager' });
     }
 
     create(data) {
-
-
-
 
         const level = data.level;
         const mapData = level.mapData;
@@ -27,8 +20,6 @@ export default class MapManager extends Phaser.Scene {
                 const x = col * tileSize;
                 const y = row * tileSize;
 
-                
-
                 if (tileKey) {
                     this.add.image(x, y, tileKey).setOrigin(0);
                 }
@@ -43,6 +34,7 @@ export default class MapManager extends Phaser.Scene {
         
 
         this.tPath = this.findPath(mapData);
+
         this.wPath = this.toWP(this.tPath);
 
 
