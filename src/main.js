@@ -8,6 +8,7 @@ import Level2 from './scenes/Level2.js';
 import LevelSelect from './scenes/LevelSelect.js';
 import TimeManager from './managers/TimeManager.js';
 import UIManager from './managers/UIManager.js';
+import TowerManager from './managers/TowerManager.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -27,6 +28,7 @@ const config = {
         MapManager,
         PlayerManager,
         TimeManager,
+        TowerManager,
         UIManager,
         Level1,
         Level2

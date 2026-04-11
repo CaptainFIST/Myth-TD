@@ -1,4 +1,5 @@
 import TimeManager from '../managers/TimeManager.js';
+
 export default class Level2 extends Phaser.Scene {
     constructor() {
         super({ key: 'Level2' });
@@ -36,6 +37,7 @@ export default class Level2 extends Phaser.Scene {
         2: 'path',
         3: 'path'
     };
+
     static decoTypes = {
         2: 'rock'
     };
@@ -45,23 +47,24 @@ export default class Level2 extends Phaser.Scene {
         this.load.image('path', 'assets/tiles/level2/snow_path.png');
         this.load.image('rock', 'assets/decorations/level2/snowy_rock.png');
         this.load.image('UI', 'assets/UI/UI.png');
-
     }
+
     create() {
         this.scene.launch('MapManager', { level: this.constructor });
-        this.timeManager = new TimeManager();
-        this.add.image(1280/2, 720-49, 'UI');
-        this.timerText = this.add.text(16, 16, 'Time: 0.00s', {
-            fontSize: '18px',
-            color: '#000000',
-            fontStyle: 'bold',
-            fontFamily: 'Arial, sans-serif'
-        }).setDepth(10);
+
+        // this.timeManager = new TimeManager();
+        
+        //         this.timerText = this.add.text(16, 16, 'Time: 0.00s', {
+        //             fontSize: '18px',
+        //             color: '#000000',
+        //             fontStyle: 'bold',
+        //             fontFamily: 'Arial, sans-serif'
+        //         }).setDepth(10);
     }
 
-    update(time, delta) {
-        this.timeManager.update(delta);
-        const elapsedTime = this.timeManager.getTime().toFixed(2);
-        this.timerText.setText(`Time: ${elapsedTime}s`);
-    }
+    // update(time, delta) {
+    //     this.timeManager.update(delta);
+    //     const elapsedTime = this.timeManager.getTime().toFixed(2);
+    //     this.timerText.setText(`Time: ${elapsedTime}s`);
+    // }
 }

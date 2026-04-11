@@ -23,7 +23,6 @@ export default class Level1 extends Phaser.Scene {
     ];
 
     static decoData = [
-
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -47,6 +46,7 @@ export default class Level1 extends Phaser.Scene {
         2: 'path',
         3: 'path'
     };
+
     static decoTypes = { 
         2: 'tree'
     };
@@ -67,8 +67,5 @@ export default class Level1 extends Phaser.Scene {
             player: this.player,
             inventory: this.inventory
         });
-
-        
     }
-
 }
