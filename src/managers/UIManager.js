@@ -13,12 +13,19 @@ export default class UIManager extends Phaser.Scene {
     }
 
     create(data) {
+        this.grid = this.add.graphics();
+        this.highlighter = this.add.graphics();
+        const width = this.scale.width;
+        const height = this.scale.height;
+
+        this.highlighter.setDepth(1);
+        this.grid.setDepth(0);
+        this.drawGrid(width, height);
+
         this.player = data.player;
         this.inventory = data.inventory;
         this.timeManager = new TimeManager();
 
-        const width = this.scale.width;
-        const height = this.scale.height;
         const uiX = width / 2;
         const uiY = height - 49;
         this.add.image(uiX, uiY, 'UI').setScale(1.7);
@@ -117,6 +124,23 @@ export default class UIManager extends Phaser.Scene {
         return { bg, text };
     }
 
+    drawGrid(width, height) {
+        // grid transparent (., ., 0), change 0 to up-to 1 for solid grid
+        this.grid.lineStyle(1, 0x0000ff, 0.1);
+
+        for(var i = 0; i < ((height - 96) / 64); i++) {
+            this.grid.moveTo(0, i * 64);
+            this.grid.lineTo(width, i * 64);
+        }
+
+        for(var j = 0; j < (width / 64); j++) {
+            this.grid.moveTo(j * 64, 0);
+            this.grid.lineTo(j * 64, height);
+        }
+
+        this.grid.strokePath();
+    }
+
     update(time, delta) {
         this.timeManager.update(delta);
 
@@ -130,6 +154,22 @@ export default class UIManager extends Phaser.Scene {
         //     console.log(this.acq);
         // }
         this.updateUI();
+
+        const pointer = this.input.activePointer;
+
+        this.highlighter.clear();
+
+        if (pointer.y < this.scale.height - 96) {
+            const gridX = Math.floor(pointer.x / 64) * 64;
+            const gridY = Math.floor(pointer.y / 64) * 64;
+
+            this.highlighter.fillStyle(0xffffff, 0.3); 
+            this.highlighter.fillRect(gridX, gridY, 64, 64);
+        
+            // grid outline (optional)
+            //this.highlighter.lineStyle(2, 0xffffff, 0.8);
+            //this.highlighter.strokeRect(gridX, gridY, 64, 64);
+        }
     }
 
     updateUI() {
