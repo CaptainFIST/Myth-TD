@@ -88,6 +88,15 @@ export default class UIManager extends Phaser.Scene {
 
         //console.log(this.player.incInterval);
         this.acq = 0;
+
+        this.incomeTimer = this.time.addEvent({
+            delay: this.player.incInterval, 
+            loop: true,
+            callback: () => {
+                this.player.income();
+                console.log(this.timeManager.getTime().toFixed(2));
+            }
+        });
     }
 
     createButton(x, y, label, onClick) {
@@ -111,18 +120,15 @@ export default class UIManager extends Phaser.Scene {
     update(time, delta) {
         this.timeManager.update(delta);
 
-        let curTime = this.timeManager.getTime().toFixed(2);
-        // if(curTime < 1)
-        // {
-        //     this.acq = 0;
-        // }
+        // const curTime = this.timeManager.getTime();
+        // const interval = this.player.incInterval;
         
-        if(curTime - this.acq >= this.player.incInterval)
-        {
-            this.acq = curTime;
-            this.player.income();
-            console.log(this.acq);
-        }
+        // if(curTime - this.acq >= interval)
+        // {
+        //     this.player.income();
+        //     this.acq = curTime;
+        //     console.log(this.acq);
+        // }
         this.updateUI();
     }
 
