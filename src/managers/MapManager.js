@@ -37,6 +37,11 @@ export default class MapManager extends Phaser.Scene {
 
         this.wPath = this.toWP(this.tPath);
 
+            
+
+            console.log(this.tPath);
+            console.log(this.wPath);
+
 
 
         
@@ -73,8 +78,12 @@ export default class MapManager extends Phaser.Scene {
     findPath(map) {
         const path = [];
         const visited = new Set();
+        const tileSize = this.tileSize || 64;
 
         let cur = this.findOpening(map, 'Ent');
+
+        var graphics = this.add.graphics();
+        let drawPath = this.add.path(cur.x * tileSize + tileSize / 2, cur.y * tileSize + tileSize / 2);
 
         const key = (x,y) => `${x},${y}`;
 
@@ -106,9 +115,14 @@ export default class MapManager extends Phaser.Scene {
                 }
             }
             cur = next;
+            drawPath.lineTo((cur.x * tileSize) + (tileSize / 2), (cur.y * tileSize) + (tileSize / 2));
 
 
         }
+
+             graphics.lineStyle(3, 0xffffff, 1);
+            // // visualize the path
+             drawPath.draw(graphics);
 
         return path;
     }
