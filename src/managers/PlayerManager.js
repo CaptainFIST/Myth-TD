@@ -11,11 +11,11 @@ export default class PlayerManager {
         //Gold Stats
         this.goldPerSec = 2;
         this.incInterval = 1000;
-        //this.incomeStart();
+        
         if(scene != null)
         {
             console.log(this.scene);
-            //this.incomeStart();
+            
         }
         
 
@@ -23,31 +23,7 @@ export default class PlayerManager {
 
     }
 
-    incomeStart() {
-        // this.incomeTimer = this.TimeManager.getTime.addEvent({
-        //     delay: this.incInterval,
-        //     callback: this.income,
-        //     callbackScope: this,
-        //     loop: true
-        // });
-        
-        // this.incomeTimer = this.elapsed.addEvent({
-        //     delay: this.incInterval,
-        //     callback: this.income,
-        //     callbackScope: this,
-        //     loop: true
-        // });
-
-        // this.incomeTimer = this.time.addEvent({
-        //     delay: 1000, 
-        //     loop: true,
-        //     callback: () => {
-        //         income();
-        //     }
-        //});
-
-
-    }
+    
 
     income() {
         this.gold += this.goldPerSec;

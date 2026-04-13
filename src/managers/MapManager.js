@@ -33,14 +33,21 @@ export default class MapManager extends Phaser.Scene {
         this.findOpening(mapData, 'Ex');
         
 
-        this.tPath = this.findPath(mapData);
+        this.mappedPath = this.findPath(mapData);
 
-        this.wPath = this.toWP(this.tPath);
+        this.worldPath = this.actualWorldPath(this.mappedPath);
 
             
 
-            console.log(this.tPath);
-            console.log(this.wPath);
+        console.log(this.mappedPath);
+        console.log(this.worldPath);
+
+        //tests
+        // for(let i = 0; i < this.mappedPath.length; i++){
+        //     console.log(this.mappedPath[i]);
+        //     console.log(this.worldPath[i]);
+        // }
+        
 
 
 
@@ -121,13 +128,13 @@ export default class MapManager extends Phaser.Scene {
         }
 
              graphics.lineStyle(3, 0xffffff, 1);
-            // // visualize the path
+            // visualize the path
              drawPath.draw(graphics);
 
         return path;
     }
 
-    toWP(tileP) {
+    actualWorldPath(tileP) {
         const tileSize = this.tileSize || 64;
 
         return tileP.map(tile => ({
