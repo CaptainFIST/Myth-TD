@@ -31,6 +31,7 @@ export default class MapManager extends Phaser.Scene {
 
         //this.findOpening(mapData, 'Ent');
         this.findOpening(mapData, 'Ex');
+<<<<<<< HEAD
         
 
         this.mappedPath = this.findPath(mapData);
@@ -52,25 +53,27 @@ export default class MapManager extends Phaser.Scene {
 
 
         
+=======
+        this.tPath = this.findPath(mapData);
+        this.wPath = this.toWP(this.tPath);
+        console.log(this.tPath);
+        console.log(this.wPath);
+>>>>>>> experimental-EE
     }
 
     findOpening(map, e) {
         
         for(let y = 0; y < map.length; y++) {
             for(let x = 0; x < map[0].length; x++) {
-
-
-                    if(map[y][x] === 2 && e === 'Ent') {
-                        console.log(`Entrance is at: {${x}, ${y}}`);
-                        return {x, y};
-                    }
-                    else if(map[y][x] === 3 && e === 'Ex') {
-                        console.log(`Exit is at: {${x}, ${y}}`);
-                        return {x, y};
-                    }
-
+                if(map[y][x] === 2 && e === 'Ent') {
+                    console.log(`Entrance is at: {${x}, ${y}}`);
+                    return {x, y};
+                }
+                else if(map[y][x] === 3 && e === 'Ex') {
+                    console.log(`Exit is at: {${x}, ${y}}`);
+                       return {x, y};
+                }
             }
-
         }
 
         if(e === 'Ent'){
@@ -86,12 +89,18 @@ export default class MapManager extends Phaser.Scene {
         const path = [];
         const visited = new Set();
         const tileSize = this.tileSize || 64;
+<<<<<<< HEAD
 
+=======
+>>>>>>> experimental-EE
         let cur = this.findOpening(map, 'Ent');
 
         var graphics = this.add.graphics();
         let drawPath = this.add.path(cur.x * tileSize + tileSize / 2, cur.y * tileSize + tileSize / 2);
+<<<<<<< HEAD
 
+=======
+>>>>>>> experimental-EE
         const key = (x,y) => `${x},${y}`;
 
         while(cur) {
@@ -104,7 +113,6 @@ export default class MapManager extends Phaser.Scene {
             }
 
             let next = null;
-
             const directions = [
                 {x: 0, y: -1},
                 {x: 1, y: 0},
@@ -123,6 +131,7 @@ export default class MapManager extends Phaser.Scene {
             }
             cur = next;
             drawPath.lineTo((cur.x * tileSize) + (tileSize / 2), (cur.y * tileSize) + (tileSize / 2));
+<<<<<<< HEAD
 
 
         }
@@ -131,6 +140,13 @@ export default class MapManager extends Phaser.Scene {
             // visualize the path
              drawPath.draw(graphics);
 
+=======
+        }
+
+             graphics.lineStyle(3, 0xffffff, 1);
+            // // visualize the path
+             drawPath.draw(graphics);
+>>>>>>> experimental-EE
         return path;
     }
 
@@ -142,16 +158,4 @@ export default class MapManager extends Phaser.Scene {
             y: tile.y * tileSize + tileSize / 2,
         }));
     }
-
-    
-
-
-
-
-    
-
-    
-
-
-
 }
