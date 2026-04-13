@@ -1,4 +1,5 @@
 import TimeManager from '../managers/TimeManager.js';
+import TowerManager from '../managers/TowerManager.js';
 
 export default class UIManager extends Phaser.Scene {
     constructor() {
@@ -25,6 +26,7 @@ export default class UIManager extends Phaser.Scene {
         this.player = data.player;
         this.inventory = data.inventory;
         this.timeManager = new TimeManager();
+        this.towerManager = new TowerManager();
 
         const uiX = width / 2;
         const uiY = height - 49;
@@ -79,29 +81,24 @@ export default class UIManager extends Phaser.Scene {
         this.createButton(20, startY, 'Purchase Tower\n50 g', () => {
             if (this.player.gold >= 50) {
                 this.player.updateGold(-50);
-                this.inventory.push({ type: 'unknown' });
+                const tower = this.towerManager.createTower();
+                this.inventory.push(tower);
                 this.updateInventoryUI();
             }
         });
         const rightStartX = width - 340;
         this.createButton(rightStartX, startY, 'Merge', () => {
-            //this.player.updateHealth(1);
         });
 
         this.createButton(rightStartX + 170, startY, 'Inventory', () => {
             this.toggleInventory();
         });
         this.updateUI();
-
-        //console.log(this.player.incInterval);
-        this.acq = 0;
-
-        this.incomeTimer = this.time.addEvent({
-            delay: this.player.incInterval, 
+        this.time.addEvent({
+            delay: this.player.incInterval, // 1000ms = 1 sec
             loop: true,
             callback: () => {
                 this.player.income();
-                console.log(this.timeManager.getTime().toFixed(2));
             }
         });
     }
@@ -143,16 +140,6 @@ export default class UIManager extends Phaser.Scene {
 
     update(time, delta) {
         this.timeManager.update(delta);
-
-        // const curTime = this.timeManager.getTime();
-        // const interval = this.player.incInterval;
-        
-        // if(curTime - this.acq >= interval)
-        // {
-        //     this.player.income();
-        //     this.acq = curTime;
-        //     console.log(this.acq);
-        // }
         this.updateUI();
 
         const pointer = this.input.activePointer;

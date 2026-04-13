@@ -1,58 +1,28 @@
 export default class PlayerManager {
     constructor(scene) {
         this.scene = scene;
-
-        //this.level = level;
-        //Player Manager stats
-        
         this.gold = 150;
         this.playerHealth = 20;
-        
-        //Gold Stats
+
         this.goldPerSec = 2;
         this.incInterval = 1000;
-        //this.incomeStart();
-        if(scene != null)
-        {
-            console.log(this.scene);
-            //this.incomeStart();
-        }
-        
-
-
-
     }
 
     incomeStart() {
-        // this.incomeTimer = this.TimeManager.getTime.addEvent({
-        //     delay: this.incInterval,
-        //     callback: this.income,
-        //     callbackScope: this,
-        //     loop: true
-        // });
-        
-        // this.incomeTimer = this.elapsed.addEvent({
-        //     delay: this.incInterval,
-        //     callback: this.income,
-        //     callbackScope: this,
-        //     loop: true
-        // });
-
-        // this.incomeTimer = this.time.addEvent({
-        //     delay: 1000, 
-        //     loop: true,
-        //     callback: () => {
-        //         income();
-        //     }
-        //});
-
-
+        this.incomeTimer = this.scene.time.addEvent({
+            delay: this.incInterval,
+            callback: this.income,
+            callbackScope: this,
+            loop: true
+        });
     }
 
     income() {
         this.gold += this.goldPerSec;
-
-        console.log(`🌾 Farm income: +${this.goldPerSec} gold (Total: ${this.gold})`);
+        if (this.scene.debug) {
+            console.log(`🌾 Farm income: +${this.goldPerSec} gold (Total: ${this.gold})`);
+        }
+        
     }
 
     updateHealth(damage) {
@@ -79,28 +49,6 @@ export default class PlayerManager {
             }
         }
     }
-
-
-    displayHealth() {
-        healthText = add.text(256, 16, `Health: ${this.playerHealth}`, {
-            fontSize: '18px',
-            color: '#000000',
-            fontStyle: 'bold',
-            fontFamily: 'Arial, sans-serif'
-        }).setDepth(10);
-    }
-
-
-    // resetStats() {
-    //     this.inventory = [];
-    //     this.gold = 0;
-    //     this.playerHealth = 20;
-    //     console.log('✓ Stats reset!');
-    // }
-
-    
-    
-
 
     createFloatingText(x, y, text, color) {
         const floatingText = this.scene.add.text(x, y, text, {
