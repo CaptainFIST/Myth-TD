@@ -1,5 +1,4 @@
 import PlayerManager from '../managers/PlayerManager.js';
-import TimeManager from './TimeManager.js';
 
 export default class UIManager extends Phaser.Scene {
     constructor() {
@@ -9,19 +8,11 @@ export default class UIManager extends Phaser.Scene {
     preload() {
         this.load.image('UI', 'assets/UI/UI.png');
         this.load.image('UIHP', 'assets/UI/UIHP.png');
+        this.load.image('Inventory', 'assets/UI/Inventory.png');
+        this.load.image('TowerIcon', 'assets/UI/tower_icon.png');
     }
 
     create() {
-        // Time manager
-        this.TimeManager = new TimeManager();
-
-        this.timerText = this.add.text(16, 16, 'Time: 0.00s', {
-            fontSize: '18px',
-            color: '#000000',
-            fontStyle: 'bold',
-            fontFamily: 'Arial, sans-serif'
-        }).setDepth(10);
-
         // ui positioning
         const gameWidth = this.scale.width;
         const gameHeight = this.scale.height;
@@ -31,42 +22,182 @@ export default class UIManager extends Phaser.Scene {
 
         // hp bauble
         this.hpMax = 20;
-        this.hpFrameX = 0 + 49;
-        this.hpFrameY = uiYPos -6;
-        const hpFrame = this.add.image(this.hpFrameX, this.hpFrameY, 'UIHP');
-        hpFrame.setDepth(2);
+        this.hpFrameX = 250;
+        this.hpFrameY = uiY + 10;
+        this.add.image(this.hpFrameX, this.hpFrameY, 'UIHP').setDepth(2);
+
         this.hpRadius = 78 / 2;
-
-        // hp blood fill
+        this.hpContainer = this.add.container(0, 0).setDepth(1);
         this.hpFill = this.add.graphics();
-        this.hpFill.setDepth(1);
+        this.hpContainer.add(this.hpFill);
 
-        this.hpCircleMask = this.add.graphics();
-        this.hpCircleMask.fillStyle(0xffffff);
-        this.hpCircleMask.fillCircle(this.hpFrameX, this.hpFrameY, this.hpRadius);
-        this.hpCircleMask.setVisible(false);
+        this.hpMaskShape = this.add.graphics();
+        this.hpMaskShape.fillStyle(0xffffff);
+        this.hpMaskShape.fillCircle(this.hpFrameX, this.hpFrameY, this.hpRadius);
+        this.hpMaskShape.setVisible(false);
 
-        // hp fill logic
-        const mask = this.hpCircleMask.createGeometryMask();
-        this.hpFill.setMask(mask);
-
-
-        // player data
-        this.player = new PlayerManager();
-        this.testingPlayerMethods();
-        //this.testingPlayerMethods();
-
-        const playerHP = this.player.playerHealth;
-        const playerGold = this.player.gold;
-
-        this.healthText = this.add.text(this.hpFrameX, this.hpFrameY, `${playerHP} / ${this.hpMax}`, {
-            fontSize: '18px',
-            color: '#000000',
-            fontStyle: 'bold',
-            fontFamily: 'Arial, sans-serif'
+        const mask = this.hpMaskShape.createGeometryMask();
+        this.hpContainer.setMask(mask);
+        this.healthText = this.add.text(this.hpFrameX, this.hpFrameY, '', {
+            fontSize: '16px',
+            color: '#000',
+            fontStyle: 'bold'
         }).setOrigin(0.5).setDepth(3);
 
-        this.updateHealthCircle(playerHP);
+
+        this.goldText = this.add.text(uiX - 250, uiY + 10, '', {
+            fontSize: '20px',
+            color: '#ffd700',
+            fontStyle: 'bold'
+        }).setDepth(3);
+
+        this.timerText = this.add.text(uiX, uiY + 10, '', {
+            fontSize: '20px',
+            color: '#ffffff'
+        }).setOrigin(0.5).setDepth(3);
+
+        this.wave = 1;
+        this.waveText = this.add.text(uiX + 150, uiY + 10, '', {
+            fontSize: '20px',
+            color: '#64d5ff'
+        }).setDepth(3);
+
+        this.inventoryImage = this.add.image(width - 430, height - 340, 'Inventory')
+            .setOrigin(0).setDepth(50).setVisible(false);
+        this.towerIcons = this.add.group();
+
+        const startY = height - 80;
+        this.createButton(20, startY, 'Purchase Tower\n50 g', () => {
+            if (this.player.gold >= 50) {
+                this.player.updateGold(-50);
+                this.inventory.push({ type: 'unknown' });
+                this.updateInventoryUI();
+            }
+        });
+        const rightStartX = width - 340;
+        this.createButton(rightStartX, startY, 'Merge', () => {
+            //this.player.updateHealth(1);
+        });
+
+        this.createButton(rightStartX + 170, startY, 'Inventory', () => {
+            this.toggleInventory();
+        });
+        this.updateUI();
+
+        //console.log(this.player.incInterval);
+        this.acq = 0;
+
+        this.incomeTimer = this.time.addEvent({
+            delay: this.player.incInterval, 
+            loop: true,
+            callback: () => {
+                this.player.income();
+                console.log(this.timeManager.getTime().toFixed(2));
+            }
+        });
+    }
+
+    createButton(x, y, label, onClick) {
+        const bg = this.add.rectangle(x, y, 160, 80, 0x000000)
+            .setOrigin(0).setStrokeStyle(2, 0xffffff)
+            .setInteractive({ useHandCursor: true }).setDepth(60);
+
+        const text = this.add.text(x + 80, y + 40, label, {
+            fontSize: '16px',
+            color: '#ffffff',
+            fontStyle: 'bold',
+            align: 'center'
+        }).setOrigin(0.5).setDepth(61);
+
+        bg.on('pointerover', () => bg.setFillStyle(0x222222));
+        bg.on('pointerout', () => bg.setFillStyle(0x000000));
+        bg.on('pointerdown', onClick);
+        return { bg, text };
+    }
+
+    drawGrid(width, height) {
+        // grid transparent (., ., 0), change 0 to up-to 1 for solid grid
+        this.grid.lineStyle(1, 0x0000ff, 0.1);
+
+        for(var i = 0; i < ((height - 96) / 64); i++) {
+            this.grid.moveTo(0, i * 64);
+            this.grid.lineTo(width, i * 64);
+        }
+
+        for(var j = 0; j < (width / 64); j++) {
+            this.grid.moveTo(j * 64, 0);
+            this.grid.lineTo(j * 64, height);
+        }
+
+        this.grid.strokePath();
+    }
+
+    update(time, delta) {
+        this.timeManager.update(delta);
+
+        // const curTime = this.timeManager.getTime();
+        // const interval = this.player.incInterval;
+        
+        // if(curTime - this.acq >= interval)
+        // {
+        //     this.player.income();
+        //     this.acq = curTime;
+        //     console.log(this.acq);
+        // }
+        this.updateUI();
+
+        const pointer = this.input.activePointer;
+
+        this.highlighter.clear();
+
+        if (pointer.y < this.scale.height - 96) {
+            const gridX = Math.floor(pointer.x / 64) * 64;
+            const gridY = Math.floor(pointer.y / 64) * 64;
+
+            this.highlighter.fillStyle(0xffffff, 0.3); 
+            this.highlighter.fillRect(gridX, gridY, 64, 64);
+        
+            // grid outline (optional)
+            //this.highlighter.lineStyle(2, 0xffffff, 0.8);
+            //this.highlighter.strokeRect(gridX, gridY, 64, 64);
+        }
+    }
+
+    updateUI() {
+        if (!this.player) return;
+        this.goldText.setText(`Gold: ${this.player.gold}`);
+        
+        const time = this.timeManager.getTime().toFixed(2);
+        this.timerText.setText(`Time: ${time}s`);
+        this.waveText.setText(`Wave: ${this.wave}`);
+        this.updateHealthCircle(this.player.playerHealth);
+    }
+
+    toggleInventory() {
+        const visible = !this.inventoryImage.visible;
+        this.inventoryImage.setVisible(visible);
+        this.updateInventoryUI();
+    }
+
+    updateInventoryUI() {
+        this.towerIcons.clear(true, true);
+        if (!this.inventoryImage.visible) return;
+        const startX = this.inventoryImage.x + 20;
+        const startY = this.inventoryImage.y + 20;
+
+        const size = 50;
+        const gap = 10;
+        this.inventory.forEach((tower, i) => {
+            const row = Math.floor(i / 9);
+            const col = i % 9;
+            const x = startX + col * (size + gap);
+            const y = startY + row * (size + gap);
+
+            const icon = this.add.image(x, y, 'TowerIcon')
+                .setScale(0.7).setDepth(51);
+            this.towerIcons.add(icon);
+        });
+
     }
 
     update(time, delta) {
@@ -76,57 +207,22 @@ export default class UIManager extends Phaser.Scene {
     }
 
     updateHealthCircle(currentHP) {
-        // init values and coordinates
-        const centerX = this.hpFrameX; 
+        const centerX = this.hpFrameX;
         const centerY = this.hpFrameY;
+        const radius = this.hpRadius;
 
-        // % scaling of mask
-        let healthPercent = currentHP / this.hpMax;
-        healthPercent = Phaser.Math.Clamp(healthPercent, 0, 1);
-
-        // clear mask
+        let healthPercent = Phaser.Math.Clamp(currentHP / this.hpMax, 0, 1);
         this.hpFill.clear();
-        
-        // fill hp
-        this.hpFill.fillStyle(0xCD1C18, 1);
-        const totalHeight = this.hpRadius * 2;
+        const totalHeight = radius * 2;
         const fillHeight = totalHeight * healthPercent;
 
-        // hp "liquid" object (rectangle)
+        this.hpFill.fillStyle(0xCD1C18, 1);
         this.hpFill.fillRect(
-            centerX - this.hpRadius,                 // X (left edge)
-            (centerY + this.hpRadius) - fillHeight,  // Y (top of the liquid)
-            totalHeight,                        // Width (covers the whole orb)
-            fillHeight                          // Height (the liquid itself)
+            centerX - radius,
+            (centerY + radius) - fillHeight,
+            radius * 2,
+            fillHeight
         );
-
-        // "glowing" liquid edge
-        // Only draw the line if health is between 1% and 99%
-        if (healthPercent > 0.01 && healthPercent < 0.99) {
-            this.hpFill.lineStyle(2, 0xff0000, 1); 
-            const lineY = (centerY + this.hpRadius) - fillHeight;
-        
-            // This math calculates the width of the circle at the current liquid height
-            // so the red line doesn't poke out of the sides
-            const dy = Math.abs(lineY - centerY);
-            const lineWidth = Math.sqrt(Math.pow(this.hpRadius, 2) - Math.pow(dy, 2)) * 2;
-        
-            this.hpFill.lineBetween(centerX - (lineWidth/2), lineY, centerX + (lineWidth/2), lineY);
-        }
-
         this.healthText.setText(`${currentHP} / ${this.hpMax}`);
-    }
-
-    testingPlayerMethods() {
-        console.log(`player health is ${this.player.playerHealth}`);
-        console.log(`Player gold is ${this.player.gold}`);
-        console.log(`Is health zero: ${this.player.isHealthZero()}`);
-
-        console.log(`Testing functions:`);
-        this.player.updateGold(50);
-        console.log(`Player gold is ${this.player.gold}`);
-        this.player.updateHealth(10);
-        console.log(`player health is ${this.player.playerHealth}`);
-        console.log(`Is health zero: ${this.player.isHealthZero()}`);
     }
 }

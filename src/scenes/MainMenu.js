@@ -11,8 +11,8 @@ export default class MainMenu extends Phaser.Scene {
     create() {
         const { width, height } = this.scale;
         this.add.rectangle(width / 2, height / 2, width, height, 0x0d1128).setOrigin(0.5);
-        this.add.image(width / 2, 120, 'gameTitle');
-        this.add.image(width / 2, 280, 'subtitleImage');
+        this.add.image(width / 2, 180, 'gameTitle').setScale(1.8);
+        this.add.image(width / 2, 420, 'subtitleImage').setScale(1.5);
         this.createBackground();
 
         const buttonData = [
@@ -21,17 +21,15 @@ export default class MainMenu extends Phaser.Scene {
             {text: 'ACHIEVEMENTS', icon: '🏆'},
             {text: 'SETTINGS', icon: '⚙', action: () => this.scene.start('SettingsMenu')},
             {text: 'EXIT', icon: '✕', action: () => window.close()}
-
-
         ];
-        const startY = 350;
-        const leftx = 200;
-        const spacing = 80;
+        const startY = 520;
+        const leftx = 250;
+        const spacing = 105;
         
         buttonData.forEach((btn, index) => {
             const ypos = startY + index * spacing;
             const button = this.add.text(leftx, ypos, `${btn.icon} ${btn.text}`, {
-                fontSize: '20px',
+                fontSize: '28px',
                 color: '#06b6d4',
                 fontStyle: 'bold',
                 align: 'left',
@@ -43,12 +41,10 @@ export default class MainMenu extends Phaser.Scene {
             if (btn.action) {
                 button.on('pointerdown', btn.action);
             }
-            const box = this.add.rectangle(leftx, ypos, 280, 60, 0x0f1534, 0.7).setStrokeStyle(3, 0x000000).setOrigin(0.5);
+            const box = this.add.rectangle(leftx, ypos, 380, 80, 0x0f1534, 0.7).setStrokeStyle(3, 0x000000).setOrigin(0.5);
             box.setDepth(1);
             button.setDepth(2);
         }); 
-
-        //this.createAudioUI();
     }
 
     createBackground() {
@@ -66,26 +62,6 @@ export default class MainMenu extends Phaser.Scene {
             });
         }
     }
-
-
-    /*
-=======
-
-    createAudioUI() {
-        const { width } = this.scale;
-        const iconX = width - 160;
-        const iconY = 50;
-
-        this.add.circle(iconX, iconY, 20, 0x7c3aed);
-        this.add.text(iconX, iconY, '🔊', { fontSize: '18px' }).setOrigin(0.5);
-        const sliderX = width - 150; 
-        const sliderY = 50;
-
-        this.add.rectangle(sliderX + 70, sliderY, 100, 6, 0x333333);  
-        this.add.rectangle(sliderX + 20, sliderY, 40, 6, 0x7c3aed).setOrigin(0, 0.5); 
-        this.add.circle(sliderX + 60, sliderY, 8, 0x7c3aed);       
-    }
-    */
 
     update() {
         this.bgGraphics.clear();
