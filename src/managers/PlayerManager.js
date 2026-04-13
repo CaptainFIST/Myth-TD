@@ -4,7 +4,7 @@ export default class PlayerManager {
 
         //this.level = level;
         //Player Manager stats
-        //this.inventory = [];
+        
         this.gold = 150;
         this.playerHealth = 20;
         
@@ -12,7 +12,11 @@ export default class PlayerManager {
         this.goldPerSec = 2;
         this.incInterval = 1000;
         //this.incomeStart();
-        
+        if(scene != null)
+        {
+            console.log(this.scene);
+            //this.incomeStart();
+        }
         
 
 
@@ -34,17 +38,21 @@ export default class PlayerManager {
         //     loop: true
         // });
 
+        // this.incomeTimer = this.time.addEvent({
+        //     delay: 1000, 
+        //     loop: true,
+        //     callback: () => {
+        //         income();
+        //     }
+        //});
+
 
     }
 
     income() {
         this.gold += this.goldPerSec;
 
-        
         console.log(`🌾 Farm income: +${this.goldPerSec} gold (Total: ${this.gold})`);
-        
-
-        
     }
 
     updateHealth(damage) {

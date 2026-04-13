@@ -85,12 +85,25 @@ export default class UIManager extends Phaser.Scene {
         });
         const rightStartX = width - 340;
         this.createButton(rightStartX, startY, 'Merge', () => {
+            //this.player.updateHealth(1);
         });
 
         this.createButton(rightStartX + 170, startY, 'Inventory', () => {
             this.toggleInventory();
         });
         this.updateUI();
+
+        //console.log(this.player.incInterval);
+        this.acq = 0;
+
+        this.incomeTimer = this.time.addEvent({
+            delay: this.player.incInterval, 
+            loop: true,
+            callback: () => {
+                this.player.income();
+                console.log(this.timeManager.getTime().toFixed(2));
+            }
+        });
     }
 
     createButton(x, y, label, onClick) {
@@ -130,6 +143,16 @@ export default class UIManager extends Phaser.Scene {
 
     update(time, delta) {
         this.timeManager.update(delta);
+
+        // const curTime = this.timeManager.getTime();
+        // const interval = this.player.incInterval;
+        
+        // if(curTime - this.acq >= interval)
+        // {
+        //     this.player.income();
+        //     this.acq = curTime;
+        //     console.log(this.acq);
+        // }
         this.updateUI();
 
         const pointer = this.input.activePointer;
