@@ -32,6 +32,7 @@ export default class UIManager extends Phaser.Scene {
         const uiY = height - 49;
         this.add.image(uiX, uiY, 'UI').setScale(1.7);
 
+        // hp bauble
         this.hpMax = 20;
         this.hpFrameX = 250;
         this.hpFrameY = uiY + 10;
@@ -194,6 +195,12 @@ export default class UIManager extends Phaser.Scene {
             this.towerIcons.add(icon);
         });
 
+    }
+
+    update(time, delta) {
+        this.TimeManager.update(delta);
+        const elapsedTime = this.TimeManager.getTime().toFixed(2);
+        this.timerText.setText(`Time: ${elapsedTime}s`);
     }
 
     updateHealthCircle(currentHP) {
