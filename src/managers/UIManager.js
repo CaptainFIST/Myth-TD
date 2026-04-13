@@ -1,4 +1,4 @@
-import TimeManager from '../managers/TimeManager.js';
+import PlayerManager from '../managers/PlayerManager.js';
 
 export default class UIManager extends Phaser.Scene {
     constructor() {
@@ -12,24 +12,15 @@ export default class UIManager extends Phaser.Scene {
         this.load.image('TowerIcon', 'assets/UI/tower_icon.png');
     }
 
-    create(data) {
-        this.grid = this.add.graphics();
-        this.highlighter = this.add.graphics();
-        const width = this.scale.width;
-        const height = this.scale.height;
+    create() {
+        // ui positioning
+        const gameWidth = this.scale.width;
+        const gameHeight = this.scale.height;
+        const uiXPos = gameWidth / 2;
+        const uiYPos = gameHeight - 49;
+        this.add.image(uiXPos, uiYPos, 'UI');
 
-        this.highlighter.setDepth(1);
-        this.grid.setDepth(0);
-        this.drawGrid(width, height);
-
-        this.player = data.player;
-        this.inventory = data.inventory;
-        this.timeManager = new TimeManager();
-
-        const uiX = width / 2;
-        const uiY = height - 49;
-        this.add.image(uiX, uiY, 'UI').setScale(1.7);
-
+        // hp bauble
         this.hpMax = 20;
         this.hpFrameX = 250;
         this.hpFrameY = uiY + 10;
@@ -207,6 +198,12 @@ export default class UIManager extends Phaser.Scene {
             this.towerIcons.add(icon);
         });
 
+    }
+
+    update(time, delta) {
+        this.TimeManager.update(delta);
+        const elapsedTime = this.TimeManager.getTime().toFixed(2);
+        this.timerText.setText(`Time: ${elapsedTime}s`);
     }
 
     updateHealthCircle(currentHP) {
