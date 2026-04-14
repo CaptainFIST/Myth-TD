@@ -10,7 +10,7 @@ export default class UIManager extends Phaser.Scene {
         this.load.image('UI', 'assets/UI/UI.png');
         this.load.image('UIHP', 'assets/UI/UIHP.png');
         this.load.image('Inventory', 'assets/UI/Inventory.png');
-        this.load.image('TowerIcon', 'assets/UI/tower_icon.png');
+        this.load.image('TowerIcon', 'assets/tower/TowerIcon/Izanami.png');
     }
 
     create(data) {
@@ -18,6 +18,7 @@ export default class UIManager extends Phaser.Scene {
         this.highlighter = this.add.graphics();
         const width = this.scale.width;
         const height = this.scale.height;
+        this.sceneL = data.sceneL;
 
         this.highlighter.setDepth(1);
         this.grid.setDepth(0);
@@ -88,10 +89,16 @@ export default class UIManager extends Phaser.Scene {
         });
         const rightStartX = width - 340;
         this.createButton(rightStartX, startY, 'Merge', () => {
+            //this.sceneL.closeLevel('return');
+            
         });
 
         this.createButton(rightStartX + 170, startY, 'Inventory', () => {
             this.toggleInventory();
+        });
+
+        this.exitButton(rightStartX + 200, 0, 'Exit', () => {
+            this.sceneL.closeLevel('return');
         });
         this.updateUI();
         this.time.addEvent({
@@ -109,6 +116,24 @@ export default class UIManager extends Phaser.Scene {
             .setInteractive({ useHandCursor: true }).setDepth(60);
 
         const text = this.add.text(x + 80, y + 40, label, {
+            fontSize: '16px',
+            color: '#ffffff',
+            fontStyle: 'bold',
+            align: 'center'
+        }).setOrigin(0.5).setDepth(61);
+
+        bg.on('pointerover', () => bg.setFillStyle(0x222222));
+        bg.on('pointerout', () => bg.setFillStyle(0x000000));
+        bg.on('pointerdown', onClick);
+        return { bg, text };
+    }
+
+    exitButton(x, y, label, onClick) {
+        const bg = this.add.rectangle(x, y, 100, 70, 0x000000)
+            .setOrigin(0).setStrokeStyle(2, 0xffffff)
+            .setInteractive({ useHandCursor: true }).setDepth(60);
+
+        const text = this.add.text(x + 50, y + 30, label, {
             fontSize: '16px',
             color: '#ffffff',
             fontStyle: 'bold',

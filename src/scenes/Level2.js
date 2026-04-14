@@ -59,12 +59,29 @@ export default class Level2 extends Phaser.Scene {
     create() {
         this.scene.launch('MapManager', { level: this.constructor });
 
-        this.player = new PlayerManager(this);
+        this.player = new PlayerManager({sceneL: this});
         this.inventory = [];
 
         this.scene.launch('UIManager', {
             player: this.player,
-            inventory: this.inventory
+            inventory: this.inventory,
+            sceneL: this
         });
+    }
+
+    closeLevel(reason)
+    {
+        this.scene.stop('MapManager');
+        this.scene.stop('UIManager');
+
+        if(reason === 'return')
+        {
+            this.scene.start('MainMenu');
+        }
+        else if(reason === 'status')
+        {
+            //this.scene.start('');
+        }
+        
     }
 }
