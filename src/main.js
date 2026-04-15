@@ -9,6 +9,7 @@ import LevelSelect from './scenes/LevelSelect.js';
 import TimeManager from './managers/TimeManager.js';
 import UIManager from './managers/UIManager.js';
 import TowerManager from './managers/TowerManager.js';
+import Tower from './entities/Tower.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -26,9 +27,10 @@ const config = {
         SettingsMenu,
         Tutorial,
         MapManager,
-        PlayerManager,
-        TimeManager,
-        TowerManager,
+        //PlayerManager,
+        //TimeManager,
+        //Tower,
+        //TowerManager,
         UIManager,
         Level1,
         Level2

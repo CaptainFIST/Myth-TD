@@ -1,4 +1,5 @@
 import TimeManager from '../managers/TimeManager.js';
+import TowerManager from '../managers/TowerManager.js';
 
 export default class UIManager extends Phaser.Scene {
     constructor() {
@@ -6,6 +7,13 @@ export default class UIManager extends Phaser.Scene {
     }
 
     preload() {
+        TowerManager.physicalData.forEach(tower => {
+            this.load.spritesheet(tower[0], `assets/tower/${tower[0]}.png`, {
+                frameWidth: 64,
+                frameHeight: 64
+            });
+        });
+
         this.load.image('UI', 'assets/UI/UI.png');
         this.load.image('UIHP', 'assets/UI/UIHP.png');
         this.load.image('Inventory', 'assets/UI/Inventory.png');
@@ -13,6 +21,28 @@ export default class UIManager extends Phaser.Scene {
     }
 
     create(data) {
+        this.towerManager = new TowerManager(this);
+
+        this.towerManager.physical.forEach(stats => {
+            const name = stats[0];
+            const lastIdle = stats[4];
+            const lastAttack = stats[5];
+
+            this.anims.create({
+                key: `${name}_idle`,
+                frames: this.anims.generateFrameNumbers(name, { start: 0, end: lastIdle }),
+                frameRate: 6,
+                repeat: -1
+            });
+
+            this.anims.create({
+                key: `${name}_attack`,
+                frames: this.anims.generateFrameNumbers(name, { start: lastIdle + 1, end: lastAttack }),
+                frameRate: 12,
+                repeat: 0
+            });
+        });
+
         this.grid = this.add.graphics();
         this.highlighter = this.add.graphics();
         const width = this.scale.width;
@@ -133,7 +163,6 @@ export default class UIManager extends Phaser.Scene {
         this.updateUI();
 
         const pointer = this.input.activePointer;
-
         this.highlighter.clear();
 
         if (pointer.y < this.scale.height - 96) {
@@ -146,7 +175,19 @@ export default class UIManager extends Phaser.Scene {
             // grid outline (optional)
             //this.highlighter.lineStyle(2, 0xffffff, 0.8);
             //this.highlighter.strokeRect(gridX, gridY, 64, 64);
+
+            if (pointer.isDown && !this.lastPointerDown) {
+                this.towerManager.createTower('p0', gridX, gridY);
+            }
         }
+
+        this.towerManager.activeTowers.children.iterate(tower => {
+            if (tower && tower.update) {
+                tower.update(time, delta);
+            }
+        });
+
+        this.lastPointerDown = pointer.isDown;
     }
 
     updateUI() {
