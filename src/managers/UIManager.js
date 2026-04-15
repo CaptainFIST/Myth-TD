@@ -1,4 +1,5 @@
 import TimeManager from '../managers/TimeManager.js';
+import TowerManager from '../managers/TowerManager.js';
 
 export default class UIManager extends Phaser.Scene {
     constructor() {
@@ -25,6 +26,7 @@ export default class UIManager extends Phaser.Scene {
         this.player = data.player;
         this.inventory = data.inventory;
         this.timeManager = new TimeManager();
+        this.towerManager = new TowerManager();
 
         const uiX = width / 2;
         const uiY = height - 49;
@@ -79,7 +81,8 @@ export default class UIManager extends Phaser.Scene {
         this.createButton(20, startY, 'Purchase Tower\n50 g', () => {
             if (this.player.gold >= 50) {
                 this.player.updateGold(-50);
-                this.inventory.push({ type: 'unknown' });
+                const tower = this.towerManager.createTower();
+                this.inventory.push(tower);
                 this.updateInventoryUI();
             }
         });
@@ -91,6 +94,13 @@ export default class UIManager extends Phaser.Scene {
             this.toggleInventory();
         });
         this.updateUI();
+        this.time.addEvent({
+            delay: this.player.incInterval, // 1000ms = 1 sec
+            loop: true,
+            callback: () => {
+                this.player.income();
+            }
+        });
     }
 
     createButton(x, y, label, onClick) {
