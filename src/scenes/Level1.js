@@ -5,6 +5,8 @@ export default class Level1 extends Phaser.Scene {
         super({ key: 'Level1' });
     }
 
+    static level = 1;
+
     static mapData = [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [2,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -77,9 +79,13 @@ export default class Level1 extends Phaser.Scene {
         {
             this.scene.start('MainMenu');
         }
-        else if(reason === 'status')
+        else if(reason === 'win')
         {
-            //this.scene.start('');
+            this.scene.start('WinScreen', {sceneL: this.constructor});
+        }
+        else if(reason === 'Lose')
+        {
+            this.scene.start('LoseScreen', {sceneL: this.constructor});
         }
         
     }

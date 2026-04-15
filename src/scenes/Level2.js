@@ -4,6 +4,8 @@ export default class Level2 extends Phaser.Scene {
     constructor() {
         super({ key: 'Level2' });
     }
+
+    static level = 2;
     
     static mapData = [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],

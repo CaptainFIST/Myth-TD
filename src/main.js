@@ -1,6 +1,8 @@
 import MainMenu from './scenes/MainMenu.js';
 import SettingsMenu from './scenes/SettingsMenu.js';
 import Tutorial from './scenes/Tutorial.js';
+import WinScreen from './scenes/WinScreen.js';
+import LoseScreen from './scenes/LoseScreen.js';
 import MapManager from './managers/MapManager.js';
 import PlayerManager from './managers/PlayerManager.js';
 import Level1 from './scenes/Level1.js';
@@ -25,6 +27,8 @@ const config = {
         LevelSelect,
         SettingsMenu,
         Tutorial,
+        WinScreen,
+        LoseScreen,
         MapManager,
         PlayerManager,
         TimeManager,
