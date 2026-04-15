@@ -39,8 +39,24 @@ export default class TowerManager {
     getStatsByIndex(indexStr) {
         const type = indexStr[0];
         const id = parseInt(indexStr.slice(1));
-        if (type === 'p') return this.physical[id];
-        return null;
+
+        switch(type) {
+            case 'p': return this.physical[id];
+            case 'a': return this.air[id];
+            case 'w': return this.water[id];
+            case 'f': return this.fire[id];
+            case 'd': return this.dark[id];
+            case 'o': return this.other[id];
+            default: return null;
+        }
+    }
+
+    getRandomTowerIndex() {
+        // Pick a random number between 0 and the length of the index array
+        const randomIndex = Math.floor(Math.random() * this.towerIndex.length);
+    
+        // Return the string (e.g., 'p0' or 'p1')
+        return this.towerIndex[randomIndex];
     }
 
     createTower(indexStr, x, y) {

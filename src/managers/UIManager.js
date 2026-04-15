@@ -17,10 +17,18 @@ export default class UIManager extends Phaser.Scene {
         this.load.image('UI', 'assets/UI/UI.png');
         this.load.image('UIHP', 'assets/UI/UIHP.png');
         this.load.image('Inventory', 'assets/UI/Inventory.png');
-        this.load.image('TowerIcon', 'assets/UI/tower_icon.png');
+        this.load.image('Izanami', 'assets/tower/TowerIcon/Izanami.png');
+        this.load.image('Susanoo', 'assets/tower/TowerIcon/Susanoo.png');
     }
 
     create(data) {
+        // ------------- CONTROLS -------------
+        // disable right-click menu
+        this.input.mouse.disableContextMenu();
+        this.escKey = this.input.keyboard.addKey('ESC');
+        this.canPlace = true;
+        // ------------------------------------
+
         this.towerManager = new TowerManager(this);
 
         this.towerManager.physical.forEach(stats => {
@@ -55,7 +63,6 @@ export default class UIManager extends Phaser.Scene {
         this.player = data.player;
         this.inventory = data.inventory;
         this.timeManager = new TimeManager();
-        this.towerManager = new TowerManager();
 
         const uiX = width / 2;
         const uiY = height - 49;
@@ -110,11 +117,15 @@ export default class UIManager extends Phaser.Scene {
         this.createButton(20, startY, 'Purchase Tower\n50 g', () => {
             if (this.player.gold >= 50) {
                 this.player.updateGold(-50);
-                const tower = this.towerManager.createTower();
-                this.inventory.push(tower);
+
+                const rolledTower = this.towerManager.getRandomTowerIndex();
+                this.inventory.push({ type: rolledTower });
+                console.log(`Rolled a new tower: ${rolledTower}`);
+
                 this.updateInventoryUI();
             }
         });
+
         const rightStartX = width - 340;
         this.createButton(rightStartX, startY, 'Merge', () => {
         });
@@ -122,6 +133,7 @@ export default class UIManager extends Phaser.Scene {
         this.createButton(rightStartX + 170, startY, 'Inventory', () => {
             this.toggleInventory();
         });
+
         this.updateUI();
         this.time.addEvent({
             delay: this.player.incInterval, // 1000ms = 1 sec
@@ -178,22 +190,47 @@ export default class UIManager extends Phaser.Scene {
             const gridX = Math.floor(pointer.x / 64) * 64;
             const gridY = Math.floor(pointer.y / 64) * 64;
 
-            this.highlighter.fillStyle(0xffffff, 0.3); 
-            this.highlighter.fillRect(gridX, gridY, 64, 64);
-        
-            // grid outline (optional)
-            //this.highlighter.lineStyle(2, 0xffffff, 0.8);
-            //this.highlighter.strokeRect(gridX, gridY, 64, 64);
+            if (this.selectedTower) {
+                this.highlighter.fillStyle(0x00ff00, 0.4);
 
-            if (pointer.isDown && !this.lastPointerDown) {
-                this.towerManager.createTower('p0', gridX, gridY);
+                // --------- CANCEL Selection ----------
+                // check for right click of escape key
+                if (pointer.rightButtonDown() || Phaser.Input.Keyboard.JustDown(this.escKey)) {
+                    this.selectedTower = null;
+                    console.log("Placement Cancelled.");
+                    return;
+                }
+                // -------------------------------------
+
+                if (pointer.isDown && !this.lastPointerDown && this.canPlace) {
+                    this.towerManager.createTower(this.selectedTower, gridX, gridY);
+
+                    const index = this.inventory.findIndex(item => item.type === this.selectedTower);
+                    if (index > -1) this.inventory.splice(index, 1);
+
+                    this.selectedTower = null;
+                    this.canPlace = false;
+                    this.updateInventoryUI();
+                }
+            } else {
+                this.highlighter.fillStyle(0xffffff, 0.3);
             }
+            this.highlighter.fillRect(gridX, gridY, 64, 64);
+
+            /* Grid outline (optional):
+                this.highlighter.lineStyle(2, 0xffffff, 0.8);
+                this.highlighter.strokeRect(gridX, gridY, 64, 64);
+            */
+
+            /* Auto tower placement on click:
+                if (pointer.isDown && !this.lastPointerDown) {
+                    this.towerManager.createTower('p0', gridX, gridY);
+                }
+            */
         }
 
         this.towerManager.activeTowers.children.iterate(tower => {
-            if (tower && tower.update) {
-                tower.update(time, delta);
-            }
+            if (tower && tower.update) tower.update(time, delta);
         });
 
         this.lastPointerDown = pointer.isDown;
@@ -218,20 +255,39 @@ export default class UIManager extends Phaser.Scene {
     updateInventoryUI() {
         this.towerIcons.clear(true, true);
         if (!this.inventoryImage.visible) return;
+
         const startX = this.inventoryImage.x + 20;
         const startY = this.inventoryImage.y + 20;
-
         const size = 50;
         const gap = 10;
-        this.inventory.forEach((tower, i) => {
+
+        this.inventory.forEach((item, i) => {
             const row = Math.floor(i / 9);
             const col = i % 9;
             const x = startX + col * (size + gap);
             const y = startY + row * (size + gap);
 
-            const icon = this.add.image(x, y, 'TowerIcon')
-                .setScale(0.7).setDepth(51);
+            const stats = this.towerManager.getStatsByIndex(item.type);
+            const textureKey = stats ? stats[0] : 'TowerIcon';
+
+            const icon = this.add.image(x, y, textureKey)
+                .setDisplaySize(size, size)
+                .setDepth(51)
+                .setInteractive({ useHandCursor: true });
+
             this.towerIcons.add(icon);
+
+            icon.on('pointerdown', () => {
+                this.selectedTower = item.type;
+                this.toggleInventory();
+
+                this.canPlace = false;
+                this.time.delayedCall(100, () => {
+                    this.canPlace = true;
+                });
+
+                console.log(`Selected ${textureKey} from inventory.`);
+            });
         });
 
     }
@@ -253,6 +309,7 @@ export default class UIManager extends Phaser.Scene {
             radius * 2,
             fillHeight
         );
+
         this.healthText.setText(`${currentHP} / ${this.hpMax}`);
     }
 }
