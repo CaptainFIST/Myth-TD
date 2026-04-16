@@ -43,12 +43,12 @@ export default class Tower extends Phaser.GameObjects.Sprite {
 
     update(time, delta) {
         if (time > this.nextTic && !this.isAttacking) {
-            /* Enemy targeting
-            const enemy = this.getClosestEnemy();
-            if (enemy && distanceTo(enemy) < this.range) {
-                this.fire(time);
-            }
-            */
+            // Enemy targeting
+            // const enemy = this.getClosestEnemy();
+            // if (enemy && distanceTo(enemy) < this.range) {
+            //     this.fire(time);
+            // }
+            
         }
     }
 

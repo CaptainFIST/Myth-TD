@@ -1,5 +1,6 @@
 import TimeManager from '../managers/TimeManager.js';
 import TowerManager from '../managers/TowerManager.js';
+import EnemyManager from '../managers/EnemyManager.js';
 
 export default class UIManager extends Phaser.Scene {
     constructor() {
@@ -14,6 +15,13 @@ export default class UIManager extends Phaser.Scene {
             });
 
             this.load.image(`${tower[0]}_Icon`, `assets/tower/TowerIcon/${tower[0]}_Icon.png`);
+        });
+
+        EnemyManager.testData.forEach(enemy => {
+            this.load.spritesheet(enemy[0], `assets/Enemies/${enemy[0]}.png`, {
+                frameWidth: 64,
+                frameHeight: 64
+            });
         });
 
         this.load.image('UI', 'assets/UI/UI.png');
@@ -52,6 +60,37 @@ export default class UIManager extends Phaser.Scene {
                 frameRate: 12,
                 repeat: 0
             });
+        });
+
+
+
+        this.enemyManager = new EnemyManager(this);
+
+        EnemyManager.testData.forEach(stats => {
+            const name = stats[0];
+
+            this.anims.create({
+                key: `${name}_walk`,
+                frames: this.anims.generateFrameNumbers(name, { start: 0, end: 5 }),
+                frameRate: 8,
+                repeat: -1
+            });
+});
+
+        this.mapManager = this.scene.get('MapManager');
+
+        this.time.delayedCall(500, () => {
+            this.path = this.mapManager.worldPath;
+            console.log(this.path);
+        });
+
+        this.createButton(200, 20, 'Spawn Enemy', () => {
+            if (!this.path) {
+                console.log("Path not ready yet!");
+                return;
+            }
+
+            this.enemyManager.createEnemy(0, this.path);
         });
 
         this.grid = this.add.graphics();
@@ -134,7 +173,7 @@ export default class UIManager extends Phaser.Scene {
         this.createButton(rightStartX, startY, 'Merge', () => {
             //temp test button
             //this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
-            //this.player.updateHealth(5);
+            this.player.updateHealth(5);
         });
 
         this.createButton(rightStartX + 170, startY, 'Inventory', () => {
@@ -265,6 +304,10 @@ export default class UIManager extends Phaser.Scene {
 
         this.towerManager.activeTowers.children.iterate(tower => {
             if (tower && tower.update) tower.update(time, delta);
+        });
+
+        this.enemyManager.activeEnemies.children.iterate(enemy => {
+            if (enemy && enemy.update) enemy.update(time, delta);
         });
 
         this.lastPointerDown = pointer.isDown;

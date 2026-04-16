@@ -61,6 +61,9 @@ export default class Level2 extends Phaser.Scene {
     create() {
         this.scene.launch('MapManager', { level: this.constructor });
 
+        this.mapManager = this.scene.get('MapManager');
+
+
         this.player = new PlayerManager({sceneL: this});
         this.inventory = [];
 
