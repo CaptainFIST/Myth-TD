@@ -70,7 +70,7 @@ export default class Level1 extends Phaser.Scene {
         });
     }
 
-    closeLevel(reason)
+    closeLevel(reason, time)
     {
         this.scene.stop('MapManager');
         this.scene.stop('UIManager');
@@ -81,11 +81,11 @@ export default class Level1 extends Phaser.Scene {
         }
         else if(reason === 'win')
         {
-            this.scene.start('WinScreen', {sceneL: this.constructor});
+            this.scene.start('WinScreen', {sceneL: this.constructor, passTime: time});
         }
-        else if(reason === 'Lose')
+        else if(reason === 'lose')
         {
-            this.scene.start('LoseScreen', {sceneL: this.constructor});
+            this.scene.start('LoseScreen', {sceneL: this.constructor, passTime: time});
         }
         
     }

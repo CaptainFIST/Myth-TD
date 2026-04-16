@@ -89,7 +89,7 @@ export default class UIManager extends Phaser.Scene {
         });
         const rightStartX = width - 340;
         this.createButton(rightStartX, startY, 'Merge', () => {
-            this.sceneL.closeLevel('win');
+            this.sceneL.closeLevel('lose', this.timeManager.getTime().toFixed(2));
             
         });
 

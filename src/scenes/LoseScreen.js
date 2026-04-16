@@ -13,25 +13,14 @@ export default class LoseScreen extends Phaser.Scene {
     //     }
     // }
 
-    create() {
-        // Hide all game UI elements that might be visible from previous scenes
-    //     const uiElements = [
-    //         'game-ui',
-    //         'tower-selection-panel'
-    //     ];
-
-    //     uiElements.forEach(id => {
-    //         const element = document.getElementById(id);
-    //         if (element) {
-    //             element.style.display = 'none';
-    //         }
-    //     });
+    create(data) {
+    
 
          const { width, height } = this.scale;
 
-    //     // Background with gradient effect
-    //     this.add.rectangle(width / 2, height / 2, width, height, 0x1a0000).setDepth(-1);
-    //     this.add.rectangle(width / 2, height / 2, width, height, 0x2d0000).setDepth(-1).setAlpha(0.5);
+         // Background with gradient effect
+        this.add.rectangle(width / 2, height / 2, width, height, 0x1a0000).setDepth(-1);
+        this.add.rectangle(width / 2, height / 2, width, height, 0x2d0000).setDepth(-1).setAlpha(0.5);
 
     //     // Overlay (interactive so clicks don't fall through to underlying scene)
     //     const overlayRect = this.add.rectangle(width / 2, height / 2, width, height, 0x000000)
@@ -60,32 +49,32 @@ export default class LoseScreen extends Phaser.Scene {
     //             break;
     //     }
 
-    //     // Loss message with animation
-    //     const title = this.add.text(width / 2, height / 2 - 150, 'DEFEAT', {
-    //         fontSize: '96px',
-    //         fill: '#ff4444',
-    //         fontFamily: 'Arial',
-    //         fontStyle: 'bold',
-    //         stroke: '#ff0000',
-    //         strokeThickness: 6
-    //     }).setOrigin(0.5).setDepth(3000);
+         // Loss message with animation
+        const title = this.add.text(width / 2, height / 2 - 150, 'DEFEAT', {
+            fontSize: '96px',
+            fill: '#ff4444',
+            fontFamily: 'Arial',
+            fontStyle: 'bold',
+            stroke: '#ff0000',
+            strokeThickness: 6
+        }).setOrigin(0.5).setDepth(3000);
 
-    //     this.tweens.add({
-    //         targets: title,
-    //         y: height / 2 - 140,
-    //         duration: 600,
-    //         ease: 'Elastic.easeOut',
-    //         useFrames: false
-    //     });
+        this.tweens.add({
+            targets: title,
+            y: height / 2 - 140,
+            duration: 600,
+            ease: 'Elastic.easeOut',
+            useFrames: false
+        });
 
 
-    //     // Subtitle
-    //     this.add.text(width / 2, height / 2 - 70, 'Your castle has fallen...', {
-    //         fontSize: '32px',
-    //         fill: '#ff6666',
-    //         fontFamily: 'Arial',
-    //         fontStyle: 'italic'
-    //     }).setOrigin(0.5).setDepth(3000);
+         // Subtitle
+        this.add.text(width / 2, height / 2 - 70, 'Your castle has fallen...', {
+            fontSize: '32px',
+            fill: '#ff6666',
+            fontFamily: 'Arial',
+            fontStyle: 'italic'
+        }).setOrigin(0.5).setDepth(3000);
 
     //     // Retry button
     //     this.createButton(width / 2 - 180, height / 2 + 140, 'RETRY', '#ef4444', () => {
@@ -109,6 +98,22 @@ export default class LoseScreen extends Phaser.Scene {
     //         this.scene.start(levelName);
     //     });
 
+    this.levelNumber = data.sceneL.level || 0;
+
+    this.createButton(width / 2 - 180, height / 2 + 140, 'RETRY', '#ef4444', () => {
+        switch(this.levelNumber) {
+            case 1: 
+                this.scene.start('Level1');
+                break;
+            case 2:
+                this.scene.start('Level2');
+                break;
+            default:
+                break;
+        }
+    } );
+    
+
     //     // Return to menu button
     //     this.createButton(width / 2 + 180, height / 2 + 140, 'MENU', '#6366f1', () => {
     //         // stop whichever level was active (safe even if already stopped)
@@ -123,6 +128,11 @@ export default class LoseScreen extends Phaser.Scene {
     //         }
     //         this.scene.start('MenuScene');
     //     });
+
+        this.createButton(width / 2 + 180, height / 2 + 140, 'MENU', '#6366f1', () => {
+            this.scene.start('MainMenu');
+        } );
+    
      }
 
     createButton(x, y, text, color, callback) {

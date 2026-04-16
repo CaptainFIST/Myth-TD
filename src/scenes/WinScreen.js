@@ -8,19 +8,7 @@ export default class WinScreen extends Phaser.Scene {
     }
 
     create(data) {
-        // Hide all game UI elements that might be visible from previous scenes
-        // const uiElements = [
-        //     'game-ui',
-        //     'tower-selection-panel'
-        // ];
-
-        // uiElements.forEach(id => {
-        //     const element = document.getElementById(id);
-        //     if (element) {
-        //         element.style.display = 'none';
-        //     }
-        // });
-
+        
         const { width, height } = this.scale;
 
         // Background with gradient effect
@@ -105,12 +93,12 @@ export default class WinScreen extends Phaser.Scene {
         // else if (this.levelType === 'Level3Scene') levelText = 'LEVEL 3 - FINAL';
         // else if (this.levelType === 'Level4Scene') levelText = 'Level 4';
         
-        // this.add.text(width / 2, height / 2 - 70, `${levelText} COMPLETE!`, {
-        //     fontSize: '32px',
-        //     fill: '#90EE90',
-        //     fontFamily: 'Arial',
-        //     fontStyle: 'italic'
-        // }).setOrigin(0.5).setDepth(3000);
+        this.add.text(width / 2, height / 2 - 70, `LEVEL ${this.levelNumber} COMPLETE!`, {
+            fontSize: '32px',
+            fill: '#90EE90',
+            fontFamily: 'Arial',
+            fontStyle: 'italic'
+        }).setOrigin(0.5).setDepth(3000);
 
         // Gold reward display
         //const goldDisplay = this.add.container(width / 2, height / 2 + 10);
@@ -118,13 +106,13 @@ export default class WinScreen extends Phaser.Scene {
         //const goldBg = this.add.rectangle(0, 0, 400, 80, 0x1a1f42).setStrokeStyle(3, 0xFFD700);
         //goldDisplay.add(goldBg);
 
-        const goldText = this.add.text(-150, -10, 'GOLD EARNED', {
-            fontSize: '20px',
-            fill: '#9ca3af',
-            fontFamily: 'Arial',
-            fontWeight: 'bold',
-            letterSpacing: 2
-        });
+        // const goldText = this.add.text(-150, -10, 'GOLD EARNED', {
+        //     fontSize: '20px',
+        //     fill: '#9ca3af',
+        //     fontFamily: 'Arial',
+        //     fontWeight: 'bold',
+        //     letterSpacing: 2
+        // });
         //goldDisplay.add(goldText);
 
         // const goldAmount = this.add.text(80, 0, `${gold}`, {
@@ -149,6 +137,37 @@ export default class WinScreen extends Phaser.Scene {
         //     fontStyle: 'bold'
         // }).setOrigin(0.5).setDepth(3000);
 
+        console.log(data.passTime);
+
+        
+
+        const timePDisplay = this.add.container(width / 2, height / 2 + 10);
+        const timePBg = this.add.rectangle(0, 0, 400, 80, 0x1a1f42).setStrokeStyle(3, 0xFFD700);
+        timePDisplay.add(timePBg);
+
+        const timePText = this.add.text(-150, -10, `TIME PASSED: `, {
+            fontSize: '20px',
+            fill: '#9ca3af',
+            fontFamily: 'Arial',
+            fontWeight: 'bold',
+            letterSpacing: 2
+        });
+        timePDisplay.add(timePText);
+
+        const timeP = this.add.text(80, 0, `${data.passTime}`, {
+            fontSize: '48px',
+            fill: '#FFD700',
+            fontFamily: 'Arial',
+            fontStyle: 'bold'
+        }).setOrigin(0.5);
+        timePDisplay.add(timeP);
+
+        timePDisplay.setDepth(3000);
+
+
+
+
+
         // Button logic based on level
         // if (this.levelType === 'MainScene') {
         //     // Level 1 complete - show "Skill Tree" and "Menu"
@@ -172,29 +191,17 @@ export default class WinScreen extends Phaser.Scene {
         //         this.scene.stop('Level2Scene');
         //         this.scene.start('MenuScene');
         //     });
-        // } else if (this.levelType === 'Level3Scene') {
-        //     // Level 3 complete - show "Skill Tree" and "Menu"
-        //     this.createButton(width / 2 - 180, height / 2 + 140, 'SKILL TREE', '#7c3aed', () => {
-        //         this.scene.stop('Level3Scene');
-        //         this.scene.start('SkillTreeScene', { nextScene: 'Level4Scene', level: 4 });
-        //     });
+        
 
-        //     this.createButton(width / 2 + 180, height / 2 + 140, 'MENU', '#6366f1', () => {
-        //         this.scene.stop('Level3Scene');
-        //         this.scene.start('MenuScene');
-        //     });
-        // } else if (this.levelType === 'Level4Scene') {
-        //     // Level 4 complete - show "Skill Tree" and "Menu"
-        //     this.createButton(width / 2 - 180, height / 2 + 140, 'SKILL TREE', '#7c3aed', () => {
-        //         this.scene.stop('Level4Scene');
-        //         this.scene.start('SkillTreeScene', { nextScene: 'LevelSelectScene', level: 1 });
-        //     });
+            this.createButton(width / 2 - 180, height / 2 + 140, 'NEXT LEVEL', '#7c3aed', () => {
+                //this.scene.stop('Level4Scene');
+                //this.scene.start('SkillTreeScene', { nextScene: 'LevelSelectScene', level: 1 });
+            });
 
-        //     this.createButton(width / 2 + 180, height / 2 + 140, 'MENU', '#6366f1', () => {
-        //         this.scene.stop('Level4Scene');
-        //         this.scene.start('MenuScene');
-        //     });
-        // }
+        this.createButton(width / 2 + 180, height / 2 + 140, 'MENU', '#6366f1', () => {
+                //this.scene.stop('Level4Scene');
+                this.scene.start('MainMenu');
+            });
     }
 
     createButton(x, y, text, color, callback) {
