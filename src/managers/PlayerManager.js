@@ -6,22 +6,26 @@ export default class PlayerManager {
 
         this.goldPerSec = 2;
         this.incInterval = 1000;
+
+        if(scene != null)
+        {
+            console.log(this.scene);
+            
+        }
+        
+
+
+
     }
 
-    incomeStart() {
-        this.incomeTimer = this.scene.time.addEvent({
-            delay: this.incInterval,
-            callback: this.income,
-            callbackScope: this,
-            loop: true
-        });
-    }
+    
+
 
     income() {
         this.gold += this.goldPerSec;
-        if (this.scene.debug) {
-            console.log(`🌾 Farm income: +${this.goldPerSec} gold (Total: ${this.gold})`);
-        }
+        
+        console.log(`🌾 Farm income: +${this.goldPerSec} gold (Total: ${this.gold})`);
+        
         
     }
 

@@ -31,10 +31,17 @@ export default class MapManager extends Phaser.Scene {
 
         //this.findOpening(mapData, 'Ent');
         this.findOpening(mapData, 'Ex');
-        this.tPath = this.findPath(mapData);
-        this.wPath = this.toWP(this.tPath);
-        console.log(this.tPath);
-        console.log(this.wPath);
+
+        this.mappedPath = this.findPath(mapData);
+        this.worldPath = this.actualWorldPath(this.mappedPath);
+        console.log(this.mappedPath);
+        console.log(this.worldPath);
+
+        //tests
+        // for(let i = 0; i < this.mappedPath.length; i++){
+        //     console.log(this.mappedPath[i]);
+        //     console.log(this.worldPath[i]);
+        // }
     }
 
     findOpening(map, e) {
@@ -69,6 +76,7 @@ export default class MapManager extends Phaser.Scene {
 
         var graphics = this.add.graphics();
         let drawPath = this.add.path(cur.x * tileSize + tileSize / 2, cur.y * tileSize + tileSize / 2);
+
         const key = (x,y) => `${x},${y}`;
 
         while(cur) {
@@ -99,15 +107,16 @@ export default class MapManager extends Phaser.Scene {
             }
             cur = next;
             drawPath.lineTo((cur.x * tileSize) + (tileSize / 2), (cur.y * tileSize) + (tileSize / 2));
-        }
 
+        }
              graphics.lineStyle(3, 0xffffff, 1);
-            // // visualize the path
+            // visualize the path
              drawPath.draw(graphics);
+
         return path;
     }
 
-    toWP(tileP) {
+    actualWorldPath(tileP) {
         const tileSize = this.tileSize || 64;
 
         return tileP.map(tile => ({
