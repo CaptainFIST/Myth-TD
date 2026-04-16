@@ -41,13 +41,14 @@ export default class Level1 extends Phaser.Scene {
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     ];
 
-    static tileTypes = { 
-        0: 'grass', 
+    static tileTypes = {
+        0: 'grass',
         1: 'path',
         2: 'path',
         3: 'path'
     };
-    static decoTypes = { 
+
+    static decoTypes = {
         2: 'tree'
     };
 
@@ -58,38 +59,35 @@ export default class Level1 extends Phaser.Scene {
     }
 
     create() {
-        this.scene.launch('MapManager', { level: this.constructor });
+        this.scene.launch('MapManager', { level: Level1 });
 
-        this.mapManager = this.scene.get('MapManager');
-
-
-        this.player = new PlayerManager({sceneL: this});
+        this.player = new PlayerManager({ sceneL: this });
         this.inventory = [];
 
         this.scene.launch('UIManager', {
             player: this.player,
             inventory: this.inventory,
-            sceneL: this
+            sceneL: this,
+            levelId: 1
         });
     }
 
-    closeLevel(reason, time)
-    {
+    closeLevel(reason, time) {
         this.scene.stop('MapManager');
         this.scene.stop('UIManager');
 
-        if(reason === 'return')
-        {
+        if (reason === 'return') {
             this.scene.start('MainMenu');
+        } else if (reason === 'win') {
+            this.scene.start('WinScreen', {
+                levelId: 1,
+                passTime: time
+            });
+        } else if (reason === 'lose') {
+            this.scene.start('LoseScreen', {
+                levelId: 1,
+                passTime: time
+            });
         }
-        else if(reason === 'win')
-        {
-            this.scene.start('WinScreen', {sceneL: this.constructor, passTime: time});
-        }
-        else if(reason === 'lose')
-        {
-            this.scene.start('LoseScreen', {sceneL: this.constructor, passTime: time});
-        }
-        
     }
 }

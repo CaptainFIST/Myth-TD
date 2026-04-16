@@ -5,52 +5,52 @@ export default class EnemyManager {
     // ['Name', dmg, health, speed, gold] later frames
 
     static testData = [
-        ['Oni', 1, 10, 1, 5],
-        ['flying_fly', 2, 15, 1, 5]
+        ['Oni', 1, 60, 1, 5],
+        ['flying_fly', 2, 75, 1, 5]
     ];
 
     constructor(scene) {
         this.scene = scene;
-
-        this.test = EnemyManager.testData;
-
-        
-
         this.activeEnemies = this.scene.add.group({
             runChildUpdate: true
         });
-
     }
 
     getStatsByIndex(indexStr) {
         const type = indexStr[0];
         const id = parseInt(indexStr.slice(1));
 
-        switch(type) {
-            case 't': return this.test[id];
-            
-            default: return null;
+        switch (type) {
+            case 't':
+                return EnemyManager.testData[id];
+            default:
+                return null;
         }
     }
 
-    createEnemy(indexStr, path) {
-        const stats = EnemyManager.testData[indexStr];
-        //const stats = this.getStatsByIndex(indexStr);
+    createEnemy(index, path) {
+        if (!path || path.length === 0) {
+            console.error("EnemyManager: Invalid path");
+            return;
+        }
+
+        const stats = EnemyManager.testData[index];
 
         if (!stats) {
-            console.error("Invalid enemy index:", indexStr);
+            console.error("Invalid enemy index:", index);
             return;
         }
 
         const enemy = new Enemy(this.scene, stats, path);
         this.activeEnemies.add(enemy);
-
         return enemy;
     }
+
+    clearEnemies() {
+        this.activeEnemies.clear(true, true);
+    }
+
+    getAliveCount() {
+        return this.activeEnemies.getChildren().length;
+    }
 }
-
-/* 
-    
-    
-
-*/

@@ -13,6 +13,7 @@ export default class Tower extends Phaser.GameObjects.Sprite {
 
         this.nextTic = this.scene.time.now + (this.attackSpeed * 1000);
         this.isAttacking = false;
+        this.damageDealt = false; 
 
         this.scene.add.existing(this);
         this.setDepth(10);
@@ -22,6 +23,7 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         this.on('animationcomplete', (animation) => {
             if (animation.key === `${this.name}_attack`) {
                 this.isAttacking = false;
+                this.damageDealt = false; 
                 this.play(`${this.name}_idle`);
             }
         });
@@ -31,34 +33,59 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         const centerX = x + 32;
         const centerY = y + 32;
 
-        // vertical shift for towers
         const verticalOffset = 20;
         this.x = centerX;
         this.y = centerY - verticalOffset;
 
         this.pedestal.setPosition(centerX, centerY);
-
         this.nextTic = this.scene.time.now + (this.attackSpeed * 1000);
     }
 
     update(time, delta) {
         if (time > this.nextTic && !this.isAttacking) {
-            // Enemy targeting
-            // const enemy = this.getClosestEnemy();
-            // if (enemy && distanceTo(enemy) < this.range) {
-            //     this.fire(time);
-            // }
-            
+            const enemy = this.getClosestEnemy();
+            if (enemy) {
+                this.fire(time, enemy);
+            }
+        }
+        
+        if (this.isAttacking && !this.damageDealt) {
+            const enemy = this.getClosestEnemy();
+            if (enemy) {
+                enemy.takeDamage(this.damage);
+                console.log(`${this.name} hit ${enemy.name} for ${this.damage} damage! (${enemy.health} HP remaining)`);
+                this.damageDealt = true;
+            }
         }
     }
 
-    fire(time) {
+    getClosestEnemy() {
+        if (!this.scene.enemyManager) return null;
+        
+        const enemies = this.scene.enemyManager.activeEnemies.getChildren();
+        let closest = null;
+        let closestDist = this.range * 64; 
+        
+        enemies.forEach(enemy => {
+            const dist = Phaser.Math.Distance.Between(
+                this.x, this.y,
+                enemy.x, enemy.y
+            );
+            
+            if (dist < closestDist) {
+                closestDist = dist;
+                closest = enemy;
+            }
+        });
+        return closest;
+    }
+
+    fire(time, enemy) {
         this.isAttacking = true;
+        this.damageDealt = false;
         this.play(`${this.name}_attack`);
-
         this.nextTic = time + (this.attackSpeed * 1000);
-
-        console.log(`${this.name} fired! Next shot in ${this.attackSpeed}s`);
+        console.log(`${this.name} attacking ${enemy.name}!`);
     }
 
     destroy(fromScene) {
