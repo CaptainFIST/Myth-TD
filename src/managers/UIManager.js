@@ -68,10 +68,11 @@ export default class UIManager extends Phaser.Scene {
 
         EnemyManager.testData.forEach(stats => {
             const name = stats[0];
+            const lastMove = stats[5];
 
             this.anims.create({
                 key: `${name}_walk`,
-                frames: this.anims.generateFrameNumbers(name, { start: 0, end: 5 }),
+                frames: this.anims.generateFrameNumbers(name, { start: 0, end: lastMove }),
                 frameRate: 8,
                 repeat: -1
             });
@@ -79,19 +80,21 @@ export default class UIManager extends Phaser.Scene {
 
         this.mapManager = this.scene.get('MapManager');
 
-        this.time.delayedCall(500, () => {
+        this.time.delayedCall(1000, () => {
             this.path = this.mapManager.worldPath;
             console.log(this.path);
         });
 
-        this.createButton(200, 20, 'Spawn Enemy', () => {
-            if (!this.path) {
-                console.log("Path not ready yet!");
-                return;
-            }
+        // this.createButton(200, 20, 'Spawn Enemy', () => {
+        //     if (!this.path) {
+        //         console.log("Path not ready yet!");
+        //         return;
+        //     }
 
-            this.enemyManager.createEnemy(0, this.path);
-        });
+        //     this.enemyManager.createEnemy(0, this.path);
+        // });
+
+
 
         this.grid = this.add.graphics();
         this.highlighter = this.add.graphics();
@@ -147,6 +150,8 @@ export default class UIManager extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(3);
 
         this.wave = 1;
+        this.maxWave = 5;
+        this.isWaveActive = false;
         this.waveText = this.add.text(uiX + 150, uiY + 10, '', {
             fontSize: '20px',
             color: '#64d5ff'
@@ -172,8 +177,9 @@ export default class UIManager extends Phaser.Scene {
         const rightStartX = width - 340;
         this.createButton(rightStartX, startY, 'Merge', () => {
             //temp test button
-            //this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
-            this.player.updateHealth(5);
+            this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
+            //this.player.updateHealth(5);
+            //this.startWave();
         });
 
         this.createButton(rightStartX + 170, startY, 'Inventory', () => {
@@ -192,6 +198,23 @@ export default class UIManager extends Phaser.Scene {
                 this.player.income();
             }
         });
+
+        this.time.delayedCall(2000, () => {
+            this.enemyCount = 5;
+            this.startWave(this.enemyCount);
+
+            this.time.addEvent({
+            delay: 10000,
+            repeat: 3,
+            callback: () => {
+                this.startWave(this.enemyCount + 2);
+            }
+        });
+        });
+
+        
+
+
     }
 
     createButton(x, y, label, onClick) {
@@ -253,6 +276,7 @@ export default class UIManager extends Phaser.Scene {
 
         if(this.player.isHealthZero())
         {
+
             this.sceneL.closeLevel('lose', this.timeManager.getTime().toFixed(2));
         }
 
@@ -388,5 +412,49 @@ export default class UIManager extends Phaser.Scene {
         );
 
         this.healthText.setText(`${currentHP} / ${this.hpMax}`);
+    }
+
+    //Move and change later
+    startWave(enemyCount) {
+        if (this.isWaveActive) return;
+
+        if(this.wave > this.maxWave)
+        {
+            return;
+        }
+
+        if (!this.path || this.path.length === 0) {
+            console.log("❌ Cannot start wave, path not ready");
+            return;
+        }
+
+        console.log(`Starting wave ${this.wave}`);
+        this.isWaveActive = true;
+
+        
+
+        for (let i = 0; i < enemyCount; i++) {
+            this.time.delayedCall(i * 500, () => {
+                this.enemyManager.createEnemy(0, this.path);
+            });
+        }
+
+        // End wave after last spawn
+        this.time.delayedCall(enemyCount * 500 + 1000, () => {
+            this.endWave();
+        });//enemyCount * 500 + 1000
+
+        
+    }
+
+    endWave() {
+        console.log(`Wave ${this.wave} ended`);
+
+        if(this.wave != this.maxWave)
+        {
+            this.wave++;
+        }
+        //this.wave++;
+        this.isWaveActive = false;
     }
 }

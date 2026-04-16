@@ -62,9 +62,19 @@ export default class Tower extends Phaser.GameObjects.Sprite {
     }
 
     destroy(fromScene) {
-        if (this.pedestal) {
-            this.pedestal.destroy();
-        }
-        super.destroy(fromScene);
+        if (this._destroyed) return;
+
+    this._destroyed = true;
+
+    if (this.pedestal) {
+        this.pedestal.destroy();
+        this.pedestal = null;
+    }
+
+    super.destroy(fromScene);
     }
 }
+
+/** 
+ 
+*/
