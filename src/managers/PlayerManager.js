@@ -25,7 +25,7 @@ export default class PlayerManager extends Phaser.Scene {
     income() {
         this.gold += this.goldPerSec;
         
-        console.log(`🌾 Farm income: +${this.goldPerSec} gold (Total: ${this.gold})`);
+        //console.log(`🌾 Farm income: +${this.goldPerSec} gold (Total: ${this.gold})`);
         
         
     }

@@ -11,6 +11,7 @@ import LevelSelect from './scenes/LevelSelect.js';
 import TimeManager from './managers/TimeManager.js';
 import UIManager from './managers/UIManager.js';
 import TowerManager from './managers/TowerManager.js';
+import Tower from './entities/Tower.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -20,7 +21,7 @@ const config = {
     width: 1856,
     height: 992,
     backgroundColor: '#000000',
-    pixelArt: false,
+    pixelArt: true,
     parent: 'game-container',
     scene: [
         MainMenu,
@@ -30,9 +31,10 @@ const config = {
         WinScreen,
         LoseScreen,
         MapManager,
-        PlayerManager,
-        TimeManager,
-        TowerManager,
+        //PlayerManager,
+        //TimeManager,
+        //Tower,
+        //TowerManager,
         UIManager,
         Level1,
         Level2
