@@ -19,7 +19,7 @@ const config = {
     width: 1856,
     height: 992,
     backgroundColor: '#000000',
-    pixelArt: false,
+    pixelArt: true,
     parent: 'game-container',
     scene: [
         MainMenu,

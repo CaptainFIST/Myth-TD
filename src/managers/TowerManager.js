@@ -1,10 +1,12 @@
 import Tower from '../entities/Tower.js';
 
 export default class TowerManager {
+    // Table info:
+    // ['Name', dmg, range, attspd, lastIdleFrame, lastAttackFrame]
     static neutralData = [];
     static physicalData = [
-        ['Izanami', 15, 3, 0.7, 2, 14],
-        ['Susanoo', 10, 5, 3, 6, 14]
+        ['Izanami', 18, 3, 1.2, 2, 14],
+        ['Susanoo', 10, 5, 0.3, 6, 14]
     ];
     static airData = [];
     static waterData = [];

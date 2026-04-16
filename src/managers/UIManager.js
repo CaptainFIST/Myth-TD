@@ -12,13 +12,14 @@ export default class UIManager extends Phaser.Scene {
                 frameWidth: 64,
                 frameHeight: 64
             });
+
+            this.load.image(`${tower[0]}_Icon`, `assets/tower/TowerIcon/${tower[0]}_Icon.png`);
         });
 
         this.load.image('UI', 'assets/UI/UI.png');
         this.load.image('UIHP', 'assets/UI/UIHP.png');
         this.load.image('Inventory', 'assets/UI/Inventory.png');
-        this.load.image('Izanami', 'assets/tower/TowerIcon/Izanami.png');
-        this.load.image('Susanoo', 'assets/tower/TowerIcon/Susanoo.png');
+        this.load.image('Pedestal', 'assets/Tower Placement/tower_placement.png');
     }
 
     create(data) {
@@ -268,9 +269,9 @@ export default class UIManager extends Phaser.Scene {
             const y = startY + row * (size + gap);
 
             const stats = this.towerManager.getStatsByIndex(item.type);
-            const textureKey = stats ? stats[0] : 'TowerIcon';
+            const iconKey = stats ? `${stats[0]}_Icon` : 'DefaultIcon';
 
-            const icon = this.add.image(x, y, textureKey)
+            const icon = this.add.image(x, y, iconKey)
                 .setDisplaySize(size, size)
                 .setDepth(51)
                 .setInteractive({ useHandCursor: true });
@@ -286,7 +287,7 @@ export default class UIManager extends Phaser.Scene {
                     this.canPlace = true;
                 });
 
-                console.log(`Selected ${textureKey} from inventory.`);
+                console.log(`Selected ${iconKey} from inventory.`);
             });
         });
 
