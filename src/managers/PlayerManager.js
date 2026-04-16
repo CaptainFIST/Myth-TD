@@ -1,7 +1,6 @@
 export default class PlayerManager extends Phaser.Scene {
     constructor(data) {
         super({ key: 'PlayerManager' });
-        //this.scene = scene;
         this.gold = 150;
         this.playerHealth = 20;
 
@@ -13,21 +12,10 @@ export default class PlayerManager extends Phaser.Scene {
             console.log(data);
             this.sceneL = data.sceneL;
         }
-        
-
-
-
     }
-
-    
-
 
     income() {
         this.gold += this.goldPerSec;
-        
-        //console.log(`🌾 Farm income: +${this.goldPerSec} gold (Total: ${this.gold})`);
-        
-        
     }
 
     updateHealth(damage) {
@@ -39,36 +27,26 @@ export default class PlayerManager extends Phaser.Scene {
     }
 
     updateGold(change) {
-        
-        if(change > 0)
-        {
-            this.gold -= change;
-            console.log(`${change} gold added`);
-        }
-        else if(change < 0)
-        {
-            if(Math.abs(change) <= this.gold)
-            {
+        if (change > 0) {
+            this.gold += change;
+            console.log(`+${change} gold earned (Total: ${this.gold})`);
+        } else if (change < 0) {
+            if (Math.abs(change) <= this.gold) {
                 this.gold += change;
-                console.log(`${change} used`);
+                console.log(`-${Math.abs(change)} gold spent (Total: ${this.gold})`);
+            } else {
+                console.log('Not enough gold!');
             }
         }
     }
 
     status(condition) {
-
-
-        if(condition === 'win') 
-        {
-            this.sceneL.exitLevel();
-        }
-        else if(condition === ' lose')
-        {
-            launch('SettingsMenu');
+        if (condition === 'win') {
+            this.sceneL.closeLevel('win', 0);
+        } else if (condition === 'lose') {
+            this.sceneL.closeLevel('lose', 0);
         }
     }
-
-
 
     createFloatingText(x, y, text, color) {
         const floatingText = this.scene.add.text(x, y, text, {

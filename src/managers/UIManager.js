@@ -33,15 +33,14 @@ export default class UIManager extends Phaser.Scene {
     }
 
     create(data) {
-        // ------------- CONTROLS -------------
-        // disable right-click menu
         this.input.mouse.disableContextMenu();
         this.escKey = this.input.keyboard.addKey('ESC');
         this.canPlace = true;
-        // ------------------------------------
+        this.levelClosed = false;
+        this.rangeCircle = this.add.graphics(); 
+        this.selectedTower = null; 
 
         this.towerManager = new TowerManager(this);
-
         this.towerManager.physical.forEach(stats => {
             const name = stats[0];
             const lastIdle = stats[4];
@@ -62,10 +61,7 @@ export default class UIManager extends Phaser.Scene {
             });
         });
 
-
-
         this.enemyManager = new EnemyManager(this);
-
         EnemyManager.testData.forEach(stats => {
             const name = stats[0];
             const lastMove = stats[5];
@@ -76,11 +72,15 @@ export default class UIManager extends Phaser.Scene {
                 frameRate: 8,
                 repeat: -1
             });
-});
+        });
 
         this.mapManager = this.scene.get('MapManager');
+<<<<<<< HEAD
 
         this.time.delayedCall(1000, () => {
+=======
+        this.time.delayedCall(500, () => {
+>>>>>>> experimental-EE
             this.path = this.mapManager.worldPath;
             console.log(this.path);
         });
@@ -176,10 +176,14 @@ export default class UIManager extends Phaser.Scene {
 
         const rightStartX = width - 340;
         this.createButton(rightStartX, startY, 'Merge', () => {
+<<<<<<< HEAD
             //temp test button
             this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
             //this.player.updateHealth(5);
             //this.startWave();
+=======
+            this.player.updateHealth(5);
+>>>>>>> experimental-EE
         });
 
         this.createButton(rightStartX + 170, startY, 'Inventory', () => {
@@ -187,12 +191,17 @@ export default class UIManager extends Phaser.Scene {
         });
 
         this.exitButton(rightStartX + 200, 0, 'Exit', () => {
-            this.sceneL.closeLevel('return');
+            if (!this.levelClosed) {
+                this.levelClosed = true;
+                this.time.delayedCall(10, () => {
+                    this.sceneL.closeLevel('return');
+                });
+            }
         });
 
         this.updateUI();
         this.time.addEvent({
-            delay: this.player.incInterval, // 1000ms = 1 sec
+            delay: this.player.incInterval, 
             loop: true,
             callback: () => {
                 this.player.income();
@@ -271,17 +280,28 @@ export default class UIManager extends Phaser.Scene {
     }
 
     update(time, delta) {
+        if (this.levelClosed) return;
+
         this.timeManager.update(delta);
         this.updateUI();
 
+<<<<<<< HEAD
         if(this.player.isHealthZero())
         {
 
             this.sceneL.closeLevel('lose', this.timeManager.getTime().toFixed(2));
+=======
+        if (this.player.isHealthZero() && !this.levelClosed) {
+            this.levelClosed = true;
+            this.time.delayedCall(10, () => {
+                this.sceneL.closeLevel('lose', this.timeManager.getTime().toFixed(2));
+            });
+>>>>>>> experimental-EE
         }
 
         const pointer = this.input.activePointer;
         this.highlighter.clear();
+        this.rangeCircle.clear();
 
         if (pointer.y < this.scale.height - 96) {
             const gridX = Math.floor(pointer.x / 64) * 64;
@@ -290,14 +310,24 @@ export default class UIManager extends Phaser.Scene {
             if (this.selectedTower) {
                 this.highlighter.fillStyle(0x00ff00, 0.4);
 
-                // --------- CANCEL Selection ----------
-                // check for right click of escape key
+                const towerStats = this.towerManager.getStatsByIndex(this.selectedTower);
+                if (towerStats) {
+                    const range = towerStats[2];
+                    const rangePixels = range * 64;
+                    const centerX = gridX + 32;
+                    const centerY = gridY + 32;
+                    
+                    this.rangeCircle.lineStyle(2, 0x00ffff, 0.6);
+                    this.rangeCircle.strokeCircle(centerX, centerY, rangePixels);
+                    this.rangeCircle.setDepth(5);
+                }
+
                 if (pointer.rightButtonDown() || Phaser.Input.Keyboard.JustDown(this.escKey)) {
                     this.selectedTower = null;
+                    this.rangeCircle.clear();
                     console.log("Placement Cancelled.");
                     return;
                 }
-                // -------------------------------------
 
                 if (pointer.isDown && !this.lastPointerDown && this.canPlace) {
                     this.towerManager.createTower(this.selectedTower, gridX, gridY);
@@ -306,6 +336,7 @@ export default class UIManager extends Phaser.Scene {
                     if (index > -1) this.inventory.splice(index, 1);
 
                     this.selectedTower = null;
+                    this.rangeCircle.clear();
                     this.canPlace = false;
                     this.updateInventoryUI();
                 }
