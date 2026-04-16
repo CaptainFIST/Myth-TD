@@ -19,11 +19,9 @@ export default class UIManager extends Phaser.Scene {
         this.load.image('UI', 'assets/UI/UI.png');
         this.load.image('UIHP', 'assets/UI/UIHP.png');
         this.load.image('Inventory', 'assets/UI/Inventory.png');
-<<<<<<< HEAD
-        this.load.image('TowerIcon', 'assets/tower/TowerIcon/Izanami.png');
-=======
+        //this.load.image('TowerIcon', 'assets/tower/TowerIcon/Izanami.png');
         this.load.image('Pedestal', 'assets/Tower Placement/tower_placement.png');
->>>>>>> experimental-JR
+
     }
 
     create(data) {
@@ -143,12 +141,10 @@ export default class UIManager extends Phaser.Scene {
             this.toggleInventory();
         });
 
-<<<<<<< HEAD
         this.exitButton(rightStartX + 200, 0, 'Exit', () => {
             this.sceneL.closeLevel('return');
         });
-=======
->>>>>>> experimental-JR
+
         this.updateUI();
         this.time.addEvent({
             delay: this.player.incInterval, // 1000ms = 1 sec
