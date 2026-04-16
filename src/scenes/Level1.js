@@ -5,6 +5,8 @@ export default class Level1 extends Phaser.Scene {
         super({ key: 'Level1' });
     }
 
+    static level = 1;
+
     static mapData = [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [2,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -58,12 +60,36 @@ export default class Level1 extends Phaser.Scene {
     create() {
         this.scene.launch('MapManager', { level: this.constructor });
 
-        this.player = new PlayerManager(this);
+        this.mapManager = this.scene.get('MapManager');
+
+
+        this.player = new PlayerManager({sceneL: this});
         this.inventory = [];
 
         this.scene.launch('UIManager', {
             player: this.player,
-            inventory: this.inventory
+            inventory: this.inventory,
+            sceneL: this
         });
+    }
+
+    closeLevel(reason, time)
+    {
+        this.scene.stop('MapManager');
+        this.scene.stop('UIManager');
+
+        if(reason === 'return')
+        {
+            this.scene.start('MainMenu');
+        }
+        else if(reason === 'win')
+        {
+            this.scene.start('WinScreen', {sceneL: this.constructor, passTime: time});
+        }
+        else if(reason === 'lose')
+        {
+            this.scene.start('LoseScreen', {sceneL: this.constructor, passTime: time});
+        }
+        
     }
 }
