@@ -89,8 +89,9 @@ export default class UIManager extends Phaser.Scene {
         });
         const rightStartX = width - 340;
         this.createButton(rightStartX, startY, 'Merge', () => {
-            this.sceneL.closeLevel('lose', this.timeManager.getTime().toFixed(2));
-            
+            //temp test button
+            //this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
+            //this.player.updateHealth(5);
         });
 
         this.createButton(rightStartX + 170, startY, 'Inventory', () => {
@@ -166,6 +167,11 @@ export default class UIManager extends Phaser.Scene {
     update(time, delta) {
         this.timeManager.update(delta);
         this.updateUI();
+
+        if(this.player.isHealthZero())
+        {
+            this.sceneL.closeLevel('lose', this.timeManager.getTime().toFixed(2));
+        }
 
         const pointer = this.input.activePointer;
 
