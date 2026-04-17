@@ -301,6 +301,17 @@ export default class UIManager extends Phaser.Scene {
 
         }
 
+        if(this.wave === this.maxWave && this.enemyManager.getAliveCount() === 0) {
+            if(!this.levelClosed){
+                        this.levelClosed = true;
+                        this.time.delayedCall(5000, () => {
+                        this.towerManager.activeTowers.clear(true, true);
+                        this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
+                
+            });
+            }
+        }
+
         const pointer = this.input.activePointer;
         this.highlighter.clear();
         this.rangeCircle.clear();
@@ -475,21 +486,21 @@ export default class UIManager extends Phaser.Scene {
         // End wave after last spawn
         this.time.delayedCall(enemyCount * 500 + 1000, () => {
             this.endWave();
-            if(this.wave === this.maxWave)
-            {
-                this.time.delayedCall(20000, () => {
-                    if(!this.levelClosed){
-                        this.levelClosed = true;
-                        this.time.delayedCall(50, () => {
-                        this.towerManager.activeTowers.clear(true, true);
-                        this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
+            // if(this.wave === this.maxWave)
+            // {
+            //     this.time.delayedCall(20000, () => {
+            //         if(!this.levelClosed){
+            //             this.levelClosed = true;
+            //             this.time.delayedCall(50, () => {
+            //             this.towerManager.activeTowers.clear(true, true);
+            //             this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
                 
-            });
-            }
+            // });
+            // }
 
-            });
+            // });
 
-            }
+            // }
             
         });//enemyCount * 500 + 1000
 
