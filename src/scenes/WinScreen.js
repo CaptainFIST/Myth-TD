@@ -13,7 +13,7 @@ export default class WinScreen extends Phaser.Scene {
         this.add.rectangle(width / 2, height / 2, width, height, 0x000000)
             .setDepth(2999).setAlpha(0.85);
 
-        const levelNumber = data.level ?? 1;
+        const levelNumber = data.levelId ?? 1;
         const passTime = data.passTime ?? 0;
 
         const title = this.add.text(width / 2, height / 2 - 150, 'VICTORY!', {

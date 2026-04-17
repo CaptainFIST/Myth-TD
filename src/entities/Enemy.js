@@ -114,7 +114,7 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
 
     die() {
         if (this.scene.player) {
-            this.scene.player.updateGold(-this.reward);
+            this.scene.player.updateGold(this.reward);
         }
         if (this.healthBarBg) this.healthBarBg.destroy();
         if (this.healthBarFill) this.healthBarFill.destroy();
