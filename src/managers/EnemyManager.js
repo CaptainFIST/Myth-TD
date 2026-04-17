@@ -5,13 +5,10 @@ export default class EnemyManager {
     // ['Name', dmg, health, speed, gold, last Movement Frame] later frames
 
     static testData = [
-<<<<<<< HEAD
-        ['Oni', 4, 10, 1, 5, 15],
-        ['flying_fly', 2, 15, 1, 5, 5]
-=======
-        ['Oni', 1, 60, 1, 5],
-        ['flying_fly', 2, 75, 1, 5]
->>>>>>> experimental-EE
+
+        ['Oni', 1, 60, 1, 5, 15],
+        ['flying_fly', 2, 75, 1, 5, 5]
+
     ];
 
     constructor(scene) {

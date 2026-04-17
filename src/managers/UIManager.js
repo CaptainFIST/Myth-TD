@@ -75,12 +75,9 @@ export default class UIManager extends Phaser.Scene {
         });
 
         this.mapManager = this.scene.get('MapManager');
-<<<<<<< HEAD
 
-        this.time.delayedCall(1000, () => {
-=======
+
         this.time.delayedCall(500, () => {
->>>>>>> experimental-EE
             this.path = this.mapManager.worldPath;
             console.log(this.path);
         });
@@ -173,17 +170,25 @@ export default class UIManager extends Phaser.Scene {
                 this.updateInventoryUI();
             }
         });
+        //this.testB = false;
 
         const rightStartX = width - 340;
         this.createButton(rightStartX, startY, 'Merge', () => {
-<<<<<<< HEAD
+
             //temp test button
-            this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
+            if(!this.levelClosed){
+            this.levelClosed = true;
+            this.time.delayedCall(50, () => {
+                this.towerManager.activeTowers.clear(true, true);
+                this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
+                
+            });
+            }
             //this.player.updateHealth(5);
             //this.startWave();
-=======
-            this.player.updateHealth(5);
->>>>>>> experimental-EE
+            //this.testB = true;
+
+
         });
 
         this.createButton(rightStartX + 170, startY, 'Inventory', () => {
@@ -193,8 +198,9 @@ export default class UIManager extends Phaser.Scene {
         this.exitButton(rightStartX + 200, 0, 'Exit', () => {
             if (!this.levelClosed) {
                 this.levelClosed = true;
-                this.time.delayedCall(10, () => {
-                    this.sceneL.closeLevel('return');
+                this.time.delayedCall(50, () => {
+                    this.towerManager.activeTowers.clear(true, true);
+                    this.sceneL.closeLevel('return', 0);
                 });
             }
         });
@@ -285,18 +291,14 @@ export default class UIManager extends Phaser.Scene {
         this.timeManager.update(delta);
         this.updateUI();
 
-<<<<<<< HEAD
-        if(this.player.isHealthZero())
-        {
 
-            this.sceneL.closeLevel('lose', this.timeManager.getTime().toFixed(2));
-=======
         if (this.player.isHealthZero() && !this.levelClosed) {
             this.levelClosed = true;
             this.time.delayedCall(10, () => {
+                this.towerManager.activeTowers.clear(true, true);
                 this.sceneL.closeLevel('lose', this.timeManager.getTime().toFixed(2));
             });
->>>>>>> experimental-EE
+
         }
 
         const pointer = this.input.activePointer;

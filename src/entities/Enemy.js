@@ -6,10 +6,9 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
 
         this.name = stats[0];
         this.damage = stats[1];
-<<<<<<< HEAD
-=======
+
         this.maxHealth = stats[2];
->>>>>>> experimental-EE
+
         this.health = stats[2];
         this.speed = stats[3];
         this.reward = stats[4];
@@ -68,18 +67,13 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
     }
 
     reachedBase() {
-<<<<<<< HEAD
-        //console.log(`${this.name} reached the base!`);
 
-        // Damage player here later
-        this.scene.player.updateHealth(this.damage);
-=======
         if (this.scene.player && this.scene.player.updateHealth) {
             this.scene.player.updateHealth(this.damage);
         }
         if (this.healthBarBg) this.healthBarBg.destroy();
         if (this.healthBarFill) this.healthBarFill.destroy();
->>>>>>> experimental-EE
+
         this.destroy();
     }
 

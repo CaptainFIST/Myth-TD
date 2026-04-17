@@ -70,4 +70,6 @@ export default class TowerManager {
         this.activeTowers.add(tower);
         return tower;
     }
+
+    //this.towerManager.activeTowers.clear(true, true);
 }
