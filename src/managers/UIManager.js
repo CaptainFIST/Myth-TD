@@ -170,7 +170,7 @@ export default class UIManager extends Phaser.Scene {
                 this.updateInventoryUI();
             }
         });
-        //this.testB = false;
+        
 
         const rightStartX = width - 340;
         this.createButton(rightStartX, startY, 'Merge', () => {
@@ -186,7 +186,7 @@ export default class UIManager extends Phaser.Scene {
             }
             //this.player.updateHealth(5);
             //this.startWave();
-            //this.testB = true;
+            
 
 
         });
@@ -475,6 +475,22 @@ export default class UIManager extends Phaser.Scene {
         // End wave after last spawn
         this.time.delayedCall(enemyCount * 500 + 1000, () => {
             this.endWave();
+            if(this.wave === this.maxWave)
+            {
+                this.time.delayedCall(20000, () => {
+                    if(!this.levelClosed){
+                        this.levelClosed = true;
+                        this.time.delayedCall(50, () => {
+                        this.towerManager.activeTowers.clear(true, true);
+                        this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
+                
+            });
+            }
+
+            });
+
+            }
+            
         });//enemyCount * 500 + 1000
 
         
@@ -487,6 +503,7 @@ export default class UIManager extends Phaser.Scene {
         {
             this.wave++;
         }
+        
         //this.wave++;
         this.isWaveActive = false;
     }
