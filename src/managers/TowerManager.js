@@ -6,7 +6,7 @@ export default class TowerManager {
     static neutralData = [];
     static physicalData = [
         ['Izanami', 18, 2, 1.2, 2, 14],
-        ['Susanoo', 10, 3, 0.3, 6, 14]
+        ['Susanoo', 10, 3, 0.15, 6, 14]
     ];
     static airData = [];
     static waterData = [];
