@@ -53,7 +53,7 @@ export default class Tower extends Phaser.GameObjects.Sprite {
             const enemy = this.getClosestEnemy();
             if (enemy) {
                 enemy.takeDamage(this.damage);
-                console.log(`${this.name} hit ${enemy.name} for ${this.damage} damage! (${enemy.health} HP remaining)`);
+                //console.log(`${this.name} hit ${enemy.name} for ${this.damage} damage! (${enemy.health} HP remaining)`);
                 this.damageDealt = true;
             }
         }

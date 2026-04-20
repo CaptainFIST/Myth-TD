@@ -4,7 +4,7 @@ export default class MapManager extends Phaser.Scene {
     }
 
     create(data) {
-
+        this.levelData = data.level;
         const level = data.level;
         const mapData = level.mapData;
         const decoData = level.decoData;
@@ -24,7 +24,7 @@ export default class MapManager extends Phaser.Scene {
                     this.add.image(x, y, tileKey).setOrigin(0);
                 }
                 if (decoKey && !mapData[row][col]) {
-                    this.add.image(x, y, decoKey).setOrigin(0).setDepth(0.5);
+                    this.add.image(x + tileSize/2, y + tileSize, decoKey).setOrigin(0.5, 1).setDepth(0.5);
                 }
             }
         }
@@ -32,8 +32,8 @@ export default class MapManager extends Phaser.Scene {
         this.findOpening(mapData, 'Ex');
         this.mappedPath = this.findPath(mapData);
         this.worldPath = this.actualWorldPath(this.mappedPath);
-        console.log(this.mappedPath);
-        console.log(this.worldPath);
+        //console.log(this.mappedPath);
+        //console.log(this.worldPath);
     }
 
     findOpening(map, e) {

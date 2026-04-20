@@ -5,8 +5,8 @@ export default class TowerManager {
     // ['Name', dmg, range, attspd, lastIdleFrame, lastAttackFrame]
     static neutralData = [];
     static physicalData = [
-        ['Izanami', 25, 3, 1.2, 2, 14],
-        ['Susanoo', 12, 4, 0.25, 6, 14]
+        ['Izanami', 30, 3, 1.2, 2, 14],
+        ['Susanoo', 15, 4, 0.25, 6, 14]
     ];
     static airData = [];
     static waterData = [];
