@@ -42,7 +42,7 @@ export default class Tower extends Phaser.GameObjects.Sprite {
     }
 
     update(time, delta) {
-        if (time > this.nextTic && !this.isAttacking) {
+        if (time > this.nextTic) {
             const enemy = this.getClosestEnemy();
             if (enemy) {
                 this.fire(time, enemy);
@@ -53,7 +53,7 @@ export default class Tower extends Phaser.GameObjects.Sprite {
             const enemy = this.getClosestEnemy();
             if (enemy) {
                 enemy.takeDamage(this.damage);
-                console.log(`${this.name} hit ${enemy.name} for ${this.damage} damage! (${enemy.health} HP remaining)`);
+                //console.log(`${this.name} hit ${enemy.name} for ${this.damage} damage! (${enemy.health} HP remaining)`);
                 this.damageDealt = true;
             }
         }
@@ -63,29 +63,40 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         if (!this.scene.enemyManager) return null;
         
         const enemies = this.scene.enemyManager.activeEnemies.getChildren();
-        let closest = null;
-        let closestDist = this.range * 64; 
+        let leadEnemy = null;
+        let maxDistance = -1; 
+        const towerRangePx = this.range * 64;
         
         enemies.forEach(enemy => {
-            const dist = Phaser.Math.Distance.Between(
+            const distToTower = Phaser.Math.Distance.Between(
                 this.x, this.y,
                 enemy.x, enemy.y
             );
             
-            if (dist < closestDist) {
-                closestDist = dist;
-                closest = enemy;
+            if (distToTower <= towerRangePx) {
+                if (enemy.distanceTraveled > maxDistance) {
+                maxDistance = enemy.distanceTraveled;
+                leadEnemy = enemy;
+                }
             }
         });
-        return closest;
+
+        return leadEnemy;
     }
 
     fire(time, enemy) {
         this.isAttacking = true;
         this.damageDealt = false;
-        this.play(`${this.name}_attack`);
-        this.nextTic = time + (this.attackSpeed * 1000);
-        console.log(`${this.name} attacking ${enemy.name}!`);
+
+        const duration = this.attackSpeed * 1000;
+
+        this.play({
+            key: `${this.name}_attack`,
+            duration: duration
+        });
+
+        this.nextTic = time + duration;
+        //console.log(`${this.name} attacking ${enemy.name}!`);
     }
 
     destroy(fromScene) {

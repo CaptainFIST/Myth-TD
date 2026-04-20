@@ -79,7 +79,7 @@ export default class UIManager extends Phaser.Scene {
 
         this.time.delayedCall(500, () => {
             this.path = this.mapManager.worldPath;
-            console.log(this.path);
+            //console.log(this.path);
         });
 
         // this.createButton(200, 20, 'Spawn Enemy', () => {
@@ -170,25 +170,22 @@ export default class UIManager extends Phaser.Scene {
                 this.updateInventoryUI();
             }
         });
-        //this.testB = false;
+        
 
         const rightStartX = width - 340;
+
         this.createButton(rightStartX, startY, 'Merge', () => {
 
+            /*
             //temp test button
             if(!this.levelClosed){
             this.levelClosed = true;
             this.time.delayedCall(50, () => {
                 this.towerManager.activeTowers.clear(true, true);
                 this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
-                
             });
             }
-            //this.player.updateHealth(5);
-            //this.startWave();
-            //this.testB = true;
-
-
+            */
         });
 
         this.createButton(rightStartX + 170, startY, 'Inventory', () => {
@@ -291,47 +288,62 @@ export default class UIManager extends Phaser.Scene {
         this.timeManager.update(delta);
         this.updateUI();
 
-
         if (this.player.isHealthZero() && !this.levelClosed) {
             this.levelClosed = true;
             this.time.delayedCall(10, () => {
                 this.towerManager.activeTowers.clear(true, true);
                 this.sceneL.closeLevel('lose', this.timeManager.getTime().toFixed(2));
             });
+        }
 
+        // Wave completion logic...
+        if(this.wave === this.maxWave && this.enemyManager.getAliveCount() === 0) {
+            if(!this.levelClosed){
+                this.levelClosed = true;
+                this.time.delayedCall(5000, () => {
+                    this.towerManager.activeTowers.clear(true, true);
+                    this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
+                });
+            }
         }
 
         const pointer = this.input.activePointer;
         this.highlighter.clear();
         this.rangeCircle.clear();
 
+        // Check if mouse is within the playable grid area
         if (pointer.y < this.scale.height - 96) {
             const gridX = Math.floor(pointer.x / 64) * 64;
             const gridY = Math.floor(pointer.y / 64) * 64;
 
             if (this.selectedTower) {
-                this.highlighter.fillStyle(0x00ff00, 0.4);
+                // NEW: Check if the current tile is valid for placement
+                const canPlaceHere = this.isPlacementValid(gridX, gridY);
+
+                // Change color: Green for valid, Red for blocked
+                const color = canPlaceHere ? 0x00ff00 : 0xff0000;
+                this.highlighter.fillStyle(color, 0.4);
 
                 const towerStats = this.towerManager.getStatsByIndex(this.selectedTower);
                 if (towerStats) {
-                    const range = towerStats[2];
-                    const rangePixels = range * 64;
+                    const rangePixels = towerStats[2] * 64;
                     const centerX = gridX + 32;
                     const centerY = gridY + 32;
                     
-                    this.rangeCircle.lineStyle(2, 0x00ffff, 0.6);
+                    this.rangeCircle.lineStyle(2, canPlaceHere ? 0x00ffff : 0xff0000, 0.6);
                     this.rangeCircle.strokeCircle(centerX, centerY, rangePixels);
                     this.rangeCircle.setDepth(5);
                 }
 
+                // Cancel placement logic
                 if (pointer.rightButtonDown() || Phaser.Input.Keyboard.JustDown(this.escKey)) {
                     this.selectedTower = null;
                     this.rangeCircle.clear();
-                    console.log("Placement Cancelled.");
                     return;
                 }
 
-                if (pointer.isDown && !this.lastPointerDown && this.canPlace) {
+                // NEW: Only trigger createTower if canPlaceHere is true
+                if (pointer.isDown && !this.lastPointerDown && this.canPlace && canPlaceHere) {
                     this.towerManager.createTower(this.selectedTower, gridX, gridY);
 
                     const index = this.inventory.findIndex(item => item.type === this.selectedTower);
@@ -345,20 +357,11 @@ export default class UIManager extends Phaser.Scene {
             } else {
                 this.highlighter.fillStyle(0xffffff, 0.3);
             }
+            
             this.highlighter.fillRect(gridX, gridY, 64, 64);
-
-            /* Grid outline (optional):
-                this.highlighter.lineStyle(2, 0xffffff, 0.8);
-                this.highlighter.strokeRect(gridX, gridY, 64, 64);
-            */
-
-            /* Auto tower placement on click:
-                if (pointer.isDown && !this.lastPointerDown) {
-                    this.towerManager.createTower('p0', gridX, gridY);
-                }
-            */
         }
 
+        // Update managers
         this.towerManager.activeTowers.children.iterate(tower => {
             if (tower && tower.update) tower.update(time, delta);
         });
@@ -368,6 +371,37 @@ export default class UIManager extends Phaser.Scene {
         });
 
         this.lastPointerDown = pointer.isDown;
+    }
+
+    isPlacementValid(gridX, gridY) {
+        const col = Math.floor(gridX / 64);
+        const row = Math.floor(gridY / 64);
+
+        // Access static level data through the MapManager reference
+        const mapData = this.mapManager.levelData.mapData;
+        const decoData = this.mapManager.levelData.decoData;
+
+        // Safety check for out of bounds
+        if (!mapData[row] || mapData[row][col] === undefined) return false;
+
+        // 1. Block if tile is a Path (1), Entrance (2), or Exit (3)
+        // We only allow placement on Grass (0)
+        if (mapData[row][col] !== 0) return false;
+
+        // 2. Block if tile has a Decoration (e.g., Tree = 2)
+        if (decoData[row][col] !== 0) return false;
+
+        // 3. Block if a tower is already placed on this exact grid tile
+        const towers = this.towerManager.activeTowers.getChildren();
+        const alreadyOccupied = towers.some(t => {
+            const tCol = Math.floor(t.x / 64);
+            const tRow = Math.floor((t.y + 20) / 64); // Adjust for the vertical offset in Tower class
+            return tCol === col && tRow === row;
+        });
+
+        if (alreadyOccupied) return false;
+
+        return true;
     }
 
     updateUI() {
@@ -420,7 +454,7 @@ export default class UIManager extends Phaser.Scene {
                     this.canPlace = true;
                 });
 
-                console.log(`Selected ${iconKey} from inventory.`);
+                //console.log(`Selected ${iconKey} from inventory.`);
             });
         });
 
@@ -475,6 +509,22 @@ export default class UIManager extends Phaser.Scene {
         // End wave after last spawn
         this.time.delayedCall(enemyCount * 500 + 1000, () => {
             this.endWave();
+            // if(this.wave === this.maxWave)
+            // {
+            //     this.time.delayedCall(20000, () => {
+            //         if(!this.levelClosed){
+            //             this.levelClosed = true;
+            //             this.time.delayedCall(50, () => {
+            //             this.towerManager.activeTowers.clear(true, true);
+            //             this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
+                
+            // });
+            // }
+
+            // });
+
+            // }
+            
         });//enemyCount * 500 + 1000
 
         
@@ -487,6 +537,7 @@ export default class UIManager extends Phaser.Scene {
         {
             this.wave++;
         }
+        
         //this.wave++;
         this.isWaveActive = false;
     }

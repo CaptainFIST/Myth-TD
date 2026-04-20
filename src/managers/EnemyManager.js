@@ -6,7 +6,7 @@ export default class EnemyManager {
 
     static testData = [
 
-        ['Oni', 1, 10, 1, 5, 15],
+        ['Oni', 1, 60, 1, 5, 15],
         ['flying_fly', 2, 75, 1, 5, 5]
 
     ];
