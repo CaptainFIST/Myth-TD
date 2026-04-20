@@ -173,22 +173,19 @@ export default class UIManager extends Phaser.Scene {
         
 
         const rightStartX = width - 340;
+
         this.createButton(rightStartX, startY, 'Merge', () => {
 
+            /*
             //temp test button
             if(!this.levelClosed){
             this.levelClosed = true;
             this.time.delayedCall(50, () => {
                 this.towerManager.activeTowers.clear(true, true);
                 this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
-                
             });
             }
-            //this.player.updateHealth(5);
-            //this.startWave();
-            
-
-
+            */
         });
 
         this.createButton(rightStartX + 170, startY, 'Inventory', () => {

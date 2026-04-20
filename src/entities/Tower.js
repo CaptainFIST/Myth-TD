@@ -63,21 +63,25 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         if (!this.scene.enemyManager) return null;
         
         const enemies = this.scene.enemyManager.activeEnemies.getChildren();
-        let closest = null;
-        let closestDist = this.range * 64; 
+        let leadEnemy = null;
+        let maxDistance = -1; 
+        const towerRangePx = this.range * 64;
         
         enemies.forEach(enemy => {
-            const dist = Phaser.Math.Distance.Between(
+            const distToTower = Phaser.Math.Distance.Between(
                 this.x, this.y,
                 enemy.x, enemy.y
             );
             
-            if (dist < closestDist) {
-                closestDist = dist;
-                closest = enemy;
+            if (distToTower <= towerRangePx) {
+                if (enemy.distanceTraveled > maxDistance) {
+                maxDistance = enemy.distanceTraveled;
+                leadEnemy = enemy;
+                }
             }
         });
-        return closest;
+
+        return leadEnemy;
     }
 
     fire(time, enemy) {

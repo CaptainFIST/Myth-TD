@@ -21,6 +21,8 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
         this.healthBarFill = this.scene.add.graphics();
         this.updateHealthBar();
 
+        this.distanceTraveled = 0;
+
         if (!path || path.length === 0) {
             console.error(" Enemy spawned with invalid path:", path);
             return;
@@ -61,8 +63,11 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
         );
 
         const dt = delta / 16.6667;
-        this.x += Math.cos(angle) * this.speed * dt;
-        this.y += Math.sin(angle) * this.speed * dt;
+        const moveDist = this.speed * dt;
+        this.x += Math.cos(angle) * moveDist;
+        this.y += Math.sin(angle) * moveDist;
+
+        this.distanceTraveled += moveDist;
         this.updateHealthBar();
     }
 
