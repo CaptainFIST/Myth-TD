@@ -3,9 +3,14 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
         super(scene, 0, 0, stats[0], 0);
         this.scene = scene;
 
-        // Destructure stats: name, damage, health, speed, reward
-        [this.name, this.damage, this.maxHealth, this.speed, this.reward] = stats;
-        this.health = this.maxHealth;
+        this.name = stats[0];
+        this.damage = stats[1];
+
+        this.maxHealth = stats[2];
+
+        this.health = stats[2];
+        this.speed = stats[3];
+        this.reward = stats[4];
 
         scene.add.existing(this);
         this.setDepth(10).setScale(2);

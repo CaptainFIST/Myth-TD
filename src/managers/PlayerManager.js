@@ -30,9 +30,15 @@ export default class PlayerManager extends Phaser.Scene {
 
     updateGold(change) {
         if (change > 0) {
-            this.gold -= change;
-            console.log(`+${change} gold earned (Total: ${this.gold})`);
-            return;
+            this.gold += change;
+            //console.log(`+${change} gold earned (Total: ${this.gold})`);
+        } else if (change < 0) {
+            if (Math.abs(change) <= this.gold) {
+                this.gold += change;
+                //console.log(`-${Math.abs(change)} gold spent (Total: ${this.gold})`);
+            } else {
+                console.log('Not enough gold!');
+            }
         }
 
         if (Math.abs(change) > this.gold) {

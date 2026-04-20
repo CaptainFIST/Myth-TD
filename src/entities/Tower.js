@@ -66,7 +66,8 @@ export default class Tower extends Phaser.GameObjects.Sprite {
                 closest = e;
             }
         });
-        return closest;
+
+        return leadEnemy;
     }
 
     fire(time, enemy) {
@@ -124,4 +125,11 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         this.projectiles?.clear(true, true);
         super.destroy(fromScene);
     }
+
+    super.destroy(fromScene);
+    }
 }
+
+/** 
+ 
+*/
