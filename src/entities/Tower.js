@@ -1,97 +1,127 @@
 export default class Tower extends Phaser.GameObjects.Sprite {
     constructor(scene, stats) {
         super(scene, 0, 0, stats[0], 0);
-
         this.scene = scene;
-        this.name = stats[0];
-        this.damage = stats[1];
-        this.range = stats[2];
-        this.attackSpeed = stats[3];
 
-        this.pedestal = this.scene.add.image(0, 0, 'Pedestal');
-        this.pedestal.setDepth(9);
+        // Destructure tower stats: name, damage, range, attack speed
+        [this.name, this.damage, this.range, this.attackSpeed] = stats;
+        this.attackDelay = this.attackSpeed * 1000;
+        this.pedestal = scene.add.image(0, 0, 'Pedestal').setDepth(9);
 
-        this.nextTic = this.scene.time.now + (this.attackSpeed * 1000);
+        // Attack state control
+        this.nextTic = scene.time.now + this.attackDelay;
         this.isAttacking = false;
-        this.damageDealt = false; 
+        this.damageDealt = false;
+        this.projectiles = scene.add.group();
 
-        this.scene.add.existing(this);
-        this.setDepth(10);
-        this.setScale(2);
-        this.play(`${this.name}_idle`);
+        scene.add.existing(this);
+        this.setDepth(10).setScale(2).play(`${this.name}_idle`);
 
-        this.on('animationcomplete', (animation) => {
-            if (animation.key === `${this.name}_attack`) {
+        // When attack animation ends, reset state back to idle
+        this.on('animationcomplete', ({ key }) => {
+            if (key === `${this.name}_attack`) {
                 this.isAttacking = false;
-                this.damageDealt = false; 
+                this.damageDealt = false;
                 this.play(`${this.name}_idle`);
             }
         });
     }
 
     place(x, y) {
-        const centerX = x + 32;
-        const centerY = y + 32;
-
-        const verticalOffset = 20;
-        this.x = centerX;
-        this.y = centerY - verticalOffset;
-
-        this.pedestal.setPosition(centerX, centerY);
-        this.nextTic = this.scene.time.now + (this.attackSpeed * 1000);
+        const cx = x + 32, cy = y + 32;
+        this.setPosition(cx, cy - 20);
+        this.pedestal.setPosition(cx, cy);
+        this.nextTic = this.scene.time.now + this.attackDelay;
     }
 
     update(time, delta) {
-        if (time > this.nextTic && !this.isAttacking) {
-            const enemy = this.getClosestEnemy();
-            if (enemy) {
-                this.fire(time, enemy);
-            }
+        const enemy = this.getClosestEnemy();
+
+        // Attack if ready and not already attacking
+        if (time > this.nextTic && !this.isAttacking && enemy) {
+            this.fire(time, enemy);
         }
-        
-        if (this.isAttacking && !this.damageDealt) {
-            const enemy = this.getClosestEnemy();
-            if (enemy) {
-                enemy.takeDamage(this.damage);
-                console.log(`${this.name} hit ${enemy.name} for ${this.damage} damage! (${enemy.health} HP remaining)`);
-                this.damageDealt = true;
-            }
+
+        // Deal damage once per attack (except projectile towers)
+        if (this.isAttacking && !this.damageDealt && enemy && this.name !== 'Susanoo') {
+            enemy.takeDamage(this.damage);
+            this.damageDealt = true;
         }
+        this.projectiles.children.each(p => p.active && this.updateProjectile(p, delta));
     }
 
     getClosestEnemy() {
-        if (!this.scene.enemyManager) return null;
-        
-        const enemies = this.scene.enemyManager.activeEnemies.getChildren();
+        // Safely access enemy list
+        const enemies = this.scene.enemyManager?.activeEnemies.getChildren();
+        if (!enemies) return null;
+
         let closest = null;
-        let closestDist = this.range * 64; 
-        
-        enemies.forEach(enemy => {
-            const dist = Phaser.Math.Distance.Between(
-                this.x, this.y,
-                enemy.x, enemy.y
-            );
-            
-            if (dist < closestDist) {
-                closestDist = dist;
-                closest = enemy;
+        let minDist = this.range * 64; // Convert tile range to pixels
+
+        // Find nearest enemy within range
+        enemies.forEach(e => {
+            const d = Phaser.Math.Distance.Between(this.x, this.y, e.x, e.y);
+            if (d < minDist) {
+                minDist = d;
+                closest = e;
             }
         });
         return closest;
     }
 
     fire(time, enemy) {
+        // Start attack animation and reset damage flag
         this.isAttacking = true;
         this.damageDealt = false;
         this.play(`${this.name}_attack`);
-        this.nextTic = time + (this.attackSpeed * 1000);
-        console.log(`${this.name} attacking ${enemy.name}!`);
+        this.nextTic = time + this.attackDelay;
+        if (this.name === 'Susanoo') this.fireProjectile(enemy);
+    }
+
+    fireProjectile(target) {
+        // Create projectile sprite and play animation
+        const p = this.scene.add.sprite(this.x, this.y, 'Susanoo_Stripe')
+            .setDepth(5).setScale(1.5).play('Susanoo_Stripe_projectile');
+        Object.assign(p, {
+            targetEnemy: target,
+            tower: this,
+            speed: 300,
+            hasHit: false
+        });
+        this.projectiles.add(p);
+    }
+
+    updateProjectile(p, delta) {
+        const t = p.targetEnemy;
+        if (!t?.active) return p.destroy();
+
+        // Move projectile toward target
+        const angle = Phaser.Math.Angle.Between(p.x, p.y, t.x, t.y);
+        const move = p.speed * (delta / 1000);
+        p.x += Math.cos(angle) * move;
+        p.y += Math.sin(angle) * move;
+        p.rotation = angle;
+
+        // Check collision with target
+        if (!p.hasHit && Phaser.Math.Distance.Between(p.x, p.y, t.x, t.y) < 20) {
+            p.hasHit = true;
+            t.takeDamage(p.tower.damage);
+            return p.destroy();
+        }
+
+        // Remove projectile if it goes off screen
+        const { width, height } = this.scene.scale;
+        if (p.x < -100 || p.x > width + 100 || p.y < -100 || p.y > height + 100) {
+            p.destroy();
+        }
     }
 
     destroy(fromScene) {
-        if (this.pedestal) {
-            this.pedestal.destroy();
-        }
+        // Prevent double-destroy bugs
+        if (this._destroyed) return;
+        this._destroyed = true;
+        this.pedestal?.destroy();
+        this.projectiles?.clear(true, true);
         super.destroy(fromScene);
     }
 }

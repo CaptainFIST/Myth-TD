@@ -57,7 +57,8 @@ export default class Level1 extends Phaser.Scene {
         this.load.image('path', 'assets/tiles/level1/dirt_path.png');
         this.load.image('tree', 'assets/decorations/tree1.png');
     }
-
+    
+    // Initialize the level when scene starts
     create() {
         this.scene.launch('MapManager', { level: Level1 });
 

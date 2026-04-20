@@ -1,6 +1,8 @@
-import TimeManager from '../managers/TimeManager.js';
-import TowerManager from '../managers/TowerManager.js';
-import EnemyManager from '../managers/EnemyManager.js';
+import TimeManager from './TimeManager.js';
+import TowerManager from './TowerManager.js';
+import EnemyManager from './EnemyManager.js';
+import WaveManager from './WaveManager.js';
+import InventoryManager from './InventoryManager.js';
 
 export default class UIManager extends Phaser.Scene {
     constructor() {
@@ -13,7 +15,6 @@ export default class UIManager extends Phaser.Scene {
                 frameWidth: 64,
                 frameHeight: 64
             });
-
             this.load.image(`${tower[0]}_Icon`, `assets/tower/TowerIcon/${tower[0]}_Icon.png`);
         });
 
@@ -24,12 +25,18 @@ export default class UIManager extends Phaser.Scene {
             });
         });
 
+        // Load ability stripes as spritesheets for projectiles
+        this.load.spritesheet('Susanoo_Stripe', 'assets/Abilities/susanoo_water.png', {
+            frameWidth: 64,
+            frameHeight: 64
+        });
+
         this.load.image('UI', 'assets/UI/UI.png');
         this.load.image('UIHP', 'assets/UI/UIHP.png');
         this.load.image('Inventory', 'assets/UI/Inventory.png');
-        //this.load.image('TowerIcon', 'assets/tower/TowerIcon/Izanami.png');
+        this.load.image('pausebutton', 'assets/UI/pausebutton.png');
+        this.load.image('sidebar', 'assets/UI/sidebar.png');
         this.load.image('Pedestal', 'assets/Tower Placement/tower_placement.png');
-
     }
 
     create(data) {
@@ -37,80 +44,55 @@ export default class UIManager extends Phaser.Scene {
         this.escKey = this.input.keyboard.addKey('ESC');
         this.canPlace = true;
         this.levelClosed = false;
-        this.rangeCircle = this.add.graphics(); 
-        this.selectedTower = null; 
+        this.time.paused = false;
+        this.rangeCircle = this.add.graphics();
 
+        // Initialize managers
         this.towerManager = new TowerManager(this);
-        this.towerManager.physical.forEach(stats => {
-            const name = stats[0];
-            const lastIdle = stats[4];
-            const lastAttack = stats[5];
-
-            this.anims.create({
-                key: `${name}_idle`,
-                frames: this.anims.generateFrameNumbers(name, { start: 0, end: lastIdle }),
-                frameRate: 6,
-                repeat: -1
-            });
-
-            this.anims.create({
-                key: `${name}_attack`,
-                frames: this.anims.generateFrameNumbers(name, { start: lastIdle + 1, end: lastAttack }),
-                frameRate: 12,
-                repeat: 0
-            });
-        });
-
+        this.towerManager.createAnimations();
+        this.createProjectileAnimations();
         this.enemyManager = new EnemyManager(this);
-        EnemyManager.testData.forEach(stats => {
-            const name = stats[0];
-
-            this.anims.create({
-                key: `${name}_walk`,
-                frames: this.anims.generateFrameNumbers(name, { start: 0, end: 5 }),
-                frameRate: 8,
-                repeat: -1
-            });
-        });
-
+        this.enemyManager.createAnimations();
         this.mapManager = this.scene.get('MapManager');
-        this.time.delayedCall(500, () => {
-            this.path = this.mapManager.worldPath;
-            console.log(this.path);
-        });
-
-        this.createButton(200, 20, 'Spawn Enemy', () => {
-            if (!this.path) {
-                console.log("Path not ready yet!");
-                return;
-            }
-
-            this.enemyManager.createEnemy(0, this.path);
-        });
-
-        this.grid = this.add.graphics();
-        this.highlighter = this.add.graphics();
-        const width = this.scale.width;
-        const height = this.scale.height;
-        this.sceneL = data.sceneL;
-
-        this.highlighter.setDepth(1);
-        this.grid.setDepth(0);
-        this.drawGrid(width, height);
-
+        this.waveManager = new WaveManager(this, this.enemyManager);
         this.player = data.player;
-        this.inventory = data.inventory;
+        this.sceneL = data.sceneL;
         this.timeManager = new TimeManager();
 
+        // Setup grid and graphics
+        this.time.delayedCall(500, () => {
+            this.path = this.mapManager.worldPath;
+            this.waveManager.setPath(this.path);
+        });
+
+        this.grid = this.mapManager.drawGrid(this.scale.width, this.scale.height);
+        this.highlighter = this.add.graphics().setDepth(1);
+
+        // Setup all UI systems
+        this.setupUIElements();
+        this.setupBottomButtons();
+        this.setupPauseSystem();
+        this.setupGameEvents();
+    }
+
+    setupUIElements() {
+        const width = this.scale.width;
+        const height = this.scale.height;
         const uiX = width / 2;
         const uiY = height - 49;
-        this.add.image(uiX, uiY, 'UI').setScale(1.7);
 
+        this.add.image(uiX, uiY, 'UI').setScale(1.7);
+        this.setupHealthDisplay(uiX, uiY);
+        this.setupStatusTexts(uiX, uiY);
+        this.setupInventory(width, height);
+    }
+
+    setupHealthDisplay(uiX, uiY) {
         this.hpMax = 20;
         this.hpFrameX = 250;
         this.hpFrameY = uiY + 10;
+        
         this.add.image(this.hpFrameX, this.hpFrameY, 'UIHP').setDepth(2);
-
         this.hpRadius = 78 / 2;
         this.hpContainer = this.add.container(0, 0).setDepth(1);
         this.hpFill = this.add.graphics();
@@ -123,85 +105,138 @@ export default class UIManager extends Phaser.Scene {
 
         const mask = this.hpMaskShape.createGeometryMask();
         this.hpContainer.setMask(mask);
+        
         this.healthText = this.add.text(this.hpFrameX, this.hpFrameY, '', {
-            fontSize: '16px',
-            color: '#000',
-            fontStyle: 'bold'
+            fontSize: '16px', color: '#000', fontStyle: 'bold'
         }).setOrigin(0.5).setDepth(3);
+    }
 
-
+    setupStatusTexts(uiX, uiY) {
         this.goldText = this.add.text(uiX - 250, uiY + 10, '', {
-            fontSize: '20px',
-            color: '#ffd700',
-            fontStyle: 'bold'
+            fontSize: '20px', color: '#ffd700', fontStyle: 'bold'
         }).setDepth(3);
 
         this.timerText = this.add.text(uiX, uiY + 10, '', {
-            fontSize: '20px',
-            color: '#ffffff'
+            fontSize: '20px', color: '#ffffff'
         }).setOrigin(0.5).setDepth(3);
 
-        this.wave = 1;
         this.waveText = this.add.text(uiX + 150, uiY + 10, '', {
-            fontSize: '20px',
-            color: '#64d5ff'
+            fontSize: '20px', color: '#64d5ff'
         }).setDepth(3);
 
+        this.waveManager.initialize(this.waveText, this.path);
+    }
+
+    setupInventory(width, height) {
         this.inventoryImage = this.add.image(width - 430, height - 340, 'Inventory')
             .setOrigin(0).setDepth(50).setVisible(false);
         this.towerIcons = this.add.group();
 
-        const startY = height - 80;
-        this.createButton(20, startY, 'Purchase Tower\n50 g', () => {
-            if (this.player.gold >= 50) {
-                this.player.updateGold(-50);
-
-                const rolledTower = this.towerManager.getRandomTowerIndex();
-                this.inventory.push({ type: rolledTower });
-                console.log(`Rolled a new tower: ${rolledTower}`);
-
-                this.updateInventoryUI();
-            }
+        this.inventoryManager = new InventoryManager(this, this.towerManager, this.sceneL.player.inventory);
+        this.inventoryManager.initialize(this.inventoryImage, this.towerIcons);
+        this.inventoryManager.setTowerSelectedCallback(() => {
+            this.canPlace = false;
+            this.time.delayedCall(100, () => this.canPlace = true);
         });
 
-        const rightStartX = width - 340;
-        this.createButton(rightStartX, startY, 'Merge', () => {
-            this.player.updateHealth(5);
-        });
-
-        this.createButton(rightStartX + 170, startY, 'Inventory', () => {
-            this.toggleInventory();
-        });
-
-        this.exitButton(rightStartX + 200, 0, 'Exit', () => {
+        this.waveManager.setOnGameCompleteCallback(() => {
             if (!this.levelClosed) {
                 this.levelClosed = true;
-                this.time.delayedCall(10, () => {
-                    this.sceneL.closeLevel('return');
+                this.time.delayedCall(50, () => {
+                    this.towerManager.activeTowers.clear(true, true);
+                    this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
                 });
             }
         });
+    }
 
+    createProjectileAnimations() {
+        // Create animation for Susanoo water ball projectile
+        this.anims.create({
+            key: 'Susanoo_Stripe_projectile',
+            frames: this.anims.generateFrameNumbers('Susanoo_Stripe', { start: 0, end: 5 }),
+            frameRate: 10,
+            repeat: -1
+        });
+    }
+
+    setupBottomButtons() {
+        const width = this.scale.width;
+        const height = this.scale.height;
+        const startY = height - 80;
+        const rightStartX = width - 340;
+
+        this.createButton(20, startY, 'Purchase Tower\n50 g', () => {
+            if (this.player.gold >= 50) {
+                this.player.updateGold(-50);
+                const rolledTower = this.towerManager.getRandomTowerIndex();
+                this.inventoryManager.addTower(rolledTower);
+                this.inventoryManager.updateInventoryUI();
+            }
+        });
+
+        this.createButton(rightStartX, startY, 'Merge', () => {
+            if(!this.levelClosed){
+                this.levelClosed = true;
+                this.towerManager.activeTowers.clear(true, true);
+                this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
+            }
+        });
+
+        this.createButton(rightStartX + 170, startY, 'Inventory', () => {
+            this.inventoryManager.toggleInventory();
+        });
+
+        this.setupControlButtons(rightStartX);
+    }
+
+    setupControlButtons(rightStartX) {
+        const pauseBtn = this.add.image(rightStartX + 200, 10, 'pausebutton')
+            .setOrigin(0.5, 0).setScale(0.1).setInteractive({ useHandCursor: true }).setDepth(60);
+        pauseBtn.on('pointerdown', () => this.toggleSimplePause());
+
+        const sidebarBtn = this.add.image(rightStartX + 300, 10, 'sidebar')
+            .setOrigin(0.5, 0).setScale(0.2).setInteractive({ useHandCursor: true }).setDepth(60);
+        sidebarBtn.on('pointerdown', () => this.togglePauseMenu());
+    }
+
+    setupPauseSystem() {
+        this.pauseOverlay = this.add.rectangle(this.scale.width / 2, this.scale.height / 2, this.scale.width, this.scale.height, 0x000000, 0.7)
+            .setOrigin(0.5).setDepth(200).setVisible(false);
+
+        this.pauseText = this.add.text(this.scale.width / 2, this.scale.height / 2 - 100, 'PAUSE', {
+            fontSize: '120px', color: '#ffffff', fontStyle: 'bold'
+        }).setOrigin(0.5).setDepth(201).setVisible(false);
+
+        const centerX = this.scale.width / 2;
+        const baseY = this.scale.height / 2 + 50;
+        this.pauseButtons = [];
+        
+        this.pauseButtons.push(this.createPauseButton(centerX, baseY, 'Resume', () => this.togglePauseMenu()));
+        this.pauseButtons.push(this.createPauseButton(centerX, baseY + 80, 'Main Menu', () => {
+            if (!this.levelClosed) {
+                this.levelClosed = true;
+                this.towerManager.activeTowers.clear(true, true);
+                this.sceneL.closeLevel('return', 0);
+            }
+        }));
+    }
+
+    setupGameEvents() {
         this.updateUI();
         this.time.addEvent({
             delay: this.player.incInterval, 
             loop: true,
-            callback: () => {
-                this.player.income();
-            }
+            callback: () => this.player.income()
         });
+        this.waveManager.startWaveCycle(this, 5, 2000, 10000, 3);
     }
 
-    createButton(x, y, label, onClick) {
-        const bg = this.add.rectangle(x, y, 160, 80, 0x000000)
-            .setOrigin(0).setStrokeStyle(2, 0xffffff)
-            .setInteractive({ useHandCursor: true }).setDepth(60);
-
-        const text = this.add.text(x + 80, y + 40, label, {
-            fontSize: '16px',
-            color: '#ffffff',
-            fontStyle: 'bold',
-            align: 'center'
+    createButton(x, y, label, onClick, width = 160, height = 80) {
+        const bg = this.add.rectangle(x, y, width, height, 0x000000)
+            .setOrigin(0).setStrokeStyle(2, 0xffffff).setInteractive({ useHandCursor: true }).setDepth(60);
+        const text = this.add.text(x + width / 2, y + height / 2, label, {
+            fontSize: '16px', color: '#ffffff', fontStyle: 'bold', align: 'center'
         }).setOrigin(0.5).setDepth(61);
 
         bg.on('pointerover', () => bg.setFillStyle(0x222222));
@@ -210,112 +245,126 @@ export default class UIManager extends Phaser.Scene {
         return { bg, text };
     }
 
-    exitButton(x, y, label, onClick) {
-        const bg = this.add.rectangle(x, y, 100, 70, 0x000000)
-            .setOrigin(0).setStrokeStyle(2, 0xffffff)
-            .setInteractive({ useHandCursor: true }).setDepth(60);
+    createButtonWithText(x, y, label, onClick, width = 160, height = 80) {
+        const bg = this.add.rectangle(x, y, width, height, 0x333333)
+            .setOrigin(0.5).setStrokeStyle(2, 0xffffff).setInteractive({ useHandCursor: true });
+        const text = this.add.text(x, y, label, {
+            fontSize: '18px', color: '#ffffff', fontStyle: 'bold', align: 'center'
+        }).setOrigin(0.5);
 
-        const text = this.add.text(x + 50, y + 30, label, {
-            fontSize: '16px',
-            color: '#ffffff',
-            fontStyle: 'bold',
-            align: 'center'
-        }).setOrigin(0.5).setDepth(61);
-
-        bg.on('pointerover', () => bg.setFillStyle(0x222222));
-        bg.on('pointerout', () => bg.setFillStyle(0x000000));
+        bg.on('pointerover', () => bg.setFillStyle(0x555555));
+        bg.on('pointerout', () => bg.setFillStyle(0x333333));
         bg.on('pointerdown', onClick);
         return { bg, text };
     }
 
-    drawGrid(width, height) {
-        // grid transparent (., ., 0), change 0 to up-to 1 for solid grid
-        this.grid.lineStyle(1, 0x0000ff, 0.1);
+    createPauseButton(x, y, label, onClick, width = 200, height = 60) {
+        const btn = this.createButtonWithText(x, y, label, onClick, width, height);
+        btn.bg.setDepth(202).setVisible(false);
+        btn.text.setDepth(202).setVisible(false);
+        btn.setVisible = (v) => {
+            btn.bg.setVisible(v);
+            btn.text.setVisible(v);
+        };
+        return btn;
+    }
 
-        for(var i = 0; i < ((height - 96) / 64); i++) {
-            this.grid.moveTo(0, i * 64);
-            this.grid.lineTo(width, i * 64);
+    togglePause() {
+        this.timeManager.togglePause();
+        const isPaused = this.timeManager.isPaused();
+        this.time.paused = isPaused;
+        
+        if (isPaused) {
+            this.enemyManager.pause();
+            this.towerManager.pause();
+        } else {
+            this.enemyManager.resume();
+            this.towerManager.resume();
         }
+    }
 
-        for(var j = 0; j < (width / 64); j++) {
-            this.grid.moveTo(j * 64, 0);
-            this.grid.lineTo(j * 64, height);
-        }
+    toggleSimplePause() {
+        this.togglePause();
+        const isPaused = this.timeManager.isPaused();
+        this.pauseOverlay.setVisible(isPaused);
+        this.pauseText.setVisible(isPaused);
+    }
 
-        this.grid.strokePath();
+    togglePauseMenu() {
+        this.togglePause();
+        const isPaused = this.timeManager.isPaused();
+        this.pauseOverlay.setVisible(isPaused);
+        this.pauseButtons.forEach(btn => btn.setVisible(isPaused));
     }
 
     update(time, delta) {
         if (this.levelClosed) return;
-
         this.timeManager.update(delta);
         this.updateUI();
 
         if (this.player.isHealthZero() && !this.levelClosed) {
             this.levelClosed = true;
             this.time.delayedCall(10, () => {
+                this.towerManager.activeTowers.clear(true, true);
                 this.sceneL.closeLevel('lose', this.timeManager.getTime().toFixed(2));
             });
         }
 
-        const pointer = this.input.activePointer;
+        if (this.timeManager.isPaused()) return;
+        this.handleTowerPlacement();
+        this.updateGameEntities(time, delta);
+    }
+
+    handleTowerPlacement() {
         this.highlighter.clear();
         this.rangeCircle.clear();
 
+        const pointer = this.input.activePointer;
         if (pointer.y < this.scale.height - 96) {
             const gridX = Math.floor(pointer.x / 64) * 64;
             const gridY = Math.floor(pointer.y / 64) * 64;
 
-            if (this.selectedTower) {
-                this.highlighter.fillStyle(0x00ff00, 0.4);
-
-                const towerStats = this.towerManager.getStatsByIndex(this.selectedTower);
-                if (towerStats) {
-                    const range = towerStats[2];
-                    const rangePixels = range * 64;
-                    const centerX = gridX + 32;
-                    const centerY = gridY + 32;
-                    
-                    this.rangeCircle.lineStyle(2, 0x00ffff, 0.6);
-                    this.rangeCircle.strokeCircle(centerX, centerY, rangePixels);
-                    this.rangeCircle.setDepth(5);
-                }
-
-                if (pointer.rightButtonDown() || Phaser.Input.Keyboard.JustDown(this.escKey)) {
-                    this.selectedTower = null;
-                    this.rangeCircle.clear();
-                    console.log("Placement Cancelled.");
-                    return;
-                }
-
-                if (pointer.isDown && !this.lastPointerDown && this.canPlace) {
-                    this.towerManager.createTower(this.selectedTower, gridX, gridY);
-
-                    const index = this.inventory.findIndex(item => item.type === this.selectedTower);
-                    if (index > -1) this.inventory.splice(index, 1);
-
-                    this.selectedTower = null;
-                    this.rangeCircle.clear();
-                    this.canPlace = false;
-                    this.updateInventoryUI();
-                }
+            if (this.towerManager.hasSelectedTower()) {
+                this.drawTowerPlacementUI(gridX, gridY, pointer);
             } else {
                 this.highlighter.fillStyle(0xffffff, 0.3);
             }
             this.highlighter.fillRect(gridX, gridY, 64, 64);
+        }
+    }
 
-            /* Grid outline (optional):
-                this.highlighter.lineStyle(2, 0xffffff, 0.8);
-                this.highlighter.strokeRect(gridX, gridY, 64, 64);
-            */
+    drawTowerPlacementUI(gridX, gridY, pointer) {
+        this.highlighter.fillStyle(0x00ff00, 0.4);
 
-            /* Auto tower placement on click:
-                if (pointer.isDown && !this.lastPointerDown) {
-                    this.towerManager.createTower('p0', gridX, gridY);
-                }
-            */
+        const towerStats = this.towerManager.getSelectedTowerStats();
+        if (towerStats) {
+            const range = towerStats[2];
+            const rangePixels = range * 64;
+            const centerX = gridX + 32;
+            const centerY = gridY + 32;
+            
+            this.rangeCircle.lineStyle(2, 0x00ffff, 0.6);
+            this.rangeCircle.strokeCircle(centerX, centerY, rangePixels);
+            this.rangeCircle.setDepth(5);
         }
 
+        if (pointer.rightButtonDown() || Phaser.Input.Keyboard.JustDown(this.escKey)) {
+            this.towerManager.deselectTower();
+            this.rangeCircle.clear();
+            return;
+        }
+
+        if (pointer.isDown && !this.lastPointerDown && this.canPlace) {
+            this.towerManager.createTower(this.towerManager.getSelectedTower(), gridX, gridY);
+            this.inventoryManager.removeTower(this.towerManager.getSelectedTower());
+            this.towerManager.deselectTower();
+            this.rangeCircle.clear();
+            this.canPlace = false;
+            this.inventoryManager.updateInventoryUI();
+        }
+    }
+
+    updateGameEntities(time, delta) {
         this.towerManager.activeTowers.children.iterate(tower => {
             if (tower && tower.update) tower.update(time, delta);
         });
@@ -324,63 +373,15 @@ export default class UIManager extends Phaser.Scene {
             if (enemy && enemy.update) enemy.update(time, delta);
         });
 
-        this.lastPointerDown = pointer.isDown;
+        this.lastPointerDown = this.input.activePointer.isDown;
     }
 
     updateUI() {
         if (!this.player) return;
         this.goldText.setText(`Gold: ${this.player.gold}`);
-        
-        const time = this.timeManager.getTime().toFixed(2);
-        this.timerText.setText(`Time: ${time}s`);
-        this.waveText.setText(`Wave: ${this.wave}`);
+        this.timerText.setText(`Time: ${this.timeManager.getTime().toFixed(2)}s`);
+        this.waveManager.updateWaveText();
         this.updateHealthCircle(this.player.playerHealth);
-    }
-
-    toggleInventory() {
-        const visible = !this.inventoryImage.visible;
-        this.inventoryImage.setVisible(visible);
-        this.updateInventoryUI();
-    }
-
-    updateInventoryUI() {
-        this.towerIcons.clear(true, true);
-        if (!this.inventoryImage.visible) return;
-
-        const startX = this.inventoryImage.x + 20;
-        const startY = this.inventoryImage.y + 20;
-        const size = 50;
-        const gap = 10;
-
-        this.inventory.forEach((item, i) => {
-            const row = Math.floor(i / 9);
-            const col = i % 9;
-            const x = startX + col * (size + gap);
-            const y = startY + row * (size + gap);
-
-            const stats = this.towerManager.getStatsByIndex(item.type);
-            const iconKey = stats ? `${stats[0]}_Icon` : 'DefaultIcon';
-
-            const icon = this.add.image(x, y, iconKey)
-                .setDisplaySize(size, size)
-                .setDepth(51)
-                .setInteractive({ useHandCursor: true });
-
-            this.towerIcons.add(icon);
-
-            icon.on('pointerdown', () => {
-                this.selectedTower = item.type;
-                this.toggleInventory();
-
-                this.canPlace = false;
-                this.time.delayedCall(100, () => {
-                    this.canPlace = true;
-                });
-
-                console.log(`Selected ${iconKey} from inventory.`);
-            });
-        });
-
     }
 
     updateHealthCircle(currentHP) {
@@ -400,7 +401,6 @@ export default class UIManager extends Phaser.Scene {
             radius * 2,
             fillHeight
         );
-
         this.healthText.setText(`${currentHP} / ${this.hpMax}`);
     }
 }
