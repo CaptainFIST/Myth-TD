@@ -1,32 +1,21 @@
-export default class PlayerManager {
-    constructor(scene) {
-        this.scene = scene;
+export default class PlayerManager extends Phaser.Scene {
+    constructor(data) {
+        super({ key: 'PlayerManager' });
         this.gold = 150;
         this.playerHealth = 20;
 
         this.goldPerSec = 2;
         this.incInterval = 1000;
 
-        if(scene != null)
+        if(data != null)
         {
-            console.log(this.scene);
-            
+            console.log(data);
+            this.sceneL = data.sceneL;
         }
-        
-
-
-
     }
-
-    
-
 
     income() {
         this.gold += this.goldPerSec;
-        
-        //console.log(`🌾 Farm income: +${this.goldPerSec} gold (Total: ${this.gold})`);
-        
-        
     }
 
     updateHealth(damage) {
@@ -38,19 +27,24 @@ export default class PlayerManager {
     }
 
     updateGold(change) {
-        
-        if(change > 0)
-        {
-            this.gold -= change;
-            console.log(`${change} gold added`);
-        }
-        else if(change < 0)
-        {
-            if(Math.abs(change) <= this.gold)
-            {
+        if (change > 0) {
+            this.gold += change;
+            console.log(`+${change} gold earned (Total: ${this.gold})`);
+        } else if (change < 0) {
+            if (Math.abs(change) <= this.gold) {
                 this.gold += change;
-                console.log(`${change} used`);
+                console.log(`-${Math.abs(change)} gold spent (Total: ${this.gold})`);
+            } else {
+                console.log('Not enough gold!');
             }
+        }
+    }
+
+    status(condition) {
+        if (condition === 'win') {
+            this.sceneL.closeLevel('win', 0);
+        } else if (condition === 'lose') {
+            this.sceneL.closeLevel('lose', 0);
         }
     }
 

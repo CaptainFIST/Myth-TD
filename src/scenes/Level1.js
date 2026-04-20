@@ -5,6 +5,8 @@ export default class Level1 extends Phaser.Scene {
         super({ key: 'Level1' });
     }
 
+    static level = 1;
+
     static mapData = [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [2,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -39,13 +41,14 @@ export default class Level1 extends Phaser.Scene {
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     ];
 
-    static tileTypes = { 
-        0: 'grass', 
+    static tileTypes = {
+        0: 'grass',
         1: 'path',
         2: 'path',
         3: 'path'
     };
-    static decoTypes = { 
+
+    static decoTypes = {
         2: 'tree'
     };
 
@@ -56,14 +59,35 @@ export default class Level1 extends Phaser.Scene {
     }
 
     create() {
-        this.scene.launch('MapManager', { level: this.constructor });
+        this.scene.launch('MapManager', { level: Level1 });
 
-        this.player = new PlayerManager(this);
+        this.player = new PlayerManager({ sceneL: this });
         this.inventory = [];
 
         this.scene.launch('UIManager', {
             player: this.player,
-            inventory: this.inventory
+            inventory: this.inventory,
+            sceneL: this,
+            levelId: 1
         });
+    }
+
+    closeLevel(reason, time) {
+        this.scene.stop('MapManager');
+        this.scene.stop('UIManager');
+
+        if (reason === 'return') {
+            this.scene.start('MainMenu');
+        } else if (reason === 'win') {
+            this.scene.start('WinScreen', {
+                levelId: 1,
+                passTime: time
+            });
+        } else if (reason === 'lose') {
+            this.scene.start('LoseScreen', {
+                levelId: 1,
+                passTime: time
+            });
+        }
     }
 }

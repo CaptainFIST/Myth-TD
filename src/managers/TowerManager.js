@@ -5,8 +5,8 @@ export default class TowerManager {
     // ['Name', dmg, range, attspd, lastIdleFrame, lastAttackFrame]
     static neutralData = [];
     static physicalData = [
-        ['Izanami', 18, 3, 1.2, 2, 14],
-        ['Susanoo', 10, 5, 0.3, 6, 14]
+        ['Izanami', 18, 2, 1.2, 2, 14],
+        ['Susanoo', 10, 3, 0.3, 6, 14]
     ];
     static airData = [];
     static waterData = [];
@@ -54,25 +54,22 @@ export default class TowerManager {
     }
 
     getRandomTowerIndex() {
-        // Pick a random number between 0 and the length of the index array
         const randomIndex = Math.floor(Math.random() * this.towerIndex.length);
-    
-        // Return the string (e.g., 'p0' or 'p1')
         return this.towerIndex[randomIndex];
     }
 
     createTower(indexStr, x, y) {
         const stats = this.getStatsByIndex(indexStr);
-
         if (!stats) {
             console.error("Could not find stats from index:", indexStr);
             return;
         }
-
         const tower = new Tower(this.scene, stats);
 
         tower.place(x, y);
         this.activeTowers.add(tower);
         return tower;
     }
+
+    //this.towerManager.activeTowers.clear(true, true);
 }

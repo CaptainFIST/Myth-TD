@@ -1,5 +1,6 @@
 import TimeManager from '../managers/TimeManager.js';
 import TowerManager from '../managers/TowerManager.js';
+import EnemyManager from '../managers/EnemyManager.js';
 
 export default class UIManager extends Phaser.Scene {
     constructor() {
@@ -16,22 +17,30 @@ export default class UIManager extends Phaser.Scene {
             this.load.image(`${tower[0]}_Icon`, `assets/tower/TowerIcon/${tower[0]}_Icon.png`);
         });
 
+        EnemyManager.testData.forEach(enemy => {
+            this.load.spritesheet(enemy[0], `assets/Enemies/${enemy[0]}.png`, {
+                frameWidth: 64,
+                frameHeight: 64
+            });
+        });
+
         this.load.image('UI', 'assets/UI/UI.png');
         this.load.image('UIHP', 'assets/UI/UIHP.png');
         this.load.image('Inventory', 'assets/UI/Inventory.png');
+        //this.load.image('TowerIcon', 'assets/tower/TowerIcon/Izanami.png');
         this.load.image('Pedestal', 'assets/Tower Placement/tower_placement.png');
+
     }
 
     create(data) {
-        // ------------- CONTROLS -------------
-        // disable right-click menu
         this.input.mouse.disableContextMenu();
         this.escKey = this.input.keyboard.addKey('ESC');
         this.canPlace = true;
-        // ------------------------------------
+        this.levelClosed = false;
+        this.rangeCircle = this.add.graphics(); 
+        this.selectedTower = null; 
 
         this.towerManager = new TowerManager(this);
-
         this.towerManager.physical.forEach(stats => {
             const name = stats[0];
             const lastIdle = stats[4];
@@ -52,10 +61,43 @@ export default class UIManager extends Phaser.Scene {
             });
         });
 
+        this.enemyManager = new EnemyManager(this);
+        EnemyManager.testData.forEach(stats => {
+            const name = stats[0];
+            const lastMove = stats[5];
+
+            this.anims.create({
+                key: `${name}_walk`,
+                frames: this.anims.generateFrameNumbers(name, { start: 0, end: lastMove }),
+                frameRate: 8,
+                repeat: -1
+            });
+        });
+
+        this.mapManager = this.scene.get('MapManager');
+
+
+        this.time.delayedCall(500, () => {
+            this.path = this.mapManager.worldPath;
+            console.log(this.path);
+        });
+
+        // this.createButton(200, 20, 'Spawn Enemy', () => {
+        //     if (!this.path) {
+        //         console.log("Path not ready yet!");
+        //         return;
+        //     }
+
+        //     this.enemyManager.createEnemy(0, this.path);
+        // });
+
+
+
         this.grid = this.add.graphics();
         this.highlighter = this.add.graphics();
         const width = this.scale.width;
         const height = this.scale.height;
+        this.sceneL = data.sceneL;
 
         this.highlighter.setDepth(1);
         this.grid.setDepth(0);
@@ -105,6 +147,8 @@ export default class UIManager extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(3);
 
         this.wave = 1;
+        this.maxWave = 5;
+        this.isWaveActive = false;
         this.waveText = this.add.text(uiX + 150, uiY + 10, '', {
             fontSize: '20px',
             color: '#64d5ff'
@@ -126,23 +170,66 @@ export default class UIManager extends Phaser.Scene {
                 this.updateInventoryUI();
             }
         });
+        //this.testB = false;
 
         const rightStartX = width - 340;
         this.createButton(rightStartX, startY, 'Merge', () => {
+
+            //temp test button
+            if(!this.levelClosed){
+            this.levelClosed = true;
+            this.time.delayedCall(50, () => {
+                this.towerManager.activeTowers.clear(true, true);
+                this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
+                
+            });
+            }
+            //this.player.updateHealth(5);
+            //this.startWave();
+            //this.testB = true;
+
+
         });
 
         this.createButton(rightStartX + 170, startY, 'Inventory', () => {
             this.toggleInventory();
         });
 
+        this.exitButton(rightStartX + 200, 0, 'Exit', () => {
+            if (!this.levelClosed) {
+                this.levelClosed = true;
+                this.time.delayedCall(50, () => {
+                    this.towerManager.activeTowers.clear(true, true);
+                    this.sceneL.closeLevel('return', 0);
+                });
+            }
+        });
+
         this.updateUI();
         this.time.addEvent({
-            delay: this.player.incInterval, // 1000ms = 1 sec
+            delay: this.player.incInterval, 
             loop: true,
             callback: () => {
                 this.player.income();
             }
         });
+
+        this.time.delayedCall(2000, () => {
+            this.enemyCount = 5;
+            this.startWave(this.enemyCount);
+
+            this.time.addEvent({
+            delay: 10000,
+            repeat: 3,
+            callback: () => {
+                this.startWave(this.enemyCount + 2);
+            }
+        });
+        });
+
+        
+
+
     }
 
     createButton(x, y, label, onClick) {
@@ -151,6 +238,24 @@ export default class UIManager extends Phaser.Scene {
             .setInteractive({ useHandCursor: true }).setDepth(60);
 
         const text = this.add.text(x + 80, y + 40, label, {
+            fontSize: '16px',
+            color: '#ffffff',
+            fontStyle: 'bold',
+            align: 'center'
+        }).setOrigin(0.5).setDepth(61);
+
+        bg.on('pointerover', () => bg.setFillStyle(0x222222));
+        bg.on('pointerout', () => bg.setFillStyle(0x000000));
+        bg.on('pointerdown', onClick);
+        return { bg, text };
+    }
+
+    exitButton(x, y, label, onClick) {
+        const bg = this.add.rectangle(x, y, 100, 70, 0x000000)
+            .setOrigin(0).setStrokeStyle(2, 0xffffff)
+            .setInteractive({ useHandCursor: true }).setDepth(60);
+
+        const text = this.add.text(x + 50, y + 30, label, {
             fontSize: '16px',
             color: '#ffffff',
             fontStyle: 'bold',
@@ -181,11 +286,24 @@ export default class UIManager extends Phaser.Scene {
     }
 
     update(time, delta) {
+        if (this.levelClosed) return;
+
         this.timeManager.update(delta);
         this.updateUI();
 
+
+        if (this.player.isHealthZero() && !this.levelClosed) {
+            this.levelClosed = true;
+            this.time.delayedCall(10, () => {
+                this.towerManager.activeTowers.clear(true, true);
+                this.sceneL.closeLevel('lose', this.timeManager.getTime().toFixed(2));
+            });
+
+        }
+
         const pointer = this.input.activePointer;
         this.highlighter.clear();
+        this.rangeCircle.clear();
 
         if (pointer.y < this.scale.height - 96) {
             const gridX = Math.floor(pointer.x / 64) * 64;
@@ -194,14 +312,24 @@ export default class UIManager extends Phaser.Scene {
             if (this.selectedTower) {
                 this.highlighter.fillStyle(0x00ff00, 0.4);
 
-                // --------- CANCEL Selection ----------
-                // check for right click of escape key
+                const towerStats = this.towerManager.getStatsByIndex(this.selectedTower);
+                if (towerStats) {
+                    const range = towerStats[2];
+                    const rangePixels = range * 64;
+                    const centerX = gridX + 32;
+                    const centerY = gridY + 32;
+                    
+                    this.rangeCircle.lineStyle(2, 0x00ffff, 0.6);
+                    this.rangeCircle.strokeCircle(centerX, centerY, rangePixels);
+                    this.rangeCircle.setDepth(5);
+                }
+
                 if (pointer.rightButtonDown() || Phaser.Input.Keyboard.JustDown(this.escKey)) {
                     this.selectedTower = null;
+                    this.rangeCircle.clear();
                     console.log("Placement Cancelled.");
                     return;
                 }
-                // -------------------------------------
 
                 if (pointer.isDown && !this.lastPointerDown && this.canPlace) {
                     this.towerManager.createTower(this.selectedTower, gridX, gridY);
@@ -210,6 +338,7 @@ export default class UIManager extends Phaser.Scene {
                     if (index > -1) this.inventory.splice(index, 1);
 
                     this.selectedTower = null;
+                    this.rangeCircle.clear();
                     this.canPlace = false;
                     this.updateInventoryUI();
                 }
@@ -232,6 +361,10 @@ export default class UIManager extends Phaser.Scene {
 
         this.towerManager.activeTowers.children.iterate(tower => {
             if (tower && tower.update) tower.update(time, delta);
+        });
+
+        this.enemyManager.activeEnemies.children.iterate(enemy => {
+            if (enemy && enemy.update) enemy.update(time, delta);
         });
 
         this.lastPointerDown = pointer.isDown;
@@ -312,5 +445,49 @@ export default class UIManager extends Phaser.Scene {
         );
 
         this.healthText.setText(`${currentHP} / ${this.hpMax}`);
+    }
+
+    //Move and change later
+    startWave(enemyCount) {
+        if (this.isWaveActive) return;
+
+        if(this.wave > this.maxWave)
+        {
+            return;
+        }
+
+        if (!this.path || this.path.length === 0) {
+            console.log("❌ Cannot start wave, path not ready");
+            return;
+        }
+
+        console.log(`Starting wave ${this.wave}`);
+        this.isWaveActive = true;
+
+        
+
+        for (let i = 0; i < enemyCount; i++) {
+            this.time.delayedCall(i * 500, () => {
+                this.enemyManager.createEnemy(0, this.path);
+            });
+        }
+
+        // End wave after last spawn
+        this.time.delayedCall(enemyCount * 500 + 1000, () => {
+            this.endWave();
+        });//enemyCount * 500 + 1000
+
+        
+    }
+
+    endWave() {
+        console.log(`Wave ${this.wave} ended`);
+
+        if(this.wave != this.maxWave)
+        {
+            this.wave++;
+        }
+        //this.wave++;
+        this.isWaveActive = false;
     }
 }
