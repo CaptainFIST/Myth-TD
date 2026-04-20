@@ -42,7 +42,7 @@ export default class Tower extends Phaser.GameObjects.Sprite {
     }
 
     update(time, delta) {
-        if (time > this.nextTic && !this.isAttacking) {
+        if (time > this.nextTic) {
             const enemy = this.getClosestEnemy();
             if (enemy) {
                 this.fire(time, enemy);
@@ -83,9 +83,16 @@ export default class Tower extends Phaser.GameObjects.Sprite {
     fire(time, enemy) {
         this.isAttacking = true;
         this.damageDealt = false;
-        this.play(`${this.name}_attack`);
-        this.nextTic = time + (this.attackSpeed * 1000);
-        console.log(`${this.name} attacking ${enemy.name}!`);
+
+        const duration = this.attackSpeed * 1000;
+
+        this.play({
+            key: `${this.name}_attack`,
+            duration: duration
+        });
+
+        this.nextTic = time + duration;
+        //console.log(`${this.name} attacking ${enemy.name}!`);
     }
 
     destroy(fromScene) {

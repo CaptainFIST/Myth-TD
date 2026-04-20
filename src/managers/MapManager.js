@@ -23,7 +23,7 @@ export default class MapManager extends Phaser.Scene {
                 if (tileKey) {
                     this.add.image(x, y, tileKey).setOrigin(0);
                 }
-                if (decoKey) {
+                if (decoKey && !mapData[row][col]) {
                     this.add.image(x, y, decoKey).setOrigin(0).setDepth(0.5);
                 }
             }
