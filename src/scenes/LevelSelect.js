@@ -3,8 +3,10 @@ export default class LevelSelect extends Phaser.Scene {
         super('LevelSelect');
     }
 
+    // Build the level selection UI
     create() {
         const { width, height } = this.scale;
+        
         this.add.text(width / 2, 100, 'SELECT LEVEL', {
             fontSize: '80px',
             color: '#64d5ff',
@@ -20,10 +22,15 @@ export default class LevelSelect extends Phaser.Scene {
             { num: 3, name: 'LEVEL 3', scene: 'Level3' }
         ];
 
+        // Create a selectable card for each level
         levels.forEach((lvl, i) => {
-            const x = width / 2 + (i - 1) * 400;
+            const x = width / 2 + (i - 1) * 400;  
             const y = height / 2;
-            const card = this.add.rectangle(x, y, 300, 200, 0x1a3f5e).setStrokeStyle(3, 0x64d5ff).setInteractive({ useHandCursor: true });
+            
+            // Card background
+            const card = this.add.rectangle(x, y, 300, 200, 0x1a3f5e)
+                .setStrokeStyle(3, 0x64d5ff).setInteractive({ useHandCursor: true });
+            
             this.add.text(x, y - 20, lvl.name, {
                 fontSize: '36px',
                 color: '#64d5ff',
@@ -36,6 +43,7 @@ export default class LevelSelect extends Phaser.Scene {
             card.on('pointerdown', () => this.scene.start(lvl.scene));
         });
 
+        // Back button
         const back = this.add.text(80, height - 80, '← BACK', {
             fontSize: '32px',
             color: '#64d5ff',
