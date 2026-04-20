@@ -4,15 +4,15 @@ export default class MapManager extends Phaser.Scene {
     }
 
     create(data) {
-
+        this.levelData = data.level;
         const level = data.level;
         const mapData = level.mapData;
         const decoData = level.decoData;
         const tileTypes = level.tileTypes;
         const decoTypes = level.decoTypes;
 
-            const tileSize = this.tileSize || 64;        
-            for (let row = 0; row < mapData.length; row++) {
+        const tileSize = this.tileSize || 64;
+        for (let row = 0; row < mapData.length; row++) {
             for (let col = 0; col < mapData[row].length; col++) {
 
                 const tileKey = tileTypes[mapData[row][col]];
@@ -23,39 +23,39 @@ export default class MapManager extends Phaser.Scene {
                 if (tileKey) {
                     this.add.image(x, y, tileKey).setOrigin(0);
                 }
-                if (decoKey) {
-                    this.add.image(x, y, decoKey).setOrigin(0).setDepth(0.5);               
+                if (decoKey && !mapData[row][col]) {
+                    this.add.image(x + tileSize/2, y + tileSize, decoKey).setOrigin(0.5, 1).setDepth(0.5);
                 }
             }
         }
 
-        //this.findOpening(mapData, 'Ent');
         this.findOpening(mapData, 'Ex');
-        this.tPath = this.findPath(mapData);
-        this.wPath = this.toWP(this.tPath);
-        console.log(this.tPath);
-        console.log(this.wPath);
+        this.mappedPath = this.findPath(mapData);
+        this.worldPath = this.actualWorldPath(this.mappedPath);
+        //console.log(this.mappedPath);
+        //console.log(this.worldPath);
     }
 
     findOpening(map, e) {
-        
-        for(let y = 0; y < map.length; y++) {
-            for(let x = 0; x < map[0].length; x++) {
-                if(map[y][x] === 2 && e === 'Ent') {
+
+        for (let y = 0; y < map.length; y++) {
+            for (let x = 0; x < map[0].length; x++) {
+
+                if (map[y][x] === 2 && e === 'Ent') {
                     console.log(`Entrance is at: {${x}, ${y}}`);
-                    return {x, y};
+                    return { x, y };
                 }
-                else if(map[y][x] === 3 && e === 'Ex') {
+
+                if (map[y][x] === 3 && e === 'Ex') {
                     console.log(`Exit is at: {${x}, ${y}}`);
-                       return {x, y};
+                    return { x, y };
                 }
             }
         }
 
-        if(e === 'Ent'){
+        if (e === 'Ent') {
             console.log("Missing Entrance");
-        }
-        else if(e === 'Ex'){
+        } else if (e === 'Ex') {
             console.log("Missing Exit");
         }
         return null;
@@ -65,51 +65,64 @@ export default class MapManager extends Phaser.Scene {
         const path = [];
         const visited = new Set();
         const tileSize = this.tileSize || 64;
+
         let cur = this.findOpening(map, 'Ent');
+        if (!cur) {
+            console.error("No entrance found — cannot build path");
+            return [];
+        }
 
-        var graphics = this.add.graphics();
-        let drawPath = this.add.path(cur.x * tileSize + tileSize / 2, cur.y * tileSize + tileSize / 2);
-        const key = (x,y) => `${x},${y}`;
+        const graphics = this.add.graphics();
+        const drawPath = this.add.path(
+            cur.x * tileSize + tileSize / 2,
+            cur.y * tileSize + tileSize / 2
+        );
 
-        while(cur) {
+        const key = (x, y) => `${x},${y}`;
+        while (cur) {
             path.push(cur);
             visited.add(key(cur.x, cur.y));
-            console.log(cur);
 
-            if(map[cur.y][cur.x] === 3) {
+            if (map[cur.y][cur.x] === 3) {
                 break;
             }
 
             let next = null;
             const directions = [
-                {x: 0, y: -1},
-                {x: 1, y: 0},
-                {x: 0, y: 1},
-                {x: -1, y: 0}
+                { x: 0, y: -1 },
+                { x: 1, y: 0 },
+                { x: 0, y: 1 },
+                { x: -1, y: 0 }
             ];
 
-            for(let dir of directions) {
+            for (let dir of directions) {
                 let nx = cur.x + dir.x;
                 let ny = cur.y + dir.y;
-
-                if(map[ny] && (map[ny][nx] === 1 || map[ny][nx] === 3) && !visited.has(key(nx, ny))) {
+                if (
+                    map[ny] &&
+                    (map[ny][nx] === 1 || map[ny][nx] === 3) &&
+                    !visited.has(key(nx, ny))
+                ) {
                     next = { x: nx, y: ny };
                     break;
                 }
             }
             cur = next;
-            drawPath.lineTo((cur.x * tileSize) + (tileSize / 2), (cur.y * tileSize) + (tileSize / 2));
+            if (!cur) break;
+
+            drawPath.lineTo(
+                cur.x * tileSize + tileSize / 2,
+                cur.y * tileSize + tileSize / 2
+            );
         }
 
-             graphics.lineStyle(3, 0xffffff, 1);
-            // // visualize the path
-             drawPath.draw(graphics);
+        graphics.lineStyle(3, 0xffffff, 1);
+        drawPath.draw(graphics);
         return path;
     }
 
-    toWP(tileP) {
+    actualWorldPath(tileP) {
         const tileSize = this.tileSize || 64;
-
         return tileP.map(tile => ({
             x: tile.x * tileSize + tileSize / 2,
             y: tile.y * tileSize + tileSize / 2,

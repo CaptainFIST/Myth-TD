@@ -1,9 +1,11 @@
-import TimeManager from '../managers/TimeManager.js';
+import PlayerManager from '../managers/PlayerManager.js';
 
 export default class Level1 extends Phaser.Scene {
     constructor() {
         super({ key: 'Level1' });
     }
+
+    static level = 1;
 
     static mapData = [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -25,27 +27,33 @@ export default class Level1 extends Phaser.Scene {
     static decoData = [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
+        [0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,2,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
         [0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     ];
 
-    static tileTypes = { 
-        0: 'grass', 
+    static waveData = [
+        [],
+        []
+    ];
+
+    static tileTypes = {
+        0: 'grass',
         1: 'path',
         2: 'path',
         3: 'path'
     };
-    static decoTypes = { 
+
+    static decoTypes = {
         2: 'tree'
     };
 
@@ -56,21 +64,35 @@ export default class Level1 extends Phaser.Scene {
     }
 
     create() {
-        this.scene.launch('MapManager', { level: this.constructor });
-        this.scene.launch('UIManager');
-        this.timeManager = new TimeManager();
+        this.scene.launch('MapManager', { level: Level1 });
 
-        this.timerText = this.add.text(16, 16, 'Time: 0.00s', {
-            fontSize: '18px',
-            color: '#000000',
-            fontStyle: 'bold',
-            fontFamily: 'Arial, sans-serif'
-        }).setDepth(10);
+        this.player = new PlayerManager({ sceneL: this });
+        this.inventory = [];
+
+        this.scene.launch('UIManager', {
+            player: this.player,
+            inventory: this.inventory,
+            sceneL: this,
+            levelId: 1
+        });
     }
 
-    update(time, delta) {
-        this.timeManager.update(delta);
-        const elapsedTime = this.timeManager.getTime().toFixed(2);
-        this.timerText.setText(`Time: ${elapsedTime}s`);
+    closeLevel(reason, time) {
+        this.scene.stop('MapManager');
+        this.scene.stop('UIManager');
+
+        if (reason === 'return') {
+            this.scene.start('MainMenu');
+        } else if (reason === 'win') {
+            this.scene.start('WinScreen', {
+                levelId: 1,
+                passTime: time
+            });
+        } else if (reason === 'lose') {
+            this.scene.start('LoseScreen', {
+                levelId: 1,
+                passTime: time
+            });
+        }
     }
 }
