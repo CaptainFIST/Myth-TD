@@ -3,9 +3,9 @@ export default class PlayerManager extends Phaser.Scene {
         super({ key: 'PlayerManager' });
 
         // Core player stats (economy + health)
-        this.gold = 150;
+        this.gold = 250;
         this.playerHealth = 20;
-        this.goldPerSec = 2;
+        this.goldPerSec = 0;
         this.incInterval = 1000;
 
         if (data) {

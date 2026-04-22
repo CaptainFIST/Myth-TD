@@ -3,8 +3,8 @@ import Tower from '../entities/Tower.js';
 export default class TowerManager {
     // Tower stat tables: [name, damage, range, attackSpeed, idleEnd, attackEnd]
     static physicalData = [
-        ['Izanami', 18, 2, 1.2, 2, 14],
-        ['Susanoo', 10, 3, 0.3, 6, 14]
+        ['Izanami', 10, 2, 1.2, 2, 14],
+        ['Susanoo', 5, 3, 0.6, 6, 14]
     ];
 
     static airData = [];
