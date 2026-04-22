@@ -1,5 +1,5 @@
 export default class SaveManager {
-    static KEY = 'mythos_td_data';
+    static KEY = 'mythos_td_data'; 
 
     static defaultSlot() {
         return {
@@ -16,7 +16,7 @@ export default class SaveManager {
                 enemiesKilled: 0,
                 towersPlaced: 0,
             },
-            //save: null
+            save: null
         };
     }
 
