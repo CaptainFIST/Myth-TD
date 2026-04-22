@@ -1,5 +1,5 @@
 import SaveManager from '../managers/SaveManager.js';
-import StatsManager from '../managers/StatsManager.js/';
+import StatsManager from '../managers/StatsManager.js';
 
 export default class MainMenu extends Phaser.Scene {
     constructor() {
@@ -15,7 +15,7 @@ export default class MainMenu extends Phaser.Scene {
     create() {
         const sData = SaveManager.get();
         console.log(sData.activeSlot);
-        //StatsManager.incrementStat(5);
+        StatsManager.incrementStat(5);
 
         const { width, height } = this.scale;
         this.add.rectangle(width / 2, height / 2, width, height, 0x0d1128).setOrigin(0.5);
@@ -37,7 +37,7 @@ export default class MainMenu extends Phaser.Scene {
             }
 
         ];
-        const startY = 580;
+        const startY = 520;
         const leftx = 280;
         const spacing = 110;
         

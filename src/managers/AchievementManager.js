@@ -23,6 +23,8 @@ export default class AchievementManager {
             unlockedAt: Date.now()
         };
 
+        console.log(data.achievement[id]);
+
         SaveManager.commit();
 
 

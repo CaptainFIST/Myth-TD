@@ -12,10 +12,10 @@ export default class StatsManager {
         SaveManager.commit();
     }
 
-    static isUnlocked(level) {
-        if(level === 1) return true;
+    // static isUnlocked(level) {
+    //     if(level === 1) return true;
 
-        const data = SaveManager.getSlot();
-        return data.progress.levelsCompleted.includes(level - 1);
-    }
+    //     const data = SaveManager.getSlot();
+    //     return data.progress.levelsCompleted.includes(level - 1);
+    // }
 }
