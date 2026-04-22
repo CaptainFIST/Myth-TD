@@ -2,25 +2,24 @@ export default class PlayerManager extends Phaser.Scene {
     constructor(data) {
         super({ key: 'PlayerManager' });
 
-        // Player economy + health values
+        // Core player stats (economy + health)
         this.gold = 150;
         this.playerHealth = 20;
         this.goldPerSec = 2;
         this.incInterval = 1000;
 
-        // Optional scene reference for level control
         if (data) {
-            console.log(data);
             this.sceneL = data.sceneL;
         }
     }
 
     income() {
-        // Passive gold income
+        // Passive gold gain over time
         this.gold += this.goldPerSec;
     }
 
     updateHealth(damage) {
+        // Prevent health from going below 0
         this.playerHealth = Math.max(0, this.playerHealth - damage);
     }
 
@@ -29,35 +28,29 @@ export default class PlayerManager extends Phaser.Scene {
     }
 
     updateGold(change) {
+        // Positive = earn gold
         if (change > 0) {
             this.gold += change;
-            //console.log(`+${change} gold earned (Total: ${this.gold})`);
-        } else if (change < 0) {
-            if (Math.abs(change) <= this.gold) {
-                this.gold += change;
-                //console.log(`-${Math.abs(change)} gold spent (Total: ${this.gold})`);
-            } else {
-                console.log('Not enough gold!');
-            }
+            return;
         }
 
-        if (Math.abs(change) > this.gold) {
+        // Negative = spend gold (check if enough)
+        if (-change > this.gold) {
             console.log('Not enough gold!');
             return;
         }
 
         this.gold += change;
-        console.log(`-${Math.abs(change)} gold spent (Total: ${this.gold})`);
     }
 
     status(condition) {
-        // Trigger win/lose screen via level manager
-        if (condition === 'win') this.sceneL.closeLevel('win', 0);
-        else if (condition === 'lose') this.sceneL.closeLevel('lose', 0);
+        // Trigger win/lose state through level manager
+        if (condition === 'win') this.sceneL?.closeLevel('win', 0);
+        else if (condition === 'lose') this.sceneL?.closeLevel('lose', 0);
     }
 
     createFloatingText(x, y, text, color) {
-        const floatingText = this.scene.add.text(x, y, text, {
+        const main = this.scene.add.text(x, y, text, {
             fontSize: '28px',
             fill: color,
             fontStyle: 'bold',
@@ -72,15 +65,15 @@ export default class PlayerManager extends Phaser.Scene {
             alpha: 0.3
         }).setOrigin(0.5).setDepth(1999);
 
-        // Animate float upward + fade out
+        // Animate upward + fade out
         this.scene.tweens.add({
-            targets: [floatingText, shadow],
+            targets: [main, shadow],
             y: y - 80,
             alpha: 0,
             duration: 1200,
             ease: 'Quad.easeOut',
             onComplete: () => {
-                floatingText.destroy();
+                main.destroy();
                 shadow.destroy();
             }
         });

@@ -3,23 +3,22 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
         super(scene, 0, 0, stats[0], 0);
         this.scene = scene;
 
-        this.name = stats[0];
-        this.damage = stats[1];
-
-        this.maxHealth = stats[2];
-
-        this.health = stats[2];
-        this.speed = stats[3];
-        this.reward = stats[4];
+        // Destructure stats for cleaner code
+        [this.name, this.damage, this.maxHealth, this.speed, this.reward] = stats;
+        this.health = this.maxHealth;
 
         scene.add.existing(this);
         this.setDepth(10).setScale(2);
 
-        this.healthBarBg = scene.add.graphics();
-        this.healthBarFill = scene.add.graphics();
+        // Health bar graphics
+        this.healthBarBg = scene.add.graphics().setDepth(15);
+        this.healthBarFill = scene.add.graphics().setDepth(16);
 
         // Validate path
-        if (!path?.length) return console.error("Enemy spawned with invalid path:", path);
+        if (!path?.length) {
+            console.error("Enemy spawned with invalid path:", path);
+            return;
+        }
 
         this.path = path;
         this.pIndex = 0;
@@ -31,28 +30,33 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
     }
 
     update(time, delta) {
-        const target = this.path?.[this.pIndex];
+        if (!this.active || !this.path) return;
+
+        const target = this.path[this.pIndex];
         if (!target) return;
+
         const dist = Phaser.Math.Distance.Between(this.x, this.y, target.x, target.y);
 
-        // Move to next waypoint if close enough
+        // Advance waypoint or reach base
         if (dist < 5 && ++this.pIndex >= this.path.length) {
             return this.reachedBase();
         }
 
         const next = this.path[this.pIndex];
         const angle = Phaser.Math.Angle.Between(this.x, this.y, next.x, next.y);
-        const move = this.speed * (delta / 16.6667);
+
+        // Normalize movement to ~60 FPS
+        const move = this.speed * (delta / 16.67);
 
         this.x += Math.cos(angle) * move;
         this.y += Math.sin(angle) * move;
+
         this.updateHealthBar();
     }
 
     reachedBase() {
         this.scene.player?.updateHealth?.(this.damage);
-        this.cleanup();
-        this.destroy();
+        this.destroyWithCleanup();
     }
 
     takeDamage(amount) {
@@ -71,19 +75,25 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
         const hp = Math.max(0, this.health / this.maxHealth);
         const color = hp < 0.25 ? 0xff0000 : hp < 0.5 ? 0xffff00 : 0x00ff00;
 
-        this.healthBarBg.clear().fillStyle(0x000000, 0.8).fillRect(x, y, w, h).setDepth(15);
-        this.healthBarFill.clear().fillStyle(color, 1).fillRect(x, y, w * hp, h).setDepth(16);
+        this.healthBarBg.clear().fillStyle(0x000000, 0.8).fillRect(x, y, w, h);
+        this.healthBarFill.clear().fillStyle(color, 1).fillRect(x, y, w * hp, h);
     }
 
     die() {
         this.scene.player?.updateGold?.(this.reward);
-        this.cleanup();
-        this.destroy();
+        this.destroyWithCleanup();
     }
 
-    // Centralized cleanup (avoids repeating destroy logic)
-    cleanup() {
+    // Combined destroy + cleanup
+    destroyWithCleanup() {
+        if (!this.active) return;
+
         this.healthBarBg?.destroy();
         this.healthBarFill?.destroy();
+
+        this.healthBarBg = null;
+        this.healthBarFill = null;
+
+        this.destroy();
     }
 }
