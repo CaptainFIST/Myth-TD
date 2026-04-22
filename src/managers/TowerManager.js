@@ -1,137 +1,122 @@
 import Tower from '../entities/Tower.js';
 
 export default class TowerManager {
-    // Table format: ['Name', damage, range, attackSpeed, lastIdleFrame, lastAttackFrame]
-    static neutralData = [];            
+    // Tower stat tables: [name, damage, range, attackSpeed, idleEnd, attackEnd]
     static physicalData = [
-        ['Izanami', 18, 2, 1.2, 2, 14],  
-        ['Susanoo', 10, 3, 0.3, 6, 14]   
+        ['Izanami', 18, 2, 1.2, 2, 14],
+        ['Susanoo', 10, 3, 0.3, 6, 14]
     ];
-    static airData = [];                
-    static waterData = [];              
-    static fireData = [];               
-    static darkData = [];               
-    static otherData = [
-        ['Shrine', 0, 0, 0, 0, 0]      
-    ];
+
+    static airData = [];
+    static waterData = [];
+    static fireData = [];
+    static darkData = [];
+    static neutralData = [];
+    static otherData = [['Shrine', 0, 0, 0, 0, 0]];
 
     constructor(scene) {
         this.scene = scene;
 
-        // Create local references to tower data for quick access
-        this.neutral = TowerManager.neutralData;
-        this.physical = TowerManager.physicalData;
-        this.air = TowerManager.airData;
-        this.water = TowerManager.waterData;
-        this.fire = TowerManager.fireData;
-        this.dark = TowerManager.darkData;
-        this.other = TowerManager.otherData;
+        // Local references for quick access
+        this.activeTowers = scene.add.group({ runChildUpdate: true });
 
+        // Currently selected tower type (for placement mode)
+        this.selectedTower = null;
 
-        this.towerIndex = [
-            'p0',  // Izanami 
-            'p1'   // Susanoo 
-        ];
-
-        // Active towers
-        this.activeTowers = this.scene.add.group({
-            runChildUpdate: true
-        });
-        this.selectedTower = null;      
+        // Available tower index list
+        this.towerIndex = ['p0', 'p1'];
     }
 
-    // Convert tower index string to actual tower stats
     getStatsByIndex(indexStr) {
-        const type = indexStr[0];       
-        const id = parseInt(indexStr.slice(1)); 
+        const type = indexStr[0];
+        const id = Number(indexStr.slice(1));
 
-        // Look up the tower stats based on type
-        switch(type) {
-            case 'p': return this.physical[id];  
-            case 'a': return this.air[id];       
-            case 'w': return this.water[id];     
-            case 'f': return this.fire[id];     
-            case 'd': return this.dark[id];      
-            case 'o': return this.other[id];     
-            default: return null;                
+        switch (type) {
+            case 'p': return this.constructor.physicalData[id];
+            case 'a': return this.constructor.airData[id];
+            case 'w': return this.constructor.waterData[id];
+            case 'f': return this.constructor.fireData[id];
+            case 'd': return this.constructor.darkData[id];
+            case 'o': return this.constructor.otherData[id];
+            default: return null;
         }
     }
 
-    // Pick a random tower from available tower pool 
     getRandomTowerIndex() {
-        const randomIndex = Math.floor(Math.random() * this.towerIndex.length);
-        return this.towerIndex[randomIndex];
+        return this.towerIndex[
+            Math.floor(Math.random() * this.towerIndex.length)
+        ];
     }
 
-    // Generate sprite sheet animations for all physical towers
     createAnimations() {
-        this.physical.forEach(stats => {
-            const name = stats[0];           
-            const lastIdle = stats[4];       
-            const lastAttack = stats[5];     
+        this.constructor.physicalData.forEach(([name, , , , idleEnd, attackEnd]) => {
 
+            // Idle loop animation
             this.scene.anims.create({
                 key: `${name}_idle`,
-                frames: this.scene.anims.generateFrameNumbers(name, { start: 0, end: lastIdle }),
+                frames: this.scene.anims.generateFrameNumbers(name, {
+                    start: 0,
+                    end: idleEnd
+                }),
                 frameRate: 6,
-                repeat: -1                   // Loop forever
+                repeat: -1
             });
 
-            // Create attack animation (plays once then stops)
+            // Attack animation (plays once)
             this.scene.anims.create({
                 key: `${name}_attack`,
-                frames: this.scene.anims.generateFrameNumbers(name, { start: lastIdle + 1, end: lastAttack }),
+                frames: this.scene.anims.generateFrameNumbers(name, {
+                    start: idleEnd + 1,
+                    end: attackEnd
+                }),
                 frameRate: 12,
-                repeat: 0                    // Play once
+                repeat: 0
             });
         });
     }
 
-    // Instantiate a new tower and add it to the scene
     createTower(indexStr, x, y) {
         const stats = this.getStatsByIndex(indexStr);
-        if (!stats) {
-            console.error("Could not find stats from index:", indexStr);
-            return;
-        }
-        
+        if (!stats) return console.error("Invalid tower index:", indexStr);
+
         const tower = new Tower(this.scene, stats);
         tower.place(x, y);
+
         this.activeTowers.add(tower);
         return tower;
     }
 
-    // Tower selection for placement mode
-    selectTower(towerIndex) {
-        this.selectedTower = towerIndex;  
+    selectTower(index) {
+        this.selectedTower = index;
     }
 
     deselectTower() {
-        this.selectedTower = null;        
+        this.selectedTower = null;
     }
 
     getSelectedTower() {
-        return this.selectedTower;        
+        return this.selectedTower;
     }
 
     hasSelectedTower() {
-        return this.selectedTower !== null;  
+        return this.selectedTower !== null;
     }
 
     getSelectedTowerStats() {
-        if (!this.selectedTower) return null;
-        return this.getStatsByIndex(this.selectedTower);  
+        return this.selectedTower
+            ? this.getStatsByIndex(this.selectedTower)
+            : null;
     }
 
     pause() {
-        this.activeTowers.children.entries.forEach(tower => {
-            if (tower) tower.active = false;  // Disable each tower
+        this.activeTowers.children.each(t => {
+            if (t) t.active = false;
         });
     }
 
     resume() {
-        this.activeTowers.children.entries.forEach(tower => {
-            if (tower) tower.active = true;   // Re-enable each tower
+        this.activeTowers.children.each(t => {
+            if (t) t.active = true;
         });
     }
 }
