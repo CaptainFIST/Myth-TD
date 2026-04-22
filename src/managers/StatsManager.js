@@ -1,7 +1,7 @@
 import SaveManager from './SaveManager.js';
 
 export default class StatsManager {
-    static incrementStat(stat, amount) {
+    static incrementStat(amount) {
         const data = SaveManager.getSlot();
 
         console.log(data.stats.totalGold);
