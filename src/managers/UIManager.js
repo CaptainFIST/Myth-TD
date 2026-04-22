@@ -1,6 +1,8 @@
-import TimeManager from '../managers/TimeManager.js';
-import TowerManager from '../managers/TowerManager.js';
-import EnemyManager from '../managers/EnemyManager.js';
+import TimeManager from './TimeManager.js';
+import TowerManager from './TowerManager.js';
+import EnemyManager from './EnemyManager.js';
+import WaveManager from './WaveManager.js';
+import InventoryManager from './InventoryManager.js';
 
 export default class UIManager extends Phaser.Scene {
     constructor() {
@@ -8,537 +10,405 @@ export default class UIManager extends Phaser.Scene {
     }
 
     preload() {
-        TowerManager.physicalData.forEach(tower => {
-            this.load.spritesheet(tower[0], `assets/tower/${tower[0]}.png`, {
-                frameWidth: 64,
-                frameHeight: 64
-            });
-
-            this.load.image(`${tower[0]}_Icon`, `assets/tower/TowerIcon/${tower[0]}_Icon.png`);
+        // Load tower assets
+        TowerManager.physicalData.forEach(([name]) => {
+            this.load.spritesheet(name, `assets/tower/${name}.png`, { frameWidth: 64, frameHeight: 64 });
+            this.load.image(`${name}_Icon`, `assets/tower/TowerIcon/${name}_Icon.png`);
         });
 
-        EnemyManager.testData.forEach(enemy => {
-            this.load.spritesheet(enemy[0], `assets/Enemies/${enemy[0]}.png`, {
-                frameWidth: 64,
-                frameHeight: 64
-            });
+        // Load enemy assets
+        EnemyManager.testData.forEach(([name]) => {
+            this.load.spritesheet(name, `assets/Enemies/${name}.png`, { frameWidth: 64, frameHeight: 64 });
         });
 
-        this.load.image('UI', 'assets/UI/UI.png');
-        this.load.image('UIHP', 'assets/UI/UIHP.png');
-        this.load.image('Inventory', 'assets/UI/Inventory.png');
-        //this.load.image('TowerIcon', 'assets/tower/TowerIcon/Izanami.png');
-        this.load.image('Pedestal', 'assets/Tower Placement/tower_placement.png');
-
+        // Load UI assets
+        const uiAssets = ['UI', 'UIHP', 'Inventory', 'pausebutton', 'sidebar', 'Susanoo_Stripe', 'Pedestal'];
+        uiAssets.forEach(asset => {
+            if (asset === 'Susanoo_Stripe') {
+                this.load.spritesheet(asset, 'assets/Abilities/susanoo_water.png', { frameWidth: 64, frameHeight: 64 });
+            } else if (asset === 'Pedestal') {
+                this.load.image(asset, 'assets/Tower Placement/tower_placement.png');
+            } else {
+                this.load.image(asset, `assets/UI/${asset}.png`);
+            }
+        });
     }
 
     create(data) {
+        // Validate data
+        if (!data.player || !data.sceneL) {
+            console.error("UIManager: Missing player or sceneL in data");
+            return;
+        }
+
+        // Initialize properties
         this.input.mouse.disableContextMenu();
         this.escKey = this.input.keyboard.addKey('ESC');
         this.canPlace = true;
         this.levelClosed = false;
-        this.rangeCircle = this.add.graphics(); 
-        this.selectedTower = null; 
+        this.lastPointerDown = false;
+        this.rangeCircle = this.add.graphics();
 
+        // Initialize managers
         this.towerManager = new TowerManager(this);
-        this.towerManager.physical.forEach(stats => {
-            const name = stats[0];
-            const lastIdle = stats[4];
-            const lastAttack = stats[5];
-
-            this.anims.create({
-                key: `${name}_idle`,
-                frames: this.anims.generateFrameNumbers(name, { start: 0, end: lastIdle }),
-                frameRate: 6,
-                repeat: -1
-            });
-
-            this.anims.create({
-                key: `${name}_attack`,
-                frames: this.anims.generateFrameNumbers(name, { start: lastIdle + 1, end: lastAttack }),
-                frameRate: 12,
-                repeat: 0
-            });
-        });
-
+        this.towerManager.createAnimations();
+        this.createProjectileAnimations();
+        
         this.enemyManager = new EnemyManager(this);
-        EnemyManager.testData.forEach(stats => {
-            const name = stats[0];
-            const lastMove = stats[5];
-
-            this.anims.create({
-                key: `${name}_walk`,
-                frames: this.anims.generateFrameNumbers(name, { start: 0, end: lastMove }),
-                frameRate: 8,
-                repeat: -1
-            });
-        });
-
+        this.enemyManager.createAnimations();
+        
         this.mapManager = this.scene.get('MapManager');
-
-
-        this.time.delayedCall(500, () => {
-            this.path = this.mapManager.worldPath;
-            //console.log(this.path);
-        });
-
-        // this.createButton(200, 20, 'Spawn Enemy', () => {
-        //     if (!this.path) {
-        //         console.log("Path not ready yet!");
-        //         return;
-        //     }
-
-        //     this.enemyManager.createEnemy(0, this.path);
-        // });
-
-
-
-        this.grid = this.add.graphics();
-        this.highlighter = this.add.graphics();
-        const width = this.scale.width;
-        const height = this.scale.height;
-        this.sceneL = data.sceneL;
-
-        this.highlighter.setDepth(1);
-        this.grid.setDepth(0);
-        this.drawGrid(width, height);
-
+        this.waveManager = new WaveManager(this, this.enemyManager);
         this.player = data.player;
-        this.inventory = data.inventory;
+        this.sceneL = data.sceneL;
         this.timeManager = new TimeManager();
 
-        const uiX = width / 2;
+        // Setup path after mapManager is ready
+        this.time.delayedCall(500, () => {
+            if (this.mapManager?.worldPath) {
+                this.path = this.mapManager.worldPath;
+                this.waveManager.setPath(this.path);
+                this.waveManager.initialize(this.waveText, this.path);
+            }
+        });
+
+        this.grid = this.mapManager.drawGrid(this.scale.width, this.scale.height);
+        this.highlighter = this.add.graphics().setDepth(1);
+
+        // Setup UI
+        this.setupUI();
+    }
+
+    setupUI() {
+        const { width, height } = this.scale;
         const uiY = height - 49;
-        this.add.image(uiX, uiY, 'UI').setScale(1.7);
 
+        this.add.image(width / 2, uiY, 'UI').setScale(1.7);
+        this.setupHealthDisplay(250, uiY + 10);
+        this.setupStatusTexts(width / 2, uiY + 10);
+        this.setupInventory(width, height);
+        this.setupButtons(width, height);
+        this.setupPauseSystem();
+
+        this.updateUI();
+        this.time.addEvent({
+            delay: this.player.incInterval,
+            loop: true,
+            callback: () => this.player?.income?.()
+        });
+        this.waveManager.startWaveCycle(this, 5, 2000, 10000, 3);
+    }
+
+    setupHealthDisplay(x, y) {
         this.hpMax = 20;
-        this.hpFrameX = 250;
-        this.hpFrameY = uiY + 10;
-        this.add.image(this.hpFrameX, this.hpFrameY, 'UIHP').setDepth(2);
-
-        this.hpRadius = 78 / 2;
+        this.hpFrameX = x;
+        this.hpFrameY = y;
+        
+        this.add.image(x, y, 'UIHP').setDepth(2);
+        
+        this.hpRadius = 39; // 78 / 2
         this.hpContainer = this.add.container(0, 0).setDepth(1);
         this.hpFill = this.add.graphics();
         this.hpContainer.add(this.hpFill);
 
-        this.hpMaskShape = this.add.graphics();
-        this.hpMaskShape.fillStyle(0xffffff);
-        this.hpMaskShape.fillCircle(this.hpFrameX, this.hpFrameY, this.hpRadius);
-        this.hpMaskShape.setVisible(false);
-
-        const mask = this.hpMaskShape.createGeometryMask();
-        this.hpContainer.setMask(mask);
-        this.healthText = this.add.text(this.hpFrameX, this.hpFrameY, '', {
-            fontSize: '16px',
-            color: '#000',
-            fontStyle: 'bold'
+        // Create circular mask for HP display
+        const maskShape = this.add.graphics();
+        maskShape.fillStyle(0xffffff);
+        maskShape.fillCircle(x, y, this.hpRadius);
+        maskShape.setVisible(false);
+        this.hpContainer.setMask(maskShape.createGeometryMask());
+        
+        this.healthText = this.add.text(x, y, '', {
+            fontSize: '16px', color: '#ffffff', fontStyle: 'bold'
         }).setOrigin(0.5).setDepth(3);
+    }
 
-
-        this.goldText = this.add.text(uiX - 250, uiY + 10, '', {
-            fontSize: '20px',
-            color: '#ffd700',
-            fontStyle: 'bold'
+    setupStatusTexts(centerX, y) {
+        this.goldText = this.add.text(centerX - 250, y, '', {
+            fontSize: '20px', color: '#ffd700', fontStyle: 'bold'
         }).setDepth(3);
 
-        this.timerText = this.add.text(uiX, uiY + 10, '', {
-            fontSize: '20px',
-            color: '#ffffff'
+        this.timerText = this.add.text(centerX, y, '', {
+            fontSize: '20px', color: '#ffffff'
         }).setOrigin(0.5).setDepth(3);
 
-        this.wave = 1;
-        this.maxWave = 5;
-        this.isWaveActive = false;
-        this.waveText = this.add.text(uiX + 150, uiY + 10, '', {
-            fontSize: '20px',
-            color: '#64d5ff'
+        this.waveText = this.add.text(centerX + 150, y, '', {
+            fontSize: '20px', color: '#64d5ff'
         }).setDepth(3);
+    }
 
+    setupInventory(width, height) {
         this.inventoryImage = this.add.image(width - 430, height - 340, 'Inventory')
             .setOrigin(0).setDepth(50).setVisible(false);
         this.towerIcons = this.add.group();
 
+        this.inventoryManager = new InventoryManager(this, this.towerManager, this.sceneL.player.inventory);
+        this.inventoryManager.initialize(this.inventoryImage, this.towerIcons);
+        this.inventoryManager.setTowerSelectedCallback(() => {
+            this.canPlace = false;
+            this.time.delayedCall(100, () => this.canPlace = true);
+        });
+
+        this.waveManager.setOnGameCompleteCallback(() => this.endLevel('win'));
+    }
+
+    setupButtons(width, height) {
         const startY = height - 80;
+        const rightStart = width - 340;
+
+        // Purchase button
         this.createButton(20, startY, 'Purchase Tower\n50 g', () => {
-            if (this.player.gold >= 50) {
+            if (this.player?.gold >= 50) {
                 this.player.updateGold(-50);
-
-                const rolledTower = this.towerManager.getRandomTowerIndex();
-                this.inventory.push({ type: rolledTower });
-                console.log(`Rolled a new tower: ${rolledTower}`);
-
-                this.updateInventoryUI();
-            }
-        });
-        
-
-        const rightStartX = width - 340;
-
-        this.createButton(rightStartX, startY, 'Merge', () => {
-
-            /*
-            //temp test button
-            if(!this.levelClosed){
-            this.levelClosed = true;
-            this.time.delayedCall(50, () => {
-                this.towerManager.activeTowers.clear(true, true);
-                this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
-            });
-            }
-            */
-        });
-
-        this.createButton(rightStartX + 170, startY, 'Inventory', () => {
-            this.toggleInventory();
-        });
-
-        this.exitButton(rightStartX + 200, 0, 'Exit', () => {
-            if (!this.levelClosed) {
-                this.levelClosed = true;
-                this.time.delayedCall(50, () => {
-                    this.towerManager.activeTowers.clear(true, true);
-                    this.sceneL.closeLevel('return', 0);
-                });
+                const tower = this.towerManager.getRandomTowerIndex();
+                this.inventoryManager.addTower(tower);
+                this.inventoryManager.updateInventoryUI();
             }
         });
 
-        this.updateUI();
-        this.time.addEvent({
-            delay: this.player.incInterval, 
-            loop: true,
-            callback: () => {
-                this.player.income();
-            }
+        // Merge/Win button
+        this.createButton(rightStart, startY, 'Merge', () => this.endLevel('win'));
+
+        // Inventory button
+        this.createButton(rightStart + 170, startY, 'Inventory', () => {
+            this.inventoryManager?.toggleInventory?.();
         });
 
-        this.time.delayedCall(2000, () => {
-            this.enemyCount = 5;
-            this.startWave(this.enemyCount);
+        // Control buttons
+        const controlY = 10;
+        this.add.image(rightStart + 200, controlY, 'pausebutton')
+            .setOrigin(0.5, 0).setScale(0.1).setInteractive({ useHandCursor: true }).setDepth(60)
+            .on('pointerdown', () => this.toggleSimplePause());
 
-            this.time.addEvent({
-            delay: 10000,
-            repeat: 3,
-            callback: () => {
-                this.startWave(this.enemyCount + 2);
-            }
-        });
-        });
-
-        
-
-
+        this.add.image(rightStart + 300, controlY, 'sidebar')
+            .setOrigin(0.5, 0).setScale(0.2).setInteractive({ useHandCursor: true }).setDepth(60)
+            .on('pointerdown', () => this.togglePauseMenu());
     }
 
-    createButton(x, y, label, onClick) {
-        const bg = this.add.rectangle(x, y, 160, 80, 0x000000)
-            .setOrigin(0).setStrokeStyle(2, 0xffffff)
-            .setInteractive({ useHandCursor: true }).setDepth(60);
+    setupPauseSystem() {
+        const { width, height } = this.scale;
+        this.pauseOverlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.7)
+            .setOrigin(0.5).setDepth(200).setVisible(false);
 
-        const text = this.add.text(x + 80, y + 40, label, {
-            fontSize: '16px',
-            color: '#ffffff',
-            fontStyle: 'bold',
-            align: 'center'
+        this.pauseText = this.add.text(width / 2, height / 2 - 100, 'PAUSE', {
+            fontSize: '120px', color: '#ffffff', fontStyle: 'bold'
+        }).setOrigin(0.5).setDepth(201).setVisible(false);
+
+        const centerX = width / 2;
+        const baseY = height / 2 + 50;
+        
+        this.pauseButtons = [
+            this.createPauseButton(centerX, baseY, 'Resume', () => this.togglePauseMenu()),
+            this.createPauseButton(centerX, baseY + 80, 'Main Menu', () => this.endLevel('return'))
+        ];
+    }
+
+    createButton(x, y, label, onClick, width = 160, height = 80) {
+        const bg = this.add.rectangle(x, y, width, height, 0x000000)
+            .setOrigin(0).setStrokeStyle(2, 0xffffff).setInteractive({ useHandCursor: true }).setDepth(60);
+        
+        this.add.text(x + width / 2, y + height / 2, label, {
+            fontSize: '16px', color: '#ffffff', fontStyle: 'bold', align: 'center'
         }).setOrigin(0.5).setDepth(61);
 
         bg.on('pointerover', () => bg.setFillStyle(0x222222));
         bg.on('pointerout', () => bg.setFillStyle(0x000000));
         bg.on('pointerdown', onClick);
-        return { bg, text };
     }
 
-    exitButton(x, y, label, onClick) {
-        const bg = this.add.rectangle(x, y, 100, 70, 0x000000)
-            .setOrigin(0).setStrokeStyle(2, 0xffffff)
-            .setInteractive({ useHandCursor: true }).setDepth(60);
+    createPauseButton(x, y, label, onClick, width = 200, height = 60) {
+        const bg = this.add.rectangle(x, y, width, height, 0x333333)
+            .setOrigin(0.5).setStrokeStyle(2, 0xffffff).setInteractive({ useHandCursor: true }).setDepth(202).setVisible(false);
+        
+        const text = this.add.text(x, y, label, {
+            fontSize: '18px', color: '#ffffff', fontStyle: 'bold', align: 'center'
+        }).setOrigin(0.5).setDepth(202).setVisible(false);
 
-        const text = this.add.text(x + 50, y + 30, label, {
-            fontSize: '16px',
-            color: '#ffffff',
-            fontStyle: 'bold',
-            align: 'center'
-        }).setOrigin(0.5).setDepth(61);
-
-        bg.on('pointerover', () => bg.setFillStyle(0x222222));
-        bg.on('pointerout', () => bg.setFillStyle(0x000000));
+        bg.on('pointerover', () => bg.setFillStyle(0x555555));
+        bg.on('pointerout', () => bg.setFillStyle(0x333333));
         bg.on('pointerdown', onClick);
-        return { bg, text };
+
+        return {
+            bg, text,
+            setVisible: (v) => { bg.setVisible(v); text.setVisible(v); }
+        };
     }
 
-    drawGrid(width, height) {
-        // grid transparent (., ., 0), change 0 to up-to 1 for solid grid
-        this.grid.lineStyle(1, 0x0000ff, 0.1);
+    createProjectileAnimations() {
+        this.anims.create({
+            key: 'Susanoo_Stripe_projectile',
+            frames: this.anims.generateFrameNumbers('Susanoo_Stripe', { start: 0, end: 5 }),
+            frameRate: 10,
+            repeat: -1
+        });
+    }
 
-        for(var i = 0; i < ((height - 96) / 64); i++) {
-            this.grid.moveTo(0, i * 64);
-            this.grid.lineTo(width, i * 64);
+    togglePause() {
+        this.timeManager.togglePause();
+        const isPaused = this.timeManager.isPaused();
+        this.time.paused = isPaused;
+        
+        if (isPaused) {
+            this.enemyManager?.pause?.();
+            this.towerManager?.pause?.();
+        } else {
+            this.enemyManager?.resume?.();
+            this.towerManager?.resume?.();
         }
+    }
 
-        for(var j = 0; j < (width / 64); j++) {
-            this.grid.moveTo(j * 64, 0);
-            this.grid.lineTo(j * 64, height);
-        }
+    toggleSimplePause() {
+        this.togglePause();
+        const isPaused = this.timeManager.isPaused();
+        this.pauseOverlay?.setVisible(isPaused);
+        this.pauseText?.setVisible(isPaused);
+    }
 
-        this.grid.strokePath();
+    togglePauseMenu() {
+        this.togglePause();
+        const isPaused = this.timeManager.isPaused();
+        this.pauseOverlay?.setVisible(isPaused);
+        this.pauseButtons?.forEach(btn => btn.setVisible(isPaused));
+    }
+
+    endLevel(result) {
+        if (this.levelClosed) return;
+        this.levelClosed = true;
+        this.towerManager?.activeTowers?.clear?.(true, true);
+        this.sceneL?.closeLevel?.(result, this.timeManager.getTime().toFixed(2));
     }
 
     update(time, delta) {
         if (this.levelClosed) return;
-
-        this.timeManager.update(delta);
+        
+        this.timeManager?.update?.(delta);
         this.updateUI();
 
-        if (this.player.isHealthZero() && !this.levelClosed) {
-            this.levelClosed = true;
-            this.time.delayedCall(10, () => {
-                this.towerManager.activeTowers.clear(true, true);
-                this.sceneL.closeLevel('lose', this.timeManager.getTime().toFixed(2));
-            });
+        // Check if player lost
+        if (this.player?.isHealthZero?.() && !this.levelClosed) {
+            this.time.delayedCall(10, () => this.endLevel('lose'));
+            return;
         }
 
-        // Wave completion logic...
-        if(this.wave === this.maxWave && this.enemyManager.getAliveCount() === 0) {
-            if(!this.levelClosed){
-                this.levelClosed = true;
-                this.time.delayedCall(5000, () => {
-                    this.towerManager.activeTowers.clear(true, true);
-                    this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
-                });
-            }
-        }
+        if (this.timeManager?.isPaused?.()) return;
+        
+        this.handleTowerPlacement();
+        this.updateGameEntities(time, delta);
+    }
 
-        const pointer = this.input.activePointer;
+    handleTowerPlacement() {
         this.highlighter.clear();
         this.rangeCircle.clear();
 
-        // Check if mouse is within the playable grid area
-        if (pointer.y < this.scale.height - 96) {
-            const gridX = Math.floor(pointer.x / 64) * 64;
-            const gridY = Math.floor(pointer.y / 64) * 64;
+        const pointer = this.input.activePointer;
+        if (pointer.y >= this.scale.height - 96) return;
 
-            if (this.selectedTower) {
-                // NEW: Check if the current tile is valid for placement
-                const canPlaceHere = this.isPlacementValid(gridX, gridY);
+        const gridX = Math.floor(pointer.x / 64) * 64;
+        const gridY = Math.floor(pointer.y / 64) * 64;
 
-                // Change color: Green for valid, Red for blocked
-                const color = canPlaceHere ? 0x00ff00 : 0xff0000;
-                this.highlighter.fillStyle(color, 0.4);
-
-                const towerStats = this.towerManager.getStatsByIndex(this.selectedTower);
-                if (towerStats) {
-                    const rangePixels = towerStats[2] * 64;
-                    const centerX = gridX + 32;
-                    const centerY = gridY + 32;
-                    
-                    this.rangeCircle.lineStyle(2, canPlaceHere ? 0x00ffff : 0xff0000, 0.6);
-                    this.rangeCircle.strokeCircle(centerX, centerY, rangePixels);
-                    this.rangeCircle.setDepth(5);
-                }
-
-                // Cancel placement logic
-                if (pointer.rightButtonDown() || Phaser.Input.Keyboard.JustDown(this.escKey)) {
-                    this.selectedTower = null;
-                    this.rangeCircle.clear();
-                    return;
-                }
-
-                // NEW: Only trigger createTower if canPlaceHere is true
-                if (pointer.isDown && !this.lastPointerDown && this.canPlace && canPlaceHere) {
-                    this.towerManager.createTower(this.selectedTower, gridX, gridY);
-
-                    const index = this.inventory.findIndex(item => item.type === this.selectedTower);
-                    if (index > -1) this.inventory.splice(index, 1);
-
-                    this.selectedTower = null;
-                    this.rangeCircle.clear();
-                    this.canPlace = false;
-                    this.updateInventoryUI();
-                }
-            } else {
-                this.highlighter.fillStyle(0xffffff, 0.3);
-            }
-            
+        if (this.towerManager.hasSelectedTower()) {
+            this.drawTowerPlacementUI(gridX, gridY, pointer);
+        } else {
+            this.highlighter.fillStyle(0xffffff, 0.3);
             this.highlighter.fillRect(gridX, gridY, 64, 64);
         }
+    }
 
-        // Update managers
-        this.towerManager.activeTowers.children.iterate(tower => {
-            if (tower && tower.update) tower.update(time, delta);
-        });
+    drawTowerPlacementUI(gridX, gridY, pointer) {
+        const stats = this.towerManager.getSelectedTowerStats();
+        if (!stats) return;
 
-        this.enemyManager.activeEnemies.children.iterate(enemy => {
-            if (enemy && enemy.update) enemy.update(time, delta);
-        });
+        const canPlace = this.isPlacementValid(gridX, gridY);
+        const color = canPlace ? 0x00ff00 : 0xff0000;
 
-        this.lastPointerDown = pointer.isDown;
+        this.highlighter.fillStyle(color, 0.4);
+        this.highlighter.fillRect(gridX, gridY, 64, 64);
+
+        const centerX = gridX + 32;
+        const centerY = gridY + 32;
+        const rangePixels = stats[2] * 64;
+
+        this.rangeCircle.lineStyle(2, canPlace ? 0x00ffff : 0xff0000, 0.6);
+        this.rangeCircle.strokeCircle(centerX, centerY, rangePixels);
+        this.rangeCircle.setDepth(5);
+
+        // Cancel placement
+        if (pointer.rightButtonDown() || Phaser.Input.Keyboard.JustDown(this.escKey)) {
+            this.towerManager.deselectTower();
+            this.rangeCircle.clear();
+            return;
+        }
+
+        // Place tower
+        if (pointer.isDown && !this.lastPointerDown && this.canPlace && canPlace) {
+            const selected = this.towerManager.getSelectedTower();
+            this.towerManager.createTower(selected, gridX, gridY);
+            this.inventoryManager.removeTower(selected);
+            this.towerManager.deselectTower();
+            this.rangeCircle.clear();
+            this.canPlace = false;
+            this.inventoryManager.updateInventoryUI();
+        }
+    }
+
+    updateGameEntities(time, delta) {
+        this.towerManager?.activeTowers?.children?.iterate?.(tower => 
+            tower?.update?.(time, delta)
+        );
+
+        this.enemyManager?.activeEnemies?.children?.iterate?.(enemy => 
+            enemy?.update?.(time, delta)
+        );
+
+        this.lastPointerDown = this.input.activePointer.isDown;
     }
 
     isPlacementValid(gridX, gridY) {
         const col = Math.floor(gridX / 64);
         const row = Math.floor(gridY / 64);
 
-        // Access static level data through the MapManager reference
-        const mapData = this.mapManager.levelData.mapData;
-        const decoData = this.mapManager.levelData.decoData;
+        // Validate map data exists
+        if (!this.mapManager?.levelData) return false;
 
-        // Safety check for out of bounds
-        if (!mapData[row] || mapData[row][col] === undefined) return false;
+        const { mapData, decoData } = this.mapManager.levelData;
 
-        // 1. Block if tile is a Path (1), Entrance (2), or Exit (3)
-        // We only allow placement on Grass (0)
+        // Bounds check - properly check for undefined without treating 0 as falsy
+        if (mapData[row] === undefined || mapData[row][col] === undefined) return false;
+
+        // Only allow placement on grass (0)
         if (mapData[row][col] !== 0) return false;
 
-        // 2. Block if tile has a Decoration (e.g., Tree = 2)
+        // No decorations
         if (decoData[row][col] !== 0) return false;
 
-        // 3. Block if a tower is already placed on this exact grid tile
-        const towers = this.towerManager.activeTowers.getChildren();
-        const alreadyOccupied = towers.some(t => {
+        // Check tower collision
+        return !this.towerManager.activeTowers.getChildren().some(t => {
             const tCol = Math.floor(t.x / 64);
-            const tRow = Math.floor((t.y + 20) / 64); // Adjust for the vertical offset in Tower class
+            const tRow = Math.floor((t.y + 20) / 64);
             return tCol === col && tRow === row;
         });
-
-        if (alreadyOccupied) return false;
-
-        return true;
     }
 
     updateUI() {
         if (!this.player) return;
-        this.goldText.setText(`Gold: ${this.player.gold}`);
-        
-        const time = this.timeManager.getTime().toFixed(2);
-        this.timerText.setText(`Time: ${time}s`);
-        this.waveText.setText(`Wave: ${this.wave}`);
+        this.goldText?.setText?.(`Gold: ${this.player.gold}`);
+        this.timerText?.setText?.(`Time: ${this.timeManager.getTime().toFixed(2)}s`);
+        this.waveManager?.updateWaveText?.();
         this.updateHealthCircle(this.player.playerHealth);
     }
 
-    toggleInventory() {
-        const visible = !this.inventoryImage.visible;
-        this.inventoryImage.setVisible(visible);
-        this.updateInventoryUI();
-    }
+    updateHealthCircle(hp) {
+        const percent = Phaser.Math.Clamp(hp / this.hpMax, 0, 1);
+        const fillHeight = (this.hpRadius * 2) * percent;
 
-    updateInventoryUI() {
-        this.towerIcons.clear(true, true);
-        if (!this.inventoryImage.visible) return;
-
-        const startX = this.inventoryImage.x + 20;
-        const startY = this.inventoryImage.y + 20;
-        const size = 50;
-        const gap = 10;
-
-        this.inventory.forEach((item, i) => {
-            const row = Math.floor(i / 9);
-            const col = i % 9;
-            const x = startX + col * (size + gap);
-            const y = startY + row * (size + gap);
-
-            const stats = this.towerManager.getStatsByIndex(item.type);
-            const iconKey = stats ? `${stats[0]}_Icon` : 'DefaultIcon';
-
-            const icon = this.add.image(x, y, iconKey)
-                .setDisplaySize(size, size)
-                .setDepth(51)
-                .setInteractive({ useHandCursor: true });
-
-            this.towerIcons.add(icon);
-
-            icon.on('pointerdown', () => {
-                this.selectedTower = item.type;
-                this.toggleInventory();
-
-                this.canPlace = false;
-                this.time.delayedCall(100, () => {
-                    this.canPlace = true;
-                });
-
-                //console.log(`Selected ${iconKey} from inventory.`);
-            });
-        });
-
-    }
-
-    updateHealthCircle(currentHP) {
-        const centerX = this.hpFrameX;
-        const centerY = this.hpFrameY;
-        const radius = this.hpRadius;
-
-        let healthPercent = Phaser.Math.Clamp(currentHP / this.hpMax, 0, 1);
         this.hpFill.clear();
-        const totalHeight = radius * 2;
-        const fillHeight = totalHeight * healthPercent;
-
         this.hpFill.fillStyle(0xCD1C18, 1);
         this.hpFill.fillRect(
-            centerX - radius,
-            (centerY + radius) - fillHeight,
-            radius * 2,
+            this.hpFrameX - this.hpRadius,
+            (this.hpFrameY + this.hpRadius) - fillHeight,
+            this.hpRadius * 2,
             fillHeight
         );
-
-        this.healthText.setText(`${currentHP} / ${this.hpMax}`);
-    }
-
-    //Move and change later
-    startWave(enemyCount) {
-        if (this.isWaveActive) return;
-
-        if(this.wave > this.maxWave)
-        {
-            return;
-        }
-
-        if (!this.path || this.path.length === 0) {
-            console.log("❌ Cannot start wave, path not ready");
-            return;
-        }
-
-        console.log(`Starting wave ${this.wave}`);
-        this.isWaveActive = true;
-
-        
-
-        for (let i = 0; i < enemyCount; i++) {
-            this.time.delayedCall(i * 500, () => {
-                this.enemyManager.createEnemy(0, this.path);
-            });
-        }
-
-        // End wave after last spawn
-        this.time.delayedCall(enemyCount * 500 + 1000, () => {
-            this.endWave();
-            // if(this.wave === this.maxWave)
-            // {
-            //     this.time.delayedCall(20000, () => {
-            //         if(!this.levelClosed){
-            //             this.levelClosed = true;
-            //             this.time.delayedCall(50, () => {
-            //             this.towerManager.activeTowers.clear(true, true);
-            //             this.sceneL.closeLevel('win', this.timeManager.getTime().toFixed(2));
-                
-            // });
-            // }
-
-            // });
-
-            // }
-            
-        });//enemyCount * 500 + 1000
-
-        
-    }
-
-    endWave() {
-        console.log(`Wave ${this.wave} ended`);
-
-        if(this.wave != this.maxWave)
-        {
-            this.wave++;
-        }
-        
-        //this.wave++;
-        this.isWaveActive = false;
+        this.healthText?.setText?.(`${hp} / ${this.hpMax}`);
     }
 }
