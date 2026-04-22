@@ -1,75 +1,122 @@
 import Tower from '../entities/Tower.js';
 
 export default class TowerManager {
-    // Table info:
-    // ['Name', dmg, range, attspd, lastIdleFrame, lastAttackFrame]
-    static neutralData = [];
+    // Tower stat tables: [name, damage, range, attackSpeed, idleEnd, attackEnd]
     static physicalData = [
-        ['Izanami', 25, 3, 1.2, 2, 14],
-        ['Susanoo', 12, 4, 0.25, 6, 14]
+        ['Izanami', 18, 2, 1.2, 2, 14],
+        ['Susanoo', 10, 3, 0.3, 6, 14]
     ];
+
     static airData = [];
     static waterData = [];
     static fireData = [];
     static darkData = [];
-    static otherData = [
-        ['Shrine', 0, 0, 0, 0, 0]
-    ];
+    static neutralData = [];
+    static otherData = [['Shrine', 0, 0, 0, 0, 0]];
 
     constructor(scene) {
         this.scene = scene;
 
-        // init tower data
-        this.neutral = TowerManager.neutralData;
-        this.physical = TowerManager.physicalData;
-        this.air = TowerManager.airData;
-        this.water = TowerManager.waterData;
-        this.fire = TowerManager.fireData;
-        this.dark = TowerManager.darkData;
-        this.other = TowerManager.otherData;
+        // Local references for quick access
+        this.activeTowers = scene.add.group({ runChildUpdate: true });
 
-        // index array for tower rolling
-        this.towerIndex = [
-            'p0','p1'
-        ];
+        // Currently selected tower type (for placement mode)
+        this.selectedTower = null;
 
-        this.activeTowers = this.scene.add.group({
-            runChildUpdate: true
-        });
+        // Available tower index list
+        this.towerIndex = ['p0', 'p1'];
     }
 
     getStatsByIndex(indexStr) {
         const type = indexStr[0];
-        const id = parseInt(indexStr.slice(1));
+        const id = Number(indexStr.slice(1));
 
-        switch(type) {
-            case 'p': return this.physical[id];
-            case 'a': return this.air[id];
-            case 'w': return this.water[id];
-            case 'f': return this.fire[id];
-            case 'd': return this.dark[id];
-            case 'o': return this.other[id];
+        switch (type) {
+            case 'p': return this.constructor.physicalData[id];
+            case 'a': return this.constructor.airData[id];
+            case 'w': return this.constructor.waterData[id];
+            case 'f': return this.constructor.fireData[id];
+            case 'd': return this.constructor.darkData[id];
+            case 'o': return this.constructor.otherData[id];
             default: return null;
         }
     }
 
     getRandomTowerIndex() {
-        const randomIndex = Math.floor(Math.random() * this.towerIndex.length);
-        return this.towerIndex[randomIndex];
+        return this.towerIndex[
+            Math.floor(Math.random() * this.towerIndex.length)
+        ];
+    }
+
+    createAnimations() {
+        this.constructor.physicalData.forEach(([name, , , , idleEnd, attackEnd]) => {
+
+            // Idle loop animation
+            this.scene.anims.create({
+                key: `${name}_idle`,
+                frames: this.scene.anims.generateFrameNumbers(name, {
+                    start: 0,
+                    end: idleEnd
+                }),
+                frameRate: 6,
+                repeat: -1
+            });
+
+            // Attack animation (plays once)
+            this.scene.anims.create({
+                key: `${name}_attack`,
+                frames: this.scene.anims.generateFrameNumbers(name, {
+                    start: idleEnd + 1,
+                    end: attackEnd
+                }),
+                frameRate: 12,
+                repeat: 0
+            });
+        });
     }
 
     createTower(indexStr, x, y) {
         const stats = this.getStatsByIndex(indexStr);
-        if (!stats) {
-            console.error("Could not find stats from index:", indexStr);
-            return;
-        }
-        const tower = new Tower(this.scene, stats);
+        if (!stats) return console.error("Invalid tower index:", indexStr);
 
+        const tower = new Tower(this.scene, stats);
         tower.place(x, y);
+
         this.activeTowers.add(tower);
         return tower;
     }
 
-    //this.towerManager.activeTowers.clear(true, true);
+    selectTower(index) {
+        this.selectedTower = index;
+    }
+
+    deselectTower() {
+        this.selectedTower = null;
+    }
+
+    getSelectedTower() {
+        return this.selectedTower;
+    }
+
+    hasSelectedTower() {
+        return this.selectedTower !== null;
+    }
+
+    getSelectedTowerStats() {
+        return this.selectedTower
+            ? this.getStatsByIndex(this.selectedTower)
+            : null;
+    }
+
+    pause() {
+        this.activeTowers.children.each(t => {
+            if (t) t.active = false;
+        });
+    }
+
+    resume() {
+        this.activeTowers.children.each(t => {
+            if (t) t.active = true;
+        });
+    }
 }

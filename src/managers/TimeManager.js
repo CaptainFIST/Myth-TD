@@ -1,12 +1,16 @@
 export default class TimeManager {    
     constructor() {
-        this.time = 0; 
-        this.scale = 1; 
+        this.time = 0;
+
+        // Time multiplier (1 = normal speed, 2 = double speed, etc.)
+        this.scale = 1;
+
+        // Pause state flag
         this.paused = false;
     }
 
     update(delta) {
-        if(this.paused) return;
+        if (this.paused) return;
         this.time += (delta / 1000) * this.scale;
     }
 
@@ -15,6 +19,7 @@ export default class TimeManager {
     }
 
     resetTime() {
+        // Reset elapsed time back to zero
         this.time = 0;
     }
 
@@ -26,7 +31,16 @@ export default class TimeManager {
         this.paused = true;
     }
 
-    resume(){
+    resume() {
         this.paused = false;
+    }
+
+    isPaused() {
+        return this.paused;
+    }
+
+    togglePause() {
+        // Switch between paused and unpaused state
+        this.paused = !this.paused;
     }
 }
