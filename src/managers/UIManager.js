@@ -96,7 +96,7 @@ export default class UIManager extends Phaser.Scene {
             loop: true,
             callback: () => this.player?.income?.()
         });
-        this.waveManager.startWaveCycle(this, 5, 2000, 10000, 3);
+        this.waveManager.startWaveCycle(this, 10, 10000, 30000, 8);
     }
 
     setupHealthDisplay(x, y) {
