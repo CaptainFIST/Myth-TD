@@ -1,21 +1,26 @@
 export const ACHIEVEMENTS = {
     first_win: {
         name: 'First Victory',
-        //condition: (e) => e.type === 'LEVEL_COMPLETE'
+        condition: (e) => e.type === 'Win'
+    },
+
+    first_loss: {
+        name: 'First Loss',
+        condition: (e) => e.type === 'Lose'
     },
 
     speedrun: {
         name: 'Speedrunner',
-        
+        condition: (e) => e.type === 'Win' && e.time < 360
     },
 
-    no_damage: {
-        name: 'Perfect Defense',
+    // no_damage: {
+    //     name: 'Perfect Defense',
         
-    },
+    // },
 
-    rich: {
-        name: 'Rich!',
-        
+     rich: {
+         name: 'Rich!',
+        condition: (e) => e.type === 'Win' && e.gainedGold > 1000
     }
 };

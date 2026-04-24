@@ -1,4 +1,6 @@
 import SaveManager from '../managers/SaveManager.js';
+import AchievementManager from '../managers/AchievementManager.js';
+import ProgressManager from '../managers/ProgressManager.js';
 import StatsManager from '../managers/StatsManager.js';
 
 export default class MainMenu extends Phaser.Scene {
@@ -15,7 +17,8 @@ export default class MainMenu extends Phaser.Scene {
     create() {
         const sData = SaveManager.get();
         console.log(sData.activeSlot);
-        StatsManager.incrementStat(5);
+        console.log(sData);
+        
 
         const { width, height } = this.scale;
         this.add.rectangle(width / 2, height / 2, width, height, 0x0d1128).setOrigin(0.5);
@@ -32,7 +35,10 @@ export default class MainMenu extends Phaser.Scene {
             {text: 'ACHIEVEMENTS', icon: '🏆'}, // No action - placeholder
             {text: 'SETTINGS', icon: '⚙', action: () => this.scene.start('SettingsMenu')},
             {text: `Save ${sData.activeSlot}`, icon: '✕', 
-                action: () => SaveManager.setActiveSlot('Slot_2')
+                action: () => {
+                    SaveManager.setActiveSlot('Slot_2');
+                    console.log(sData.activeSlot);
+                }
                 
             }
 

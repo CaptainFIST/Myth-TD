@@ -1,3 +1,8 @@
+import SaveManager from '../managers/SaveManager.js';
+import AchievementManager from '../managers/AchievementManager.js';
+import ProgressManager from '../managers/ProgressManager.js';
+import StatsManager from '../managers/StatsManager.js';
+
 export default class LoseScreen extends Phaser.Scene {
     constructor() {
         super({ key: 'LoseScreen' });
@@ -6,12 +11,24 @@ export default class LoseScreen extends Phaser.Scene {
     // Build the defeat screen UI
     create(data) {
         const { width, height } = this.scale;
-        const levelId = data?.levelId ?? 1;
+        
 
         // Red/dark layered background for defeat theme
         this.add.rectangle(width / 2, height / 2, width, height, 0x1a0000).setDepth(-1);
         this.add.rectangle(width / 2, height / 2, width, height, 0x2d0000)
             .setDepth(-1).setAlpha(0.5);
+
+        const levelId = data?.levelId ?? 1;
+        const passTime = data.passTime ?? 0;
+        const gainGold = data.gainGold ?? 0;
+        const spentGold = data.spentGold ?? 0;
+
+        AchievementManager.check({
+            type: 'Lose',
+            time: passTime,
+            gainedGold: gainGold,
+            usedGold: spentGold
+        });
 
         const title = this.add.text(width / 2, height / 2 - 150, 'DEFEAT', {
             fontSize: '96px',

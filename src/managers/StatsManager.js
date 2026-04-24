@@ -12,10 +12,18 @@ export default class StatsManager {
         SaveManager.commit();
     }
 
-    // static isUnlocked(level) {
-    //     if(level === 1) return true;
+    static incTotalGold(amount) {
+        const data = SaveManager.getSlot();
+        data.stats.totalGold += amount;
+        console.log(data.stats.totalGold);
+        SaveManager.commit();
+    }
 
-    //     const data = SaveManager.getSlot();
-    //     return data.progress.levelsCompleted.includes(level - 1);
-    // }
+    static incGoldSpent(amount) {
+        const data = SaveManager.getSlot();
+        data.stats.goldSpent += amount;
+        console.log(data.stats.goldSpent);
+        SaveManager.commit();
+    }
+
 }

@@ -3,7 +3,7 @@ import Enemy from '../entities/Enemy.js';
 export default class EnemyManager {
     // [name, damage, health, speed, reward, lastFrame]
     static testData = [
-        ['Oni', 1, 40, 1, 5, 15],
+        ['Oni', 1, 4, 1, 5, 15],
         ['flying_fly', 2, 75, 1, 5, 5]
     ];
 

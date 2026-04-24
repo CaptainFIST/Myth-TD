@@ -1,17 +1,19 @@
 import SaveManager from './SaveManager.js';
-import { ACHIEVEMENTS } from './Achievements.js';
+import  {ACHIEVEMENTS} from './Achievements.js';
 
 export default class AchievementManager {
     static check(event) {
         const data = SaveManager.getSlot();
 
-        for(const id in ACHIEVEMENTS) {
+        for(const id in ACHIEVEMENTS) 
+        {
             if(data.achievements[id]) continue;
 
             const achievement = ACHIEVEMENTS[id];
 
-            if(achievement.condition(event)) {
-                this.unlock(id);
+            if(achievement.condition && achievement.condition(event)) 
+            {
+                AchievementManager.unlock(id);
             }
         }
     }
@@ -23,7 +25,7 @@ export default class AchievementManager {
             unlockedAt: Date.now()
         };
 
-        console.log(data.achievement[id]);
+        console.log(ACHIEVEMENTS[id].name);
 
         SaveManager.commit();
 
