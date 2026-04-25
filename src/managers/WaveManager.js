@@ -5,7 +5,7 @@ export default class WaveManager {
 
         // Wave state
         this.wave = 1;
-        this.maxWave = 5;
+        this.maxWave = 10;
         this.isWaveActive = false;
 
         // UI + path data
@@ -99,7 +99,7 @@ export default class WaveManager {
                 callback: () => {
                     // Prevent overlapping waves
                     if (!this.isWaveActive) {
-                        this.startWave(initialEnemyCount + 2);
+                        this.startWave(initialEnemyCount + 5);
                     }
                 }
             });
