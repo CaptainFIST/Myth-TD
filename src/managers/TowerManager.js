@@ -50,28 +50,34 @@ export default class TowerManager {
 
     createAnimations() {
         this.constructor.physicalData.forEach(([name, , , , idleEnd, attackEnd]) => {
+            const idleKey = `${name}_idle`;
+            const attackKey = `${name}_attack`;
 
             // Idle loop animation
-            this.scene.anims.create({
-                key: `${name}_idle`,
-                frames: this.scene.anims.generateFrameNumbers(name, {
-                    start: 0,
-                    end: idleEnd
-                }),
-                frameRate: 6,
-                repeat: -1
-            });
+            if (!this.scene.anims.exists(idleKey)) {
+                this.scene.anims.create({
+                    key: idleKey,
+                    frames: this.scene.anims.generateFrameNumbers(name, {
+                        start: 0,
+                        end: idleEnd
+                    }),
+                    frameRate: 6,
+                    repeat: -1
+                });
+            }
 
             // Attack animation (plays once)
-            this.scene.anims.create({
-                key: `${name}_attack`,
-                frames: this.scene.anims.generateFrameNumbers(name, {
-                    start: idleEnd + 1,
-                    end: attackEnd
-                }),
-                frameRate: 12,
-                repeat: 0
-            });
+            if (!this.scene.anims.exists(attackKey)) {
+                this.scene.anims.create({
+                    key: attackKey,
+                    frames: this.scene.anims.generateFrameNumbers(name, {
+                        start: idleEnd + 1,
+                        end: attackEnd
+                    }),
+                    frameRate: 12,
+                    repeat: 0
+                });
+            }
         });
     }
 
@@ -81,7 +87,6 @@ export default class TowerManager {
 
         const tower = new Tower(this.scene, stats);
         tower.place(x, y);
-
         this.activeTowers.add(tower);
         return tower;
     }

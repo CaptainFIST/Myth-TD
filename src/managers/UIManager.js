@@ -41,6 +41,8 @@ export default class UIManager extends Phaser.Scene {
             return;
         }
 
+        this.events.once('shutdown', this.cleanup, this);
+        this.events.once('destroy', this.cleanup, this);
         // Initialize properties
         this.input.mouse.disableContextMenu();
         this.escKey = this.input.keyboard.addKey('ESC');
@@ -63,20 +65,43 @@ export default class UIManager extends Phaser.Scene {
         this.sceneL = data.sceneL;
         this.timeManager = new TimeManager();
 
-        // Setup path after mapManager is ready
-        this.time.delayedCall(500, () => {
-            if (this.mapManager?.worldPath) {
-                this.path = this.mapManager.worldPath;
-                this.waveManager.setPath(this.path);
-                this.waveManager.initialize(this.waveText, this.path);
-            }
-        });
-
         this.grid = this.mapManager.drawGrid(this.scale.width, this.scale.height);
         this.highlighter = this.add.graphics().setDepth(1);
 
         // Setup UI
         this.setupUI();
+        // wait until MapManager is ready
+        this.waitForMapReady();
+    }
+
+    waitForMapReady() {
+        const pathReady = this.mapManager?.worldPath?.length;
+        const waveDataReady = this.sceneL?.constructor?.waveData?.length;
+
+        if (pathReady && waveDataReady) {
+            this.path = this.mapManager.worldPath;
+            this.waveManager.setWaveData(
+                this.sceneL.constructor.waveData,
+                this.sceneL.constructor.waveData.length
+            );
+
+            this.waveManager.setPath(this.path);
+            this.waveManager.initialize(this.waveText, this.path);
+
+            console.log("✓ Path + WaveData initialized");
+
+            this.time.paused = false;
+            this.timeManager.resume();
+
+            this.waveManager.reset();
+
+            if (!this.waveManager.cycleRunning) {
+                this.waveManager.startWaveCycle(this, 10000, 20000, 8);
+            }            
+            } 
+            else {
+                this.time.delayedCall(50, () => this.waitForMapReady());
+        }
     }
 
     setupUI() {
@@ -96,14 +121,12 @@ export default class UIManager extends Phaser.Scene {
             loop: true,
             callback: () => this.player?.income?.()
         });
-        this.waveManager.startWaveCycle(this, 10, 10000, 30000, 8);
     }
 
     setupHealthDisplay(x, y) {
         this.hpMax = 20;
         this.hpFrameX = x;
         this.hpFrameY = y;
-        
         this.add.image(x, y, 'UIHP').setDepth(2);
         
         this.hpRadius = 39; // 78 / 2
@@ -148,7 +171,6 @@ export default class UIManager extends Phaser.Scene {
             this.canPlace = false;
             this.time.delayedCall(100, () => this.canPlace = true);
         });
-
         this.waveManager.setOnGameCompleteCallback(() => this.endLevel('win'));
     }
 
@@ -235,12 +257,15 @@ export default class UIManager extends Phaser.Scene {
     }
 
     createProjectileAnimations() {
-        this.anims.create({
-            key: 'Susanoo_Stripe_projectile',
-            frames: this.anims.generateFrameNumbers('Susanoo_Stripe', { start: 0, end: 5 }),
-            frameRate: 10,
-            repeat: -1
-        });
+        const key = 'Susanoo_Stripe_projectile';
+        if (!this.anims.exists(key)) {
+            this.anims.create({
+                key,
+                frames: this.anims.generateFrameNumbers('Susanoo_Stripe', { start: 0, end: 5 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
     }
 
     togglePause() {
@@ -274,8 +299,14 @@ export default class UIManager extends Phaser.Scene {
     endLevel(result) {
         if (this.levelClosed) return;
         this.levelClosed = true;
-        this.towerManager?.activeTowers?.clear?.(true, true);
-        this.sceneL?.closeLevel?.(result, this.timeManager.getTime().toFixed(2));
+        this.waveManager?.stop?.(); 
+        this.cleanup();
+
+        this.sceneL?.closeLevel?.(
+            result,
+            this.timeManager.getTime().toFixed(2)
+        );
+
     }
 
     update(time, delta) {
@@ -289,9 +320,7 @@ export default class UIManager extends Phaser.Scene {
             this.time.delayedCall(10, () => this.endLevel('lose'));
             return;
         }
-
         if (this.timeManager?.isPaused?.()) return;
-        
         this.handleTowerPlacement();
         this.updateGameEntities(time, delta);
     }
@@ -320,7 +349,6 @@ export default class UIManager extends Phaser.Scene {
 
         const canPlace = this.isPlacementValid(gridX, gridY);
         const color = canPlace ? 0x00ff00 : 0xff0000;
-
         this.highlighter.fillStyle(color, 0.4);
         this.highlighter.fillRect(gridX, gridY, 64, 64);
 
@@ -371,8 +399,6 @@ export default class UIManager extends Phaser.Scene {
         if (!this.mapManager?.levelData) return false;
 
         const { mapData, decoData } = this.mapManager.levelData;
-
-        // Bounds check - properly check for undefined without treating 0 as falsy
         if (mapData[row] === undefined || mapData[row][col] === undefined) return false;
 
         // Only allow placement on grass (0)
@@ -410,5 +436,20 @@ export default class UIManager extends Phaser.Scene {
             fillHeight
         );
         this.healthText?.setText?.(`${hp} / ${this.hpMax}`);
+    }
+
+    cleanup() {
+        this.waveManager?.stop?.();   
+        this.time.removeAllEvents();
+
+        this.enemyManager?.activeEnemies?.clear?.(true, true);
+        this.towerManager?.activeTowers?.clear?.(true, true);
+
+        this.highlighter?.clear?.();
+        this.rangeCircle?.clear?.();
+
+        this.waveManager = null;
+        this.enemyManager = null;
+        this.towerManager = null;
     }
 }

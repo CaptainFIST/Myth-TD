@@ -3,21 +3,27 @@ export default class WaveManager {
         this.scene = scene;
         this.enemyManager = enemyManager;
 
-        // Wave state
         this.wave = 1;
         this.maxWave = 10;
+
+        this.waveData = [];
+        this.path = null;
+        this.waveText = null;
         this.isWaveActive = false;
 
-        // UI + path data
-        this.waveText = null;
-        this.path = null;
+        this.timers = [];
+        this.loopEvent = null;
 
-        // Win callback hook
+        this.cycleRunning = false;
         this.onGameCompleteCallback = null;
     }
 
+    setWaveData(waveData, maxWave = 10) {
+        this.waveData = waveData;
+        this.maxWave = maxWave;
+    }
+
     initialize(waveText, path) {
-        // Connect UI + enemy path
         this.waveText = waveText;
         this.path = path;
     }
@@ -26,83 +32,137 @@ export default class WaveManager {
         this.path = path;
     }
 
-    setOnGameCompleteCallback(callback) {
-        this.onGameCompleteCallback = callback;
+    setOnGameCompleteCallback(cb) {
+        this.onGameCompleteCallback = cb;
     }
 
-    startWave(enemyCount) {
-        if (this.isWaveActive || this.wave > this.maxWave) return;
-        if (!this.path?.length) return console.log("Path not ready");
+    reset() {
+        this.wave = 1;
+        this.isWaveActive = false;
+        this.cycleRunning = false;
+        this.clearTimers();
 
-        console.log(`Starting wave ${this.wave}`);
+        this.loopEvent?.remove?.();
+        this.loopEvent = null;
+        this.updateWaveText();
+    }
+
+    clearTimers() {
+        this.timers.forEach(t => t?.remove?.());
+        this.timers = [];
+    }
+
+    startWave() {
+        if (this.isWaveActive) return;
+        if (!this.path?.length) return;
+        if (!this.waveData?.length) return;
+        if (this.wave > this.maxWave) return;
         this.isWaveActive = true;
 
-        // Spawn enemies over time
-        for (let i = 0; i < enemyCount; i++) {
-            this.scene.time.delayedCall(i * 500, () => {
-                this.enemyManager.createEnemy(0, this.path);
-            });
-        }
+        const waveConfig = this.waveData[this.wave - 1];
+        if (!waveConfig) return console.error("Wave missing:", this.wave);
 
-        // End wave after last enemy spawns
-        this.scene.time.delayedCall(enemyCount * 500 + 1000, () => {
-            this.endWave();
+        let totalSpawns = 0;
+        waveConfig.enemies.forEach(({ type, count }) => {
+            for (let i = 0; i < count; i++) {
+                const t = this.scene.time.delayedCall(totalSpawns * 500, () => {
+                    this.enemyManager?.createEnemy?.(type, this.path);
+                });
+                this.timers.push(t);
+                totalSpawns++;
+            }
         });
+
+        const endTimer = this.scene.time.delayedCall(
+            totalSpawns * 500 + 1000,
+            () => this.endWave()
+        );
+        this.timers.push(endTimer);
     }
 
     endWave() {
-        console.log(`Wave ${this.wave} ended`);
-
-        // Progress wave or finish game
-        if (this.wave < this.maxWave) this.wave++;
-        else this.checkGameCompletion();
-
         this.isWaveActive = false;
+
+        if (this.wave < this.maxWave) {
+            this.wave++;
+        } else {
+            this.checkGameCompletion();
+        }
     }
 
     checkGameCompletion() {
         const check = () => {
             if (this.enemyManager.getAliveCount() === 0) {
-                console.log("All waves complete!");
-
                 this.onGameCompleteCallback?.();
             } else {
-                this.scene.time.delayedCall(500, check);
+                const t = this.scene.time.delayedCall(500, check);
+                this.timers.push(t);
             }
         };
         check();
-    }
-
-    getWave() {
-        return this.wave;
-    }
-
-    getMaxWave() {
-        return this.maxWave;
-    }
-
-    isWaveInProgress() {
-        return this.isWaveActive;
     }
 
     updateWaveText() {
         this.waveText?.setText(`Wave: ${this.wave}`);
     }
 
-    startWaveCycle(scene, initialEnemyCount, delayBeforeFirst, delayBetweenWaves, numberOfWaves) {
-        scene.time.delayedCall(delayBeforeFirst, () => {
-            this.startWave(initialEnemyCount);
+    getWave() {
+        return this.wave;
+    }
 
-            scene.time.addEvent({
-                delay: delayBetweenWaves,
-                repeat: numberOfWaves,
-                callback: () => {
-                    // Prevent overlapping waves
-                    if (!this.isWaveActive) {
-                        this.startWave(initialEnemyCount + 5);
-                    }
-                }
-            });
+    startWaveCycle(scene, initialDelay, delayBetweenWaves) {
+        if (!scene || !scene.time) return;
+        if (this.cycleRunning) {
+            return;
+        }
+
+        if (!this.path?.length || !this.waveData?.length) {
+            console.warn("WaveManager: missing path or waveData");
+            return;
+        }
+
+        this.cycleRunning = true;
+        this.clearTimers();
+
+        const first = scene.time.delayedCall(initialDelay, () => {
+            this.startWave();
         });
+        this.timers.push(first);
+
+        // loop controller
+        this.loopEvent = scene.time.addEvent({
+            delay: delayBetweenWaves,
+            loop: true,
+            callback: () => {
+                if (this.isWaveActive) return;
+                if (this.wave > this.maxWave) {
+                    this.stop();
+                    return;
+                }
+                this.startWave();
+            }
+        });
+    }
+
+    stop() {
+        this.isWaveActive = false;
+        this.cycleRunning = false;
+        this.clearTimers();
+
+        this.loopEvent?.remove?.();
+        this.loopEvent = null;
+        this.wave = 1;
+
+        this.scene.time.removeAllEvents(); 
+        this.updateWaveText();
+    }
+
+    hardReset() {
+        this.stop();
+        this.path = null;
+        this.waveData = [];
+        this.waveText = null;
+        this.scene = null;
+        this.enemyManager = null;
     }
 }
