@@ -39,7 +39,6 @@ export default class PlayerManager extends Phaser.Scene {
             console.log('Not enough gold!');
             return;
         }
-
         this.gold += change;
     }
 

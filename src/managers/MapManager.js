@@ -25,7 +25,6 @@ export default class MapManager extends Phaser.Scene {
 
                 const tileKey = tileTypes[mapData[row][col]];
                 const decoKey = decoTypes[decoData[row][col]];
-
                 if (tileKey) this.add.image(x, y, tileKey).setOrigin(0);
                 if (decoKey) this.add.image(x, y, decoKey).setOrigin(0).setDepth(0.5);
             }
@@ -73,7 +72,6 @@ export default class MapManager extends Phaser.Scene {
             visited.add(key(cur.x, cur.y));
 
             if (map[cur.y][cur.x] === 3) break;
-
             let next = null;
 
             // Check 4 directions (up, right, down, left)
@@ -106,14 +104,12 @@ export default class MapManager extends Phaser.Scene {
         }
         graphics.lineStyle(3, 0xffffff, 1);
         drawPath.draw(graphics);
-
         return path;
     }
 
     // Convert tile coordinates → world pixel positions
     actualWorldPath(tilePath) {
         const tileSize = this.tileSize || 64;
-
         return tilePath.map(t => ({
             x: t.x * tileSize + tileSize / 2,
             y: t.y * tileSize + tileSize / 2
@@ -127,7 +123,6 @@ export default class MapManager extends Phaser.Scene {
                 decoData[y][x] = 0;
             }
         });
-
         console.log("✓ Path decorations cleared");
     }
 

@@ -1,35 +1,49 @@
 export default class Enemy extends Phaser.GameObjects.Sprite {
     constructor(scene, stats, path) {
-        super(scene, 0, 0, stats[0], 0);
+        super(scene, 0, 0, stats[0]);
         this.scene = scene;
 
-        // Destructure stats for cleaner code
+        // Basic enemy setup from stats array
         [this.name, this.damage, this.maxHealth, this.speed, this.reward] = stats;
         this.health = this.maxHealth;
+        this.path = path;
 
-        scene.add.existing(this);
-        this.setDepth(10).setScale(2);
-
-        // Health bar graphics
-        this.healthBarBg = scene.add.graphics().setDepth(15);
-        this.healthBarFill = scene.add.graphics().setDepth(16);
-
-        // Validate path
         if (!path?.length) {
-            console.error("Enemy spawned with invalid path:", path);
+            console.error("Invalid path:", path);
             return;
         }
 
-        this.path = path;
+        scene.add.existing(this);
+        
+        // Scale enemies appropriately - smaller scale for on-path positioning
+        const scaleMap = {
+            'Oni': 2,
+            'Yokai': 1.1,
+            'Skeleton': 1.1,
+            'Orc': 1.1,
+            'Firespawn': 1.4,
+            'Plent': 1.1,
+            'CurseWanderer': 1.1,
+            'Slime': 1.4
+        };
+        
+        const scale = scaleMap[this.name] || 1.5;
+        
+        this.setDepth(10).setScale(scale).setPosition(path[0].x, path[0].y);
+        this.play(`${this.name}_walk`);
+
         this.pIndex = 0;
 
-        this.setPosition(path[0].x, path[0].y);
-        this.play(`${this.name}_walk`);
+        // Health bar graphics grouped for easier cleanup
+        this.bar = {
+            bg: scene.add.graphics().setDepth(15),
+            fill: scene.add.graphics().setDepth(16)
+        };
 
         this.updateHealthBar();
     }
 
-    update(time, delta) {
+    update(_, delta) {
         if (!this.active || !this.path) return;
 
         const target = this.path[this.pIndex];
@@ -37,63 +51,64 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
 
         const dist = Phaser.Math.Distance.Between(this.x, this.y, target.x, target.y);
 
-        // Advance waypoint or reach base
-        if (dist < 5 && ++this.pIndex >= this.path.length) {
-            return this.reachedBase();
-        }
+        // Move to next point or reach base
+        if (dist < 5 && ++this.pIndex >= this.path.length) return this.reachedBase();
 
         const next = this.path[this.pIndex];
-        const angle = Phaser.Math.Angle.Between(this.x, this.y, next.x, next.y);
 
-        // Normalize movement to ~60 FPS
+        // Direction + frame-rate independent movement
+        const angle = Phaser.Math.Angle.Between(this.x, this.y, next.x, next.y);
         const move = this.speed * (delta / 16.67);
 
         this.x += Math.cos(angle) * move;
         this.y += Math.sin(angle) * move;
 
+        // Flip sprite based on direction (left or right)
+        this.setFlipX(angle > Math.PI / 2 && angle < 3 * Math.PI / 2);
+
         this.updateHealthBar();
     }
 
     reachedBase() {
+        // Damage player when enemy reaches end of path
         this.scene.player?.updateHealth?.(this.damage);
-        this.destroyWithCleanup();
+        this.cleanup();
     }
 
     takeDamage(amount) {
+        // Reduce health and check death condition
         this.health -= amount;
         this.updateHealthBar();
         if (this.health <= 0) this.die();
     }
 
     updateHealthBar() {
-        if (!this.healthBarBg || !this.healthBarFill) return;
+        if (!this.bar) return;
 
         const w = 40, h = 6;
-        const x = this.x - w / 2;
-        const y = this.y - 40;
 
+        // Normalize HP (0 to 1) for UI scaling
         const hp = Math.max(0, this.health / this.maxHealth);
+
+        // Color shifts based on remaining health
         const color = hp < 0.25 ? 0xff0000 : hp < 0.5 ? 0xffff00 : 0x00ff00;
 
-        this.healthBarBg.clear().fillStyle(0x000000, 0.8).fillRect(x, y, w, h);
-        this.healthBarFill.clear().fillStyle(color, 1).fillRect(x, y, w * hp, h);
+        this.bar.bg.clear().fillStyle(0x000).fillRect(this.x - w / 2, this.y - 40, w, h);
+        this.bar.fill.clear().fillStyle(color).fillRect(this.x - w / 2, this.y - 40, w * hp, h);
     }
 
     die() {
+        // Reward player on kill
         this.scene.player?.updateGold?.(this.reward);
-        this.destroyWithCleanup();
+        this.cleanup();
     }
 
-    // Combined destroy + cleanup
-    destroyWithCleanup() {
+    cleanup() {
+        // Safely remove enemy and UI elements
         if (!this.active) return;
-
-        this.healthBarBg?.destroy();
-        this.healthBarFill?.destroy();
-
-        this.healthBarBg = null;
-        this.healthBarFill = null;
-
+        this.bar?.bg?.destroy();
+        this.bar?.fill?.destroy();
+        this.bar = null;
         this.destroy();
     }
 }
