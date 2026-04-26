@@ -43,4 +43,22 @@ export default class TimeManager {
         // Switch between paused and unpaused state
         this.paused = !this.paused;
     }
+
+    setScale(newScale) {
+        this.scale = newScale;
+    }
+
+    cycleSpeed() {
+        // Cycles through speeds: 1 -> 2 -> 4 -> 8 -> 1
+        const speeds = [1, 2, 4, 8];
+        const currentIndex = speeds.indexOf(this.scale);
+        const nextIndex = (currentIndex + 1) % speeds.length;
+        this.scale = speeds[nextIndex];
+        return this.scale;
+    }
+
+    getScaledDelta(rawDelta) {
+        // Returns delta scaled by current speed multiplier
+        return rawDelta * this.scale;
+    }
 }

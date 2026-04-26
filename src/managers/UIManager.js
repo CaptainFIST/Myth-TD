@@ -202,6 +202,18 @@ export default class UIManager extends Phaser.Scene {
             .setOrigin(0.5, 0).setScale(0.1).setInteractive({ useHandCursor: true }).setDepth(60)
             .on('pointerdown', () => this.toggleSimplePause());
 
+        // Speed button
+        this.speedButtonBg = this.add.rectangle(rightStart + 100, controlY, 60, 40, 0x333333)
+            .setOrigin(0.5, 0).setStrokeStyle(2, 0xffffff).setInteractive({ useHandCursor: true }).setDepth(60);
+        
+        this.speedButtonText = this.add.text(rightStart + 100, controlY + 20, '1x', {
+            fontSize: '20px', color: '#ffffff', fontStyle: 'bold', align: 'center'
+        }).setOrigin(0.5).setDepth(61);
+
+        this.speedButtonBg.on('pointerover', () => this.speedButtonBg.setFillStyle(0x555555));
+        this.speedButtonBg.on('pointerout', () => this.speedButtonBg.setFillStyle(0x333333));
+        this.speedButtonBg.on('pointerdown', () => this.cycleGameSpeed());
+
         this.add.image(rightStart + 300, controlY, 'sidebar')
             .setOrigin(0.5, 0).setScale(0.2).setInteractive({ useHandCursor: true }).setDepth(60)
             .on('pointerdown', () => this.togglePauseMenu());
@@ -296,6 +308,11 @@ export default class UIManager extends Phaser.Scene {
         this.pauseButtons?.forEach(btn => btn.setVisible(isPaused));
     }
 
+    cycleGameSpeed() {
+        const newSpeed = this.timeManager.cycleSpeed();
+        this.speedButtonText.setText(`${newSpeed}x`);
+    }
+
     endLevel(result) {
         if (this.levelClosed) return;
         this.levelClosed = true;
@@ -313,6 +330,8 @@ export default class UIManager extends Phaser.Scene {
         if (this.levelClosed) return;
         
         this.timeManager?.update?.(delta);
+        const scaledDelta = this.timeManager.getScaledDelta(delta);
+        
         this.updateUI();
 
         // Check if player lost
@@ -321,8 +340,12 @@ export default class UIManager extends Phaser.Scene {
             return;
         }
         if (this.timeManager?.isPaused?.()) return;
+        
+        // Update wave manager with scaled delta
+        this.waveManager?.update?.(scaledDelta);
+        
         this.handleTowerPlacement();
-        this.updateGameEntities(time, delta);
+        this.updateGameEntities(scaledDelta);
     }
 
     handleTowerPlacement() {
@@ -335,7 +358,7 @@ export default class UIManager extends Phaser.Scene {
         const gridX = Math.floor(pointer.x / 64) * 64;
         const gridY = Math.floor(pointer.y / 64) * 64;
 
-        if (this.towerManager.hasSelectedTower()) {
+        if (this.towerManager?.hasSelectedTower?.()) {
             this.drawTowerPlacementUI(gridX, gridY, pointer);
         } else {
             this.highlighter.fillStyle(0xffffff, 0.3);
@@ -379,13 +402,16 @@ export default class UIManager extends Phaser.Scene {
         }
     }
 
-    updateGameEntities(time, delta) {
+    updateGameEntities(scaledDelta) {
+        // Convert TimeManager's internal time to milliseconds for tower compatibility
+        const scaledTime = this.timeManager.getTime() * 1000;
+        
         this.towerManager?.activeTowers?.children?.iterate?.(tower => 
-            tower?.update?.(time, delta)
+            tower?.update?.(scaledTime, scaledDelta)
         );
 
         this.enemyManager?.activeEnemies?.children?.iterate?.(enemy => 
-            enemy?.update?.(time, delta)
+            enemy?.update?.(scaledTime, scaledDelta)
         );
 
         this.lastPointerDown = this.input.activePointer.isDown;
