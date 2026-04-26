@@ -3,7 +3,7 @@ export default class WaveManager {
         this.scene = scene;
         this.enemyManager = enemyManager;
 
-        this.wave = 1;
+        this.wave = 0;
         this.maxWave = 10;
 
         this.waveData = [];
@@ -16,11 +16,19 @@ export default class WaveManager {
 
         this.cycleRunning = false;
         this.onGameCompleteCallback = null;
+
+        // Internal time tracking for scaled time
+        this.elapsedTime = 0;
+        this.waveStartTime = 0;
+        this.spawnedEnemies = [];
+        this.nextWaveTime = 0;
+        this.delayBetweenWaves = 0;
     }
 
     setWaveData(waveData, maxWave = 10) {
         this.waveData = waveData;
         this.maxWave = maxWave;
+        console.log(`WaveManager: Set waveData with ${waveData.length} waves, maxWave=${maxWave}`);
     }
 
     initialize(waveText, path) {
@@ -37,14 +45,26 @@ export default class WaveManager {
     }
 
     reset() {
-        this.wave = 1;
+        this.wave = 0;
         this.isWaveActive = false;
         this.cycleRunning = false;
         this.clearTimers();
+        this.elapsedTime = 0;
+        this.waveStartTime = 0;
+        this.spawnedEnemies = [];
+        this.nextWaveTime = 0;
 
         this.loopEvent?.remove?.();
         this.loopEvent = null;
         this.updateWaveText();
+    }
+
+    updateWaveText() {
+        this.waveText?.setText(`Wave: ${this.wave}`);
+    }
+
+    getWave() {
+        return this.wave;
     }
 
     clearTimers() {
@@ -56,58 +76,41 @@ export default class WaveManager {
         if (this.isWaveActive) return;
         if (!this.path?.length) return;
         if (!this.waveData?.length) return;
-        if (this.wave > this.maxWave) return;
+        
+        // Check if wave data exists before proceeding
+        const waveConfig = this.waveData[this.wave];
+        if (!waveConfig) {
+            console.log(`No wave data for wave ${this.wave}. Total waves available: ${this.waveData.length}`);
+            return;
+        }
+        
+        console.log(`Starting wave ${this.wave}`);
         this.isWaveActive = true;
+        this.waveStartTime = this.elapsedTime;
+        this.spawnedEnemies = [];
 
-        const waveConfig = this.waveData[this.wave - 1];
-        if (!waveConfig) return console.error("Wave missing:", this.wave);
-
+        // Build spawn schedule
         let totalSpawns = 0;
         waveConfig.enemies.forEach(({ type, count }) => {
             for (let i = 0; i < count; i++) {
-                const t = this.scene.time.delayedCall(totalSpawns * 500, () => {
-                    this.enemyManager?.createEnemy?.(type, this.path);
+                this.spawnedEnemies.push({
+                    spawnTime: totalSpawns * 500, // milliseconds
+                    type: type,
+                    spawned: false
                 });
-                this.timers.push(t);
                 totalSpawns++;
             }
         });
 
-        const endTimer = this.scene.time.delayedCall(
-            totalSpawns * 500 + 1000,
-            () => this.endWave()
-        );
-        this.timers.push(endTimer);
+        // Set end wave time
+        const waveEndTime = totalSpawns * 500 + 1000;
+        this.waveEndTime = this.waveStartTime + waveEndTime;
     }
 
     endWave() {
         this.isWaveActive = false;
-
-        if (this.wave < this.maxWave) {
-            this.wave++;
-        } else {
-            this.checkGameCompletion();
-        }
-    }
-
-    checkGameCompletion() {
-        const check = () => {
-            if (this.enemyManager.getAliveCount() === 0) {
-                this.onGameCompleteCallback?.();
-            } else {
-                const t = this.scene.time.delayedCall(500, check);
-                this.timers.push(t);
-            }
-        };
-        check();
-    }
-
-    updateWaveText() {
-        this.waveText?.setText(`Wave: ${this.wave}`);
-    }
-
-    getWave() {
-        return this.wave;
+        this.wave++;  // Always move to next wave
+        console.log(`Wave ended. Moving to wave ${this.wave}`);
     }
 
     startWaveCycle(scene, initialDelay, delayBetweenWaves) {
@@ -123,35 +126,59 @@ export default class WaveManager {
 
         this.cycleRunning = true;
         this.clearTimers();
+        this.elapsedTime = 0;
+        this.delayBetweenWaves = delayBetweenWaves;
+        this.nextWaveTime = initialDelay;
+    }
 
-        const first = scene.time.delayedCall(initialDelay, () => {
-            this.startWave();
-        });
-        this.timers.push(first);
-
-        // loop controller
-        this.loopEvent = scene.time.addEvent({
-            delay: delayBetweenWaves,
-            loop: true,
-            callback: () => {
-                if (this.isWaveActive) return;
-                if (this.wave > this.maxWave) {
-                    this.stop();
-                    return;
-                }
-                this.startWave();
+    update(scaledDelta) {
+        // Always check for game completion even after wave cycle ends
+        if (!this.isWaveActive && this.waveData[this.wave] === undefined && this.cycleRunning) {
+            if (this.enemyManager.getAliveCount() === 0) {
+                console.log("All enemies defeated! Game complete!");
+                this.cycleRunning = false;
+                this.onGameCompleteCallback?.();
+                return; // Exit after triggering completion
             }
-        });
+        }
+
+        if (!this.cycleRunning) return;
+        this.elapsedTime += scaledDelta;
+
+        // Start initial wave or next wave
+        if (this.elapsedTime >= this.nextWaveTime && !this.isWaveActive) {
+            this.startWave();
+            this.nextWaveTime = this.elapsedTime + this.delayBetweenWaves;
+        }
+
+        // Update active wave spawns
+        if (this.isWaveActive) {
+            this.spawnedEnemies.forEach(spawn => {
+                if (!spawn.spawned && this.elapsedTime >= this.waveStartTime + spawn.spawnTime) {
+                    this.enemyManager?.createEnemy?.(spawn.type, this.path);
+                    spawn.spawned = true;
+                }
+            });
+
+            // Check if wave should end
+            if (this.elapsedTime >= this.waveEndTime) {
+                this.endWave();
+            }
+        }
     }
 
     stop() {
         this.isWaveActive = false;
         this.cycleRunning = false;
         this.clearTimers();
+        this.elapsedTime = 0;
+        this.waveStartTime = 0;
+        this.spawnedEnemies = [];
+        this.nextWaveTime = 0;
 
         this.loopEvent?.remove?.();
         this.loopEvent = null;
-        this.wave = 1;
+        this.wave = 0;
 
         this.scene.time.removeAllEvents(); 
         this.updateWaveText();

@@ -33,8 +33,9 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         this.setPosition(cx, cy - 20);
         this.pedestal.setPosition(cx, cy);
 
-        // Reset attack cooldown when placed
-        this.nextTic = this.scene.time.now + this.attackDelay;
+        // Reset attack cooldown when placed - set to 0 so it can attack on first update
+        // The update method will use the scaled time for cooldown calculations
+        this.nextTic = 0;
     }
 
     update(time, delta) {
