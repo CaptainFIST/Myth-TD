@@ -332,13 +332,18 @@ export default class UIManager extends Phaser.Scene {
     endLevel(result) {
         if (this.levelClosed) return;
         this.levelClosed = true;
+
         this.waveManager?.stop?.(); 
         this.cleanup();
 
         this.sceneL?.closeLevel?.(
             result,
-            this.timeManager.getTime().toFixed(2)
+            this.timeManager.getTime().toFixed(2),
+            this.player.gainGold,
+            this.player.spentGold,
+            this.player.playerHealth
         );
+
 
     }
 
