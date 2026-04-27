@@ -1,4 +1,5 @@
 import PlayerManager from '../managers/PlayerManager.js';
+import AudioManager from '../managers/AudioManager.js';
 
 export default class Level1 extends Phaser.Scene {
     constructor() {
@@ -67,13 +68,16 @@ export default class Level1 extends Phaser.Scene {
         this.load.image('grass', 'assets/tiles/level1/grass_new.png');
         this.load.image('path', 'assets/tiles/level1/dirt_path.png');
         this.load.image('tree', 'assets/decorations/tree1.png');
+        
+        this.audioManager = new AudioManager(this);
+        this.audioManager.preloadAudio();
     }
     
     // Initialize the level when scene starts
     create() {
         this.scene.launch('MapManager', { level: Level1 });
 
-        this.player = new PlayerManager({ sceneL: this });
+        this.player = new PlayerManager({ sceneL: this, audioManager: this.audioManager });
         this.inventory = [];
 
         this.scene.launch('UIManager', {

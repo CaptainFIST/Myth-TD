@@ -93,10 +93,7 @@ export default class SettingsMenu extends Phaser.Scene {
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
         backBtn.on('pointerdown', () => {
-            this.scene.stop();                      
-            this.scene.resume('UIManager');          
-            const levelScene = this.scene.get('UIManager').sceneL;  
-            if (levelScene) levelScene.scene.resume();  
+            this.scene.start('MainMenu');
         });
     }
 
