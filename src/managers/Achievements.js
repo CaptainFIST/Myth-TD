@@ -16,7 +16,7 @@ export const ACHIEVEMENTS = {
 
     no_damage: {
         name: 'Perfect Defense',
-        condition: (e) => e.type === 'Win'
+        condition: (e) => e.type === 'Win' && e.pHealth === 20
     },
 
      rich: {

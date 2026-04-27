@@ -88,14 +88,16 @@ export default class Level2 extends Phaser.Scene {
                 levelId: 2,
                 passTime: time,
                 gainGold: gainGold,
-                spentGold: spentGold
+                spentGold: spentGold,
+                playerHealth: playerHealth
             });
         } else if (reason === 'lose') {
             this.scene.start('LoseScreen', {
                 levelId: 2,
                 passTime: time,
                 gainGold: gainGold,
-                spentGold: spentGold
+                spentGold: spentGold,
+                playerHealth: playerHealth
             });
         }
     }

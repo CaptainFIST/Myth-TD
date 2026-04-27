@@ -23,13 +23,15 @@ export default class WinScreen extends Phaser.Scene {
         const passTime = data.passTime ?? 0;
         const gainGold = data.gainGold ?? 0;
         const spentGold = data.spentGold ?? 0;
+        const playerHealth = data.playerHealth ?? 0;
 
 
         AchievementManager.check({
             type: 'Win',
             time: passTime,
             gainedGold: gainGold,
-            usedGold: spentGold
+            usedGold: spentGold,
+            pHealth: playerHealth
         });
 
         StatsManager.incTotalGold(gainGold);

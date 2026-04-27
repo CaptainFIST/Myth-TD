@@ -78,7 +78,7 @@ export default class Level1 extends Phaser.Scene {
         });
     }
 
-    closeLevel(reason, time, gainGold, spentGold) {
+    closeLevel(reason, time, gainGold, spentGold, playerHealth) {
         this.scene.stop('MapManager');
         this.scene.stop('UIManager');
 
@@ -89,14 +89,16 @@ export default class Level1 extends Phaser.Scene {
                 levelId: 1,
                 passTime: time,
                 gainGold: gainGold,
-                spentGold: spentGold
+                spentGold: spentGold,
+                playerHealth: playerHealth
             });
         } else if (reason === 'lose') {
             this.scene.start('LoseScreen', {
                 levelId: 1,
                 passTime: time,
                 gainGold: gainGold,
-                spentGold: spentGold
+                spentGold: spentGold,
+                playerHealth: playerHealth
             });
         }
     }
