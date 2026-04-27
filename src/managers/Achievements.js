@@ -14,10 +14,10 @@ export const ACHIEVEMENTS = {
         condition: (e) => e.type === 'Win' && e.time < 360
     },
 
-    // no_damage: {
-    //     name: 'Perfect Defense',
-        
-    // },
+    no_damage: {
+        name: 'Perfect Defense',
+        condition: (e) => e.type === 'Win'
+    },
 
      rich: {
          name: 'Rich!',
