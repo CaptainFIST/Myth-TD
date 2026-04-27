@@ -79,4 +79,52 @@ export default class InventoryManager {
         // Set external callback (e.g., UI updates, sound effects)
         this.onTowerSelected = cb;
     }
+
+    mergeTowers() {
+        const counts = {};
+
+        // Count how many of each type
+        this.items.forEach(item => {
+            counts[item.type] = (counts[item.type] || 0) + 1;
+        });
+
+        // Find a type with at least 3
+        for (let type in counts) {
+            if (counts[type] >= 3) {
+
+                let removed = 0;
+
+                // Remove 3 of that type
+                this.items = this.items.filter(item => {
+                    if (item.type === type && removed < 3) {
+                        removed++;
+                        return false;
+                    }
+                    return true;
+                });
+
+                // Add upgraded version
+                const upgradedType = this.getUpgradedType(type);
+                this.items.push({ type: upgradedType });
+
+                console.log(`Merged 3x ${type} → ${upgradedType}`);
+
+                this.updateInventoryUI();
+                return;
+            }
+        }
+
+        console.log("No towers available to merge");
+    }
+
+    getUpgradedType(type) {
+        if (!type.includes('_')) {
+            return `${type}_2`;
+        }
+
+        const [base, tier] = type.split('_');
+        const newTier = Number(tier) + 1;
+
+        return `${base}_${newTier}`;
+    }
 }
