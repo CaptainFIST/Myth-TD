@@ -40,7 +40,19 @@ export default class Level2 extends Phaser.Scene {
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     ];
 
-    
+    // Wave format: array of [enemyIndex, count] pairs per wave
+    // 0: Oni, 1: Yokai, 2: Skeleton, 3: Orc, 4: Firespawn, 5: Plent, 6: CurseWanderer, 7: Slime
+    static waveData = [
+        { enemies: [{ type: 0, count: 2 }] },
+        { enemies: [{ type: 1, count: 3 }] },
+        { enemies: [{ type: 2, count: 2 }, { type: 0, count: 2 }] },
+        { enemies: [{ type: 0, count: 3 }, { type: 1, count: 2 }] },
+        { enemies: [{ type: 2, count: 3 }, { type: 1, count: 3 }] },
+        { enemies: [{ type: 1, count: 4 }, { type: 0, count: 2 }] },
+        { enemies: [{ type: 2, count: 3 }, { type: 0, count: 3 }, { type: 1, count: 1 }] },
+        { enemies: [{ type: 0, count: 4 }, { type: 1, count: 4 }] }
+    ];
+
     static tileTypes = {
         0: 'snow',   
         1: 'path',   
