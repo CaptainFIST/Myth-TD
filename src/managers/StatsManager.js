@@ -1,16 +1,6 @@
 import SaveManager from './SaveManager.js';
 
 export default class StatsManager {
-    static incrementStat(amount) {
-        const data = SaveManager.getSlot();
-
-        console.log(data.stats.totalGold);
-        data.stats.totalGold += amount;
-        console.log(data.stats.totalGold);
-
-
-        SaveManager.commit();
-    }
 
     static incTotalGold(amount) {
         const data = SaveManager.getSlot();
@@ -26,4 +16,21 @@ export default class StatsManager {
         SaveManager.commit();
     }
 
+    static incPerfectClears(amount) {
+        const data = SaveManager.getSlot();
+        data.stats.perfectClears += 0;
+    }
+
 }
+
+/*
+stats: 
+            totalGold: 0,
+            goldSpent: 0,
+            perfectClears: 0,
+            levelClears: 0,
+            levelFails: 0,
+            enemiesKilled: 0,
+            towersPlaced: 0,
+            
+*/
