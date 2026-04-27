@@ -8,8 +8,12 @@ export default class PlayerManager extends Phaser.Scene {
         this.goldPerSec = 0;
         this.incInterval = 1000;
 
+        this.gainGold = 0;
+        this.spentGold = 0;
+
         if (data) {
             this.sceneL = data.sceneL;
+            this.audioManager = data.audioManager;
         }
     }
 
@@ -21,6 +25,9 @@ export default class PlayerManager extends Phaser.Scene {
     updateHealth(damage) {
         // Prevent health from going below 0
         this.playerHealth = Math.max(0, this.playerHealth - damage);
+        
+        // Play health loss audio
+        this.audioManager?.playHealthLoss();
     }
 
     isHealthZero() {
@@ -31,6 +38,7 @@ export default class PlayerManager extends Phaser.Scene {
         // Positive = earn gold
         if (change > 0) {
             this.gold += change;
+            this.gainGold += change;
             return;
         }
 
@@ -40,6 +48,7 @@ export default class PlayerManager extends Phaser.Scene {
             return;
         }
         this.gold += change;
+        this.spentGold -= change;
     }
 
     status(condition) {

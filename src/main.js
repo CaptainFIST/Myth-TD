@@ -1,5 +1,6 @@
 import MainMenu from './scenes/MainMenu.js';
 import SettingsMenu from './scenes/SettingsMenu.js';
+import ProfileData from './scenes/ProfileData.js';
 import Tutorial from './scenes/Tutorial.js';
 import WinScreen from './scenes/WinScreen.js';
 import LoseScreen from './scenes/LoseScreen.js';
@@ -22,6 +23,7 @@ const config = {
         MainMenu,
         LevelSelect,
         SettingsMenu,
+        ProfileData,
         Tutorial,
         WinScreen,
         LoseScreen,

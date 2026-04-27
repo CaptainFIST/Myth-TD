@@ -1,3 +1,8 @@
+import SaveManager from '../managers/SaveManager.js';
+import AchievementManager from '../managers/AchievementManager.js';
+import ProgressManager from '../managers/ProgressManager.js';
+import StatsManager from '../managers/StatsManager.js';
+
 export default class WinScreen extends Phaser.Scene {
     constructor() {
         super({ key: 'WinScreen' });
@@ -16,6 +21,21 @@ export default class WinScreen extends Phaser.Scene {
         // Extract data from level completion
         const levelNumber = data.levelId ?? 1;
         const passTime = data.passTime ?? 0;
+        const gainGold = data.gainGold ?? 0;
+        const spentGold = data.spentGold ?? 0;
+        const playerHealth = data.playerHealth ?? 0;
+
+
+        AchievementManager.check({
+            type: 'Win',
+            time: passTime,
+            gainedGold: gainGold,
+            usedGold: spentGold,
+            pHealth: playerHealth
+        });
+
+        StatsManager.incTotalGold(gainGold);
+        StatsManager.incGoldSpent(spentGold);
 
         const title = this.add.text(width / 2, height / 2 - 150, 'VICTORY!', {
             fontSize: '96px',

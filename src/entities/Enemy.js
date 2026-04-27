@@ -3,8 +3,9 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
         super(scene, 0, 0, stats[0]);
         this.scene = scene;
 
-        // Basic enemy setup from stats array
-        [this.name, this.damage, this.maxHealth, this.speed, this.reward] = stats;
+        // Basic enemy setup from stats array: [name, id, health, speed, reward, lastFrame]
+        [this.name, , this.maxHealth, this.speed, this.reward] = stats;
+        this.damage = 1;  // All enemies deal 1 damage regardless of type
         this.health = this.maxHealth;
         this.path = path;
 
@@ -87,10 +88,8 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
 
         const w = 40, h = 6;
 
-        // Normalize HP (0 to 1) for UI scaling
         const hp = Math.max(0, this.health / this.maxHealth);
 
-        // Color shifts based on remaining health
         const color = hp < 0.25 ? 0xff0000 : hp < 0.5 ? 0xffff00 : 0x00ff00;
 
         this.bar.bg.clear().fillStyle(0x000).fillRect(this.x - w / 2, this.y - 40, w, h);
@@ -100,6 +99,10 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
     die() {
         // Reward player on kill
         this.scene.player?.updateGold?.(this.reward);
+        
+        console.log("Enemy dying! Attempting to play audio...", { hasAudioManager: !!this.scene.audioManager });
+        this.scene.audioManager?.playMonsterDeath();
+        
         this.cleanup();
     }
 

@@ -1,3 +1,9 @@
+import AudioManager from '../managers/AudioManager.js';
+import SaveManager from '../managers/SaveManager.js';
+import AchievementManager from '../managers/AchievementManager.js';
+import ProgressManager from '../managers/ProgressManager.js';
+import StatsManager from '../managers/StatsManager.js';
+
 export default class MainMenu extends Phaser.Scene {
     constructor() {
         super({ key: 'MainMenu'});
@@ -5,11 +11,22 @@ export default class MainMenu extends Phaser.Scene {
     
     preload() {
         this.load.image('gameTitle','assets/Titles/gameTitle.png');
-        this.load.image('subtitleImage','assets/Titles/subtitleimage.png');
+        this.load.image('subtitleImage','assets/Titles/subtitleImage.png');
+        
+        this.audioManager = new AudioManager(this);
+        this.audioManager.preloadAudio();
     }
 
     // Build the main menu UI
     create() {
+        this.audioManager.playMainMenuMusic();
+        const sData = SaveManager.get();
+        console.log(sData.activeSlot);
+        console.log(sData);
+        //console.log(sData.slots);
+        //console.log(SaveManager.getSlot().stats);
+        //
+
         const { width, height } = this.scale;
         this.add.rectangle(width / 2, height / 2, width, height, 0x0d1128).setOrigin(0.5);
         this.add.image(width / 2, 180, 'gameTitle').setScale(1.8);
@@ -22,10 +39,18 @@ export default class MainMenu extends Phaser.Scene {
         const buttonData = [
             {text: 'PLAY', icon: '▶', action: () => this.scene.start('LevelSelect')},
             {text: 'TUTORIAL', icon: '📚', action: () => this.scene.start('Tutorial') },
-            {text: 'ACHIEVEMENTS', icon: '🏆'},  // No action - placeholder
-            {text: 'SETTINGS', icon: '⚙', action: () => this.scene.start('SettingsMenu')}
+            {text: 'PROFILE', icon: '🏆', action: () => this.scene.start('ProfileData')}, // No action - placeholder
+            {text: 'SETTINGS', icon: '⚙', action: () => this.scene.start('SettingsMenu')},
+            {text: `Save ${sData.activeSlot}`, icon: '✕', 
+                action: () => {
+                    SaveManager.setActiveSlot('Slot_2');
+                    console.log(sData.activeSlot);
+                }
+                
+            }
+
         ];
-        const startY = 580;
+        const startY = 520;
         const leftx = 280;
         const spacing = 110;
         
@@ -84,5 +109,9 @@ export default class MainMenu extends Phaser.Scene {
             }
             this.bgGraphics.fillCircle(c.x, c.y, c.radius);
         });
+    }
+    
+    shutdown() {
+        this.audioManager.stopAudio('mainMenuMusic');
     }
 }
