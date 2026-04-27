@@ -40,7 +40,10 @@ export default class LevelSelect extends Phaser.Scene {
 
             card.on('pointerover', () => card.setScale(1.08));
             card.on('pointerout', () => card.setScale(1));
-            card.on('pointerdown', () => this.scene.start(lvl.scene));
+            card.on('pointerdown', () => {
+                this.sound.stopAll();
+                this.scene.start(lvl.scene);
+            });
         });
 
         // Back button

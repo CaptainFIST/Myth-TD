@@ -3,6 +3,7 @@ import TowerManager from './TowerManager.js';
 import EnemyManager from './EnemyManager.js';
 import WaveManager from './WaveManager.js';
 import InventoryManager from './InventoryManager.js';
+import AudioManager from './AudioManager.js';
 
 export default class UIManager extends Phaser.Scene {
     constructor() {
@@ -32,6 +33,10 @@ export default class UIManager extends Phaser.Scene {
                 this.load.image(asset, `assets/UI/${asset}.png`);
             }
         });
+
+        // Load audio assets
+        const tempAudioManager = new AudioManager(this);
+        tempAudioManager.preloadAudio();
     }
 
     create(data) {
@@ -51,6 +56,9 @@ export default class UIManager extends Phaser.Scene {
         this.lastPointerDown = false;
         this.rangeCircle = this.add.graphics();
 
+        // Store audioManager from level scene
+        this.audioManager = data.audioManager;
+
         // Initialize managers
         this.towerManager = new TowerManager(this);
         this.towerManager.createAnimations();
@@ -65,6 +73,14 @@ export default class UIManager extends Phaser.Scene {
         this.sceneL = data.sceneL;
         this.timeManager = new TimeManager();
 
+        // Create a fresh AudioManager for UIManager scene to ensure audio works
+        // (audio must be loaded in the scene that plays it)
+        this.audioManager = new AudioManager(this);
+        console.log("✓ AudioManager created for UIManager scene");
+        
+        // Play level music
+        this.audioManager.playLevelMusic();
+        
         this.grid = this.mapManager.drawGrid(this.scale.width, this.scale.height);
         this.highlighter = this.add.graphics().setDepth(1);
 

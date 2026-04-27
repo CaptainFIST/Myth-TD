@@ -1,4 +1,5 @@
 import PlayerManager from '../managers/PlayerManager.js';
+import AudioManager from '../managers/AudioManager.js';
 export default class Level2 extends Phaser.Scene {
     constructor() {
         super({ key: 'Level2' });
@@ -40,8 +41,9 @@ export default class Level2 extends Phaser.Scene {
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     ];
 
-    // Wave format: array of [enemyIndex, count] pairs per wave
-    // 0: Oni, 1: Yokai, 2: Skeleton, 3: Orc, 4: Firespawn, 5: Plent, 6: CurseWanderer, 7: Slime
+    // Wave format: array of [count, enemyIndex] pairs per wave
+    // Enemy indices: 0=Oni, 1=flying_fly, 2=Minotaur
+
     static waveData = [
         { enemies: [{ type: 0, count: 2 }] },
         { enemies: [{ type: 1, count: 3 }] },
@@ -68,6 +70,9 @@ export default class Level2 extends Phaser.Scene {
         this.load.image('snow', 'assets/tiles/level2/snow.png');
         this.load.image('path', 'assets/tiles/level2/snow_path.png');
         this.load.image('rock', 'assets/decorations/level2/snowy_rock.png');
+        
+        this.audioManager = new AudioManager(this);
+        this.audioManager.preloadAudio();
     }
 
     // Initialize the level when scene starts
@@ -75,7 +80,7 @@ export default class Level2 extends Phaser.Scene {
         this.scene.launch('MapManager', { level: Level2 });
 
         // Create player instance and initialize inventory
-        this.player = new PlayerManager({ sceneL: this });
+        this.player = new PlayerManager({ sceneL: this, audioManager: this.audioManager });
         this.inventory = [];  
 
         // Launch UIManager scene which handles all UI and game logic

@@ -1,3 +1,5 @@
+import AudioManager from '../managers/AudioManager.js';
+
 export default class MainMenu extends Phaser.Scene {
     constructor() {
         super({ key: 'MainMenu'});
@@ -6,10 +8,15 @@ export default class MainMenu extends Phaser.Scene {
     preload() {
         this.load.image('gameTitle','assets/Titles/gameTitle.png');
         this.load.image('subtitleImage','assets/Titles/subtitleimage.png');
+        
+        this.audioManager = new AudioManager(this);
+        this.audioManager.preloadAudio();
     }
 
     // Build the main menu UI
     create() {
+        this.audioManager.playMainMenuMusic();
+
         const { width, height } = this.scale;
         this.add.rectangle(width / 2, height / 2, width, height, 0x0d1128).setOrigin(0.5);
         this.add.image(width / 2, 180, 'gameTitle').setScale(1.8);
@@ -84,5 +91,9 @@ export default class MainMenu extends Phaser.Scene {
             }
             this.bgGraphics.fillCircle(c.x, c.y, c.radius);
         });
+    }
+    
+    shutdown() {
+        this.audioManager.stopAudio('mainMenuMusic');
     }
 }
