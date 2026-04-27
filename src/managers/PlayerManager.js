@@ -13,6 +13,7 @@ export default class PlayerManager extends Phaser.Scene {
 
         if (data) {
             this.sceneL = data.sceneL;
+            this.audioManager = data.audioManager;
         }
     }
 
@@ -24,6 +25,9 @@ export default class PlayerManager extends Phaser.Scene {
     updateHealth(damage) {
         // Prevent health from going below 0
         this.playerHealth = Math.max(0, this.playerHealth - damage);
+        
+        // Play health loss audio
+        this.audioManager?.playHealthLoss();
     }
 
     isHealthZero() {

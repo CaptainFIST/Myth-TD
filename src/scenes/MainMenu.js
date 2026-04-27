@@ -1,3 +1,4 @@
+import AudioManager from '../managers/AudioManager.js';
 import SaveManager from '../managers/SaveManager.js';
 import AchievementManager from '../managers/AchievementManager.js';
 import ProgressManager from '../managers/ProgressManager.js';
@@ -10,11 +11,15 @@ export default class MainMenu extends Phaser.Scene {
     
     preload() {
         this.load.image('gameTitle','assets/Titles/gameTitle.png');
-        this.load.image('subtitleImage','assets/Titles/subtitleimage.png');
+        this.load.image('subtitleImage','assets/Titles/subtitleImage.png');
+        
+        this.audioManager = new AudioManager(this);
+        this.audioManager.preloadAudio();
     }
 
     // Build the main menu UI
     create() {
+        this.audioManager.playMainMenuMusic();
         const sData = SaveManager.get();
         console.log(sData.activeSlot);
         console.log(sData);
@@ -104,5 +109,9 @@ export default class MainMenu extends Phaser.Scene {
             }
             this.bgGraphics.fillCircle(c.x, c.y, c.radius);
         });
+    }
+    
+    shutdown() {
+        this.audioManager.stopAudio('mainMenuMusic');
     }
 }

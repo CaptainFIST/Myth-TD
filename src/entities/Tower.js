@@ -76,6 +76,9 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         this.play(`${this.name}_attack`);
         this.nextTic = time + this.attackDelay;
 
+        console.log("Tower firing! Attempting to play audio...", { hasAudioManager: !!this.scene.audioManager });
+        this.scene.audioManager?.playTowerAttack();
+        
         // Only Susanoo uses projectile attacks
         if (this.name === 'Susanoo') this.fireProjectile(enemy);
     }
