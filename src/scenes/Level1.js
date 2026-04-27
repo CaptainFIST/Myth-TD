@@ -27,7 +27,7 @@ export default class Level1 extends Phaser.Scene {
     static decoData = [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
-        [0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2],
@@ -42,8 +42,14 @@ export default class Level1 extends Phaser.Scene {
     ];
 
     static waveData = [
-        [],
-        []
+        { enemies: [{ type: 0, count: 3 }, { type: 7, count: 2 }] },
+        { enemies: [{ type: 1, count: 2 }, { type: 0, count: 3 }] },
+        { enemies: [{ type: 2, count: 2 }, { type: 1, count: 2 }] },
+        { enemies: [{ type: 0, count: 2 }, { type: 1, count: 2 }, { type: 2, count: 2 }] },
+        { enemies: [{ type: 2, count: 3 }, { type: 1, count: 2 }] },
+        { enemies: [{ type: 0, count: 3 }, { type: 2, count: 2 }, { type: 1, count: 1 }] },
+        { enemies: [{ type: 2, count: 4 }, { type: 3, count: 2 }] },
+        { enemies: [{ type: 4, count: 3 }, { type: 1, count: 3 }, { type: 2, count: 3 }, ] }, 
     ];
 
     static tileTypes = {

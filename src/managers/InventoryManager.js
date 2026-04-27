@@ -38,7 +38,6 @@ export default class InventoryManager {
 
         const visible = !this.inventoryImage.visible;
         this.inventoryImage.setVisible(visible);
-
         this.updateInventoryUI();
     }
 
@@ -63,9 +62,7 @@ export default class InventoryManager {
             const key = stats ? `${stats[0]}_Icon` : 'DefaultIcon';
 
             const icon = this.scene.add.image(x, y, key)
-                .setDisplaySize(size, size)
-                .setDepth(51)
-                .setInteractive({ useHandCursor: true });
+                .setDisplaySize(size, size).setDepth(51).setInteractive({ useHandCursor: true });
 
             this.towerIcons.add(icon);
 

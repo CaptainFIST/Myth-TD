@@ -1,10 +1,16 @@
 import Enemy from '../entities/Enemy.js';
 
 export default class EnemyManager {
-    // [name, damage, health, speed, reward, lastFrame]
+    // [name, id, health, speed, reward, lastFrame]
     static testData = [
-        ['Oni', 1, 4, 1, 5, 15],
-        ['flying_fly', 2, 75, 1, 5, 5]
+        ['Oni', 0, 40, 1, 5, 15],
+        ['Yokai', 1, 60, 1, 7, 5],
+        ['Skeleton', 2, 50, 1, 10, 6],
+        ['Orc', 3, 65, 0.8, 15, 5],
+        ['Firespawn', 4, 30, 1.2, 20, 6],
+        ['Plent', 5, 35, 0.9, 4, 10],
+        ['CurseWanderer', 6, 65, 0.7, 25, 8],
+        ['Slime', 7, 20, 1, 3, 4]
     ];
 
     constructor(scene) {
@@ -21,18 +27,21 @@ export default class EnemyManager {
         const { anims } = this.scene;
 
         EnemyManager.testData.forEach(([name, , , , , lastFrame]) => {
-            anims.create({
-                key: `${name}_walk`,
-                frames: anims.generateFrameNumbers(name, { start: 0, end: lastFrame }),
-                frameRate: 8,
-                repeat: -1
-            });
+            const key = `${name}_walk`;
+            // Only create animation if it doesn't already exist
+            if (!anims.exists(key)) {
+                anims.create({
+                    key,
+                    frames: anims.generateFrameNumbers(name, { start: 0, end: lastFrame }),
+                    frameRate: 8,
+                    repeat: -1
+                });
+            }
         });
     }
 
     createEnemy(index, path) {
         if (!path?.length) return console.error("EnemyManager: Invalid path");
-
         const stats = EnemyManager.testData[index];
         if (!stats) return console.error("Invalid enemy index:", index);
 
@@ -61,7 +70,6 @@ export default class EnemyManager {
             }
         });
     }
-
     pause() { this.setActiveState(false); }
     resume() { this.setActiveState(true); }
 }
