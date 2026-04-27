@@ -40,13 +40,15 @@ export default class TowerManager {
         const type = indexStr[0];
         const id = Number(indexStr.slice(1));
 
+        let base;
+
         switch (type) {
-            case 'p': return this.constructor.physicalData[id]; break;
-            case 'a': return this.constructor.airData[id]; break;
-            case 'w': return this.constructor.waterData[id]; break;
-            case 'f': return this.constructor.fireData[id]; break;
-            case 'd': return this.constructor.darkData[id]; break;
-            case 'o': return this.constructor.otherData[id]; break;
+            case 'p': base = this.constructor.physicalData[id]; break;
+            case 'a': base = this.constructor.airData[id]; break;
+            case 'w': base = this.constructor.waterData[id]; break;
+            case 'f': base = this.constructor.fireData[id]; break;
+            case 'd': base = this.constructor.darkData[id]; break;
+            case 'o': base = this.constructor.otherData[id]; break;
             default: return null;
         }
 
@@ -149,4 +151,5 @@ export default class TowerManager {
             if (t) t.active = true;
         });
     }
+    
 }
