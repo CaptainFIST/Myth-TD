@@ -11,7 +11,7 @@ export default class MainMenu extends Phaser.Scene {
     
     preload() {
         this.load.image('gameTitle','assets/Titles/gameTitle.png');
-        this.load.image('subtitleImage','assets/Titles/subtitleimage.png');
+        this.load.image('subtitleImage','assets/Titles/subtitleImage.png');
         
         this.audioManager = new AudioManager(this);
         this.audioManager.preloadAudio();
