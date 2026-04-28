@@ -9,6 +9,7 @@ export default class InventoryManager {
         this.inventoryImage = null;
         this.towerIcons = null;
         this.onTowerSelected = null;
+        this.scrollOffset = 0;
     }
 
     initialize(inventoryImage, towerIcons) {
@@ -38,6 +39,7 @@ export default class InventoryManager {
 
         const visible = !this.inventoryImage.visible;
         this.inventoryImage.setVisible(visible);
+        this.scrollOffset = 0; // Reset scroll on toggle
         this.updateInventoryUI();
     }
 
@@ -48,14 +50,38 @@ export default class InventoryManager {
         this.towerIcons.clear(true, true);
         if (!this.inventoryImage.visible) return;
 
-        const baseX = this.inventoryImage.x + 20;
-        const baseY = this.inventoryImage.y + 20;
-        const size = 50, gap = 10, cols = 9;
+        // Get inventory bounds
+        const baseX = this.inventoryImage.x + 12;
+        const baseY = this.inventoryImage.y + 8;
+        const maxWidth = 395;  
+        const maxHeight = 285; // Usable height
+        const size = 34;       
+        const gap = 10;        // Increased gap for more spacing
+        const cols = Math.floor((maxWidth + gap) / (size + gap));  // Calculate columns that fit
+        const rowHeight = size + gap;
+        const maxRows = Math.floor(maxHeight / rowHeight);
+
+        // Calculate scroll position
+        const startRow = Math.floor(this.scrollOffset / rowHeight);
+        const endRow = startRow + maxRows + 1;
 
         this.items.forEach(({ type }, i) => {
+            const row = Math.floor(i / cols);
+            const col = i % cols;
+            
+            // Skip if outside visible area due to scroll
+            if (row < startRow || row >= endRow) {
+                return;
+            }
+
             // Calculate grid position for each icon
-            const x = baseX + (i % cols) * (size + gap);
-            const y = baseY + Math.floor(i / cols) * (size + gap);
+            const x = baseX + col * (size + gap) + (size / 2);
+            const y = baseY + row * (size + gap) - this.scrollOffset + (size / 2);
+
+            // Check if item is within bounds
+            if (y < baseY || y > baseY + maxHeight) {
+                return; 
+            }
 
             // Determine correct icon from tower stats
             const stats = this.towerManager?.getStatsByIndex(type);
@@ -73,6 +99,26 @@ export default class InventoryManager {
                 this.onTowerSelected?.();
             });
         });
+        this.setupInventoryScroll(cols, maxRows, rowHeight);
+    }
+
+    setupInventoryScroll(cols, maxRows, rowHeight) {
+        // Remove old listeners if any
+        if (this.scrollListener) {
+            this.scene.input.off('wheel', this.scrollListener);
+        }
+
+        const totalRows = Math.ceil(this.items.length / cols);
+        const maxScroll = Math.max(0, (totalRows - maxRows) * rowHeight);
+
+        this.scrollListener = (pointer, gameObjects, deltaY) => {
+            if (!this.inventoryImage?.visible) return;
+            const scrollSpeed = 15;
+            this.scrollOffset += deltaY > 0 ? scrollSpeed : -scrollSpeed;
+            this.scrollOffset = Phaser.Math.Clamp(this.scrollOffset, 0, maxScroll);
+            this.updateInventoryUI();
+        };
+        this.scene.input.on('wheel', this.scrollListener);
     }
 
     setTowerSelectedCallback(cb) {
@@ -126,5 +172,10 @@ export default class InventoryManager {
         const newTier = Number(tier) + 1;
 
         return `${base}_${newTier}`;
+    destroy() {
+        // Clean up scroll listener
+        if (this.scrollListener) {
+            this.scene.input.off('wheel', this.scrollListener);
+        }
     }
 }

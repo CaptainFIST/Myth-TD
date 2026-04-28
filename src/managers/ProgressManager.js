@@ -8,7 +8,6 @@ export default class ProgressManager {
             data.progress.levelsCompleted.push(level);
             data.progress.levelsCompleted.sort((a,b) => a - b);
         }
-
         SaveManager.commit();
     }
 

@@ -4,6 +4,8 @@ import EnemyManager from './EnemyManager.js';
 import WaveManager from './WaveManager.js';
 import InventoryManager from './InventoryManager.js';
 import AudioManager from './AudioManager.js';
+import { AssetConfig } from '../config/AssetConfig.js';
+import { UIConfig } from '../config/UIConfig.js';
 
 export default class UIManager extends Phaser.Scene {
     constructor() {
@@ -11,32 +13,27 @@ export default class UIManager extends Phaser.Scene {
     }
 
     preload() {
-        // Load tower assets
-        TowerManager.physicalData.forEach(([name]) => {
-            this.load.spritesheet(name, `assets/tower/${name}.png`, { frameWidth: 64, frameHeight: 64 });
-            this.load.image(`${name}_Icon`, `assets/tower/TowerIcon/${name}_Icon.png`);
-        });
+        // Delegate asset loading to respective managers
+        const tempTowerManager = new TowerManager(this);
+        tempTowerManager.preloadAssets();
+        
+        const tempEnemyManager = new EnemyManager(this);
+        tempEnemyManager.preloadAssets();
 
-        // Load enemy assets
-        EnemyManager.testData.forEach(([name]) => {
-            this.load.spritesheet(name, `assets/Enemies/${name}.png`, { frameWidth: 64, frameHeight: 64 });
-        });
-
-        // Load UI assets
-        const uiAssets = ['UI', 'UIHP', 'Inventory', 'pausebutton', 'sidebar', 'Susanoo_Stripe', 'Pedestal'];
-        uiAssets.forEach(asset => {
-            if (asset === 'Susanoo_Stripe') {
-                this.load.spritesheet(asset, 'assets/Abilities/susanoo_water.png', { frameWidth: 64, frameHeight: 64 });
-            } else if (asset === 'Pedestal') {
-                this.load.image(asset, 'assets/Tower Placement/tower_placement.png');
+        // Load UI assets from config
+        AssetConfig.uiAssets.forEach(asset => {
+            if (asset.type === 'spritesheet') {
+                this.load.spritesheet(asset.name, asset.path, { frameWidth: asset.frameWidth, frameHeight: asset.frameHeight });
             } else {
-                this.load.image(asset, `assets/UI/${asset}.png`);
+                this.load.image(asset.name, asset.path);
             }
         });
 
-        // Load audio assets
-        const tempAudioManager = new AudioManager(this);
-        tempAudioManager.preloadAudio();
+        // Load audio assets and create AudioManager (only once)
+        if (!this.audioManager) {
+            this.audioManager = new AudioManager(this);
+            this.audioManager.preloadAudio();
+        }
     }
 
     create(data) {
@@ -56,13 +53,10 @@ export default class UIManager extends Phaser.Scene {
         this.lastPointerDown = false;
         this.rangeCircle = this.add.graphics();
 
-        // Store audioManager from level scene
-        this.audioManager = data.audioManager;
-
         // Initialize managers
         this.towerManager = new TowerManager(this);
         this.towerManager.createAnimations();
-        this.createProjectileAnimations();
+        this.towerManager.createProjectileAnimations();
         
         this.enemyManager = new EnemyManager(this);
         this.enemyManager.createAnimations();
@@ -73,10 +67,9 @@ export default class UIManager extends Phaser.Scene {
         this.sceneL = data.sceneL;
         this.timeManager = new TimeManager();
 
-        // Create a fresh AudioManager for UIManager scene to ensure audio works
-        // (audio must be loaded in the scene that plays it)
-        this.audioManager = new AudioManager(this);
-        console.log("✓ AudioManager created for UIManager scene");
+        // Pass audioManager to player for health loss sounds
+        this.player.audioManager = this.audioManager;
+        console.log("✓ AudioManager initialized for UIManager");
         
         // Play level music
         this.audioManager.playLevelMusic();
@@ -86,7 +79,6 @@ export default class UIManager extends Phaser.Scene {
 
         // Setup UI
         this.setupUI();
-        // wait until MapManager is ready
         this.waitForMapReady();
     }
 
@@ -108,7 +100,6 @@ export default class UIManager extends Phaser.Scene {
 
             this.time.paused = false;
             this.timeManager.resume();
-
             this.waveManager.reset();
 
             if (!this.waveManager.cycleRunning) {
@@ -140,40 +131,14 @@ export default class UIManager extends Phaser.Scene {
     }
 
     setupHealthDisplay(x, y) {
-        this.hpMax = 20;
-        this.hpFrameX = x;
-        this.hpFrameY = y;
         this.add.image(x, y, 'UIHP').setDepth(2);
-        
-        this.hpRadius = 39; // 78 / 2
-        this.hpContainer = this.add.container(0, 0).setDepth(1);
-        this.hpFill = this.add.graphics();
-        this.hpContainer.add(this.hpFill);
-
-        // Create circular mask for HP display
-        const maskShape = this.add.graphics();
-        maskShape.fillStyle(0xffffff);
-        maskShape.fillCircle(x, y, this.hpRadius);
-        maskShape.setVisible(false);
-        this.hpContainer.setMask(maskShape.createGeometryMask());
-        
-        this.healthText = this.add.text(x, y, '', {
-            fontSize: '16px', color: '#ffffff', fontStyle: 'bold'
-        }).setOrigin(0.5).setDepth(3);
+        this.player.setupHealthDisplay(UIConfig, this, x, y);
     }
 
     setupStatusTexts(centerX, y) {
-        this.goldText = this.add.text(centerX - 250, y, '', {
-            fontSize: '20px', color: '#ffd700', fontStyle: 'bold'
-        }).setDepth(3);
-
-        this.timerText = this.add.text(centerX, y, '', {
-            fontSize: '20px', color: '#ffffff'
-        }).setOrigin(0.5).setDepth(3);
-
-        this.waveText = this.add.text(centerX + 150, y, '', {
-            fontSize: '20px', color: '#64d5ff'
-        }).setDepth(3);
+        this.goldText = this.add.text(centerX - 250, y, '', UIConfig.fonts.goldText).setDepth(3);
+        this.timerText = this.add.text(centerX, y, '', UIConfig.fonts.timerText).setOrigin(0.5).setDepth(3);
+        this.waveText = this.add.text(centerX + 150, y, '', UIConfig.fonts.waveText).setDepth(3);
     }
 
     setupInventory(width, height) {
@@ -216,35 +181,45 @@ export default class UIManager extends Phaser.Scene {
 
         // Control buttons
         const controlY = 10;
-        this.add.image(rightStart + 200, controlY, 'pausebutton')
-            .setOrigin(0.5, 0).setScale(0.1).setInteractive({ useHandCursor: true }).setDepth(60)
-            .on('pointerdown', () => this.toggleSimplePause());
+        this.createControlButton(rightStart + 200, controlY, 'pausebutton', () => this.toggleSimplePause(), true);
+        this.createSpeedButton(rightStart + 100, controlY);
+        this.createControlButton(rightStart + 300, controlY, 'sidebar', () => this.toggleSidebarMenu());
 
-        // Speed button
-        this.speedButtonBg = this.add.rectangle(rightStart + 100, controlY, 60, 40, 0x333333)
-            .setOrigin(0.5, 0).setStrokeStyle(2, 0xffffff).setInteractive({ useHandCursor: true }).setDepth(60);
+        this.setupSidebarMenu(width, height);
+    }
+
+    // Create a control button (like pause, sidebar, etc.)
+    createControlButton(x, y, assetKey, onClick, isImage = false) {
+        const btn = isImage
+            ? this.add.image(x, y, assetKey).setOrigin(0.5, 0).setScale(0.1)
+            : this.add.image(x, y, assetKey).setOrigin(0.5, 0).setScale(0.2);
         
-        this.speedButtonText = this.add.text(rightStart + 100, controlY + 20, '1x', {
-            fontSize: '20px', color: '#ffffff', fontStyle: 'bold', align: 'center'
-        }).setOrigin(0.5).setDepth(61);
+        btn.setInteractive({ useHandCursor: true }).setDepth(UIConfig.depths.ui).on('pointerdown', onClick);
+        return btn;
+    }
 
-        this.speedButtonBg.on('pointerover', () => this.speedButtonBg.setFillStyle(0x555555));
-        this.speedButtonBg.on('pointerout', () => this.speedButtonBg.setFillStyle(0x333333));
+    // Create speed button with text display
+    createSpeedButton(x, y) {
+        this.speedButtonBg = this.add.rectangle(x, y, UIConfig.buttons.speedButton.width, UIConfig.buttons.speedButton.height, UIConfig.colors.buttonBg)
+            .setOrigin(0.5, 0).setStrokeStyle(2, UIConfig.colors.white).setInteractive({ useHandCursor: true }).setDepth(UIConfig.depths.ui);
+        
+        this.speedButtonText = this.add.text(x, y + 20, '1x', UIConfig.fonts.statusText)
+            .setOrigin(0.5).setDepth(UIConfig.depths.uiText);
+
+        this.speedButtonBg.on('pointerover', () => this.speedButtonBg.setFillStyle(UIConfig.colors.buttonHover));
+        this.speedButtonBg.on('pointerout', () => this.speedButtonBg.setFillStyle(UIConfig.colors.buttonBg));
         this.speedButtonBg.on('pointerdown', () => this.cycleGameSpeed());
 
-        this.add.image(rightStart + 300, controlY, 'sidebar')
-            .setOrigin(0.5, 0).setScale(0.2).setInteractive({ useHandCursor: true }).setDepth(60)
-            .on('pointerdown', () => this.togglePauseMenu());
+        return { bg: this.speedButtonBg, text: this.speedButtonText };
     }
 
     setupPauseSystem() {
         const { width, height } = this.scale;
-        this.pauseOverlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.7)
-            .setOrigin(0.5).setDepth(200).setVisible(false);
+        this.pauseOverlay = this.add.rectangle(width / 2, height / 2, width, height, UIConfig.colors.black, 0.7)
+            .setOrigin(0.5).setDepth(UIConfig.depths.modal).setVisible(false);
 
-        this.pauseText = this.add.text(width / 2, height / 2 - 100, 'PAUSE', {
-            fontSize: '120px', color: '#ffffff', fontStyle: 'bold'
-        }).setOrigin(0.5).setDepth(201).setVisible(false);
+        this.pauseText = this.add.text(width / 2, height / 2 - 100, 'PAUSE', UIConfig.fonts.title)
+            .setOrigin(0.5).setDepth(UIConfig.depths.modalBg).setVisible(false);
 
         const centerX = width / 2;
         const baseY = height / 2 + 50;
@@ -255,47 +230,142 @@ export default class UIManager extends Phaser.Scene {
         ];
     }
 
-    createButton(x, y, label, onClick, width = 160, height = 80) {
-        const bg = this.add.rectangle(x, y, width, height, 0x000000)
-            .setOrigin(0).setStrokeStyle(2, 0xffffff).setInteractive({ useHandCursor: true }).setDepth(60);
+    setupSidebarMenu(width, height) {
+        const centerX = width / 2;
+        const centerY = height / 2;
+
+        // Overlay and background
+        this.sidebarOverlay = this.add.rectangle(centerX, centerY, width, height, UIConfig.colors.black, 0.7)
+            .setOrigin(0.5).setDepth(UIConfig.depths.modal).setVisible(false);
+        this.sidebarMenuBg = this.add.rectangle(centerX, centerY, 300, 400, UIConfig.colors.darkBg, 0.95)
+            .setOrigin(0.5).setStrokeStyle(2, UIConfig.colors.primary).setDepth(UIConfig.depths.modalBg).setVisible(false);
+
+        // Audio label
+        const audioLabel = this.add.text(centerX, centerY - 160, 'AUDIO', UIConfig.fonts.label)
+            .setOrigin(0.5).setDepth(UIConfig.depths.modalContent).setVisible(false);
+
+        // Mute button
+        this.sidebarMuteBtn = this.add.text(centerX + 110, centerY - 70, this.audioManager.isMuted ? '🔇' : '🔊', UIConfig.fonts.emojiButton)
+            .setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(UIConfig.depths.modalContent).setVisible(false);
         
-        this.add.text(x + width / 2, y + height / 2, label, {
-            fontSize: '16px', color: '#ffffff', fontStyle: 'bold', align: 'center'
-        }).setOrigin(0.5).setDepth(61);
+        this.sidebarMuteBtn.on('pointerdown', () => {
+            this.audioManager.toggleMute();
+            this.sidebarMuteBtn.setText(this.audioManager.isMuted ? '🔇' : '🔊');
+        });
+        this.sidebarMuteBtn.on('pointerover', () => this.sidebarMuteBtn.setStyle({ fill: UIConfig.colors.primaryLight }));
+        this.sidebarMuteBtn.on('pointerout', () => this.sidebarMuteBtn.setStyle({ fill: UIConfig.colors.primary }));
+
+        // Volume slider
+        const { sliderBg, sliderHandle } = this.setupVolumeSlider(centerX, centerY);
+
+        // Divider
+        const divider = this.add.graphics().setDepth(UIConfig.depths.modalContent).setVisible(false);
+        divider.lineStyle(1, UIConfig.colors.primary, 0.5);
+        divider.lineBetween(centerX - 120, centerY + 10, centerX + 120, centerY + 10);
+
+        // Buttons
+        const { btn: resumeBtn, txt: resumeText } = this.createSidebarButton(centerX, centerY + 50, 'Resume', () => this.toggleSidebarMenu());
+        const { btn: menuBtn, txt: menuText } = this.createSidebarButton(centerX, centerY + 130, 'Main Menu', () => this.endLevel('return'));
+
+        this.sidebarMenuElements = [
+            this.sidebarOverlay, this.sidebarMenuBg, audioLabel, this.sidebarMuteBtn,
+            sliderBg, sliderHandle, divider, resumeBtn, resumeText, menuBtn, menuText
+        ];
+    }
+
+    updateSidebarMenuDisplay() {
+        if (this.audioManager.isMuted) {
+            this.sidebarSliderInfo.handle.setFillStyle(UIConfig.colors.mutedGray);
+            this.sidebarSliderInfo.bg.setStrokeStyle(2, UIConfig.colors.mutedGray);
+        } else {
+            this.sidebarSliderInfo.handle.setFillStyle(UIConfig.colors.primary);
+            this.sidebarSliderInfo.bg.setStrokeStyle(2, UIConfig.colors.primary);
+        }
+    }
+
+    // Helper: Create a sidebar button
+    createSidebarButton(centerX, y, label, onDown, bgColor = UIConfig.colors.buttonBg) {
+        const btn = this.add.rectangle(centerX, y, UIConfig.buttons.sidebarButton.width, UIConfig.buttons.sidebarButton.height, bgColor)
+            .setOrigin(0.5).setStrokeStyle(2, UIConfig.colors.white).setInteractive({ useHandCursor: true }).setDepth(UIConfig.depths.modalContent).setVisible(false);
+        const txt = this.add.text(centerX, y, label, UIConfig.fonts.buttonLarge)
+            .setOrigin(0.5).setDepth(UIConfig.depths.modalHandle).setVisible(false);
+        btn.on('pointerover', () => btn.setFillStyle(UIConfig.colors.buttonHover));
+        btn.on('pointerout', () => btn.setFillStyle(bgColor));
+        btn.on('pointerdown', onDown);
+        return { btn, txt };
+    }
+
+    // Helper: Setup volume slider
+    setupVolumeSlider(centerX, centerY) {
+        const sliderX = centerX - 30;
+        const sliderY = centerY - 70;
+        const sliderWidth = UIConfig.slider.width;
+        const sliderHeight = UIConfig.slider.height;
+
+        const sliderBg = this.add.rectangle(sliderX, sliderY, sliderWidth, sliderHeight, UIConfig.slider.bgColor)
+            .setOrigin(0.5).setStrokeStyle(2, UIConfig.colors.primary).setDepth(UIConfig.depths.modalContent).setVisible(false);
+
+        const handleX = sliderX - (sliderWidth / 2) + (this.audioManager.getVolume() * sliderWidth);
+        const sliderHandle = this.add.circle(handleX, sliderY, UIConfig.slider.handleRadius, UIConfig.slider.primaryColor)
+            .setInteractive({ useHandCursor: true }).setDepth(UIConfig.depths.modalHandle).setVisible(false);
+
+        this.sidebarSliderInfo = { bg: sliderBg, handle: sliderHandle, sliderX, sliderY, sliderWidth, sliderHeight };
+
+        // Volume update handler
+        const updateVolume = (newX) => {
+            const clampedX = Phaser.Math.Clamp(newX, sliderX - sliderWidth / 2, sliderX + sliderWidth / 2);
+            sliderHandle.setX(clampedX);
+            const newVolume = (clampedX - (sliderX - sliderWidth / 2)) / sliderWidth;
+            this.audioManager.setVolume(newVolume);
+            this.updateSidebarMenuDisplay();
+        };
+
+        this.input.on('pointermove', (pointer) => {
+            if (pointer.isDown && sliderHandle.active && sliderHandle.visible) {
+                updateVolume(pointer.x);
+            }
+        });
+
+        sliderBg.setInteractive({ useHandCursor: true });
+        sliderBg.on('pointerdown', (pointer) => updateVolume(pointer.x));
+
+        return { sliderBg, sliderHandle };
+    }
+
+    toggleSidebarMenu() {
+        this.togglePause();
+        const isVisible = this.sidebarMenuBg?.visible ?? false;
+        this.sidebarMenuElements?.forEach(element => element?.setVisible?.(!isVisible));
+        this.updateSidebarMenuDisplay();
+    }
+
+    createButton(x, y, label, onClick, width = 160, height = 80) {
+        const bg = this.add.rectangle(x, y, width, height, UIConfig.colors.black)
+            .setOrigin(0).setStrokeStyle(2, UIConfig.colors.white).setInteractive({ useHandCursor: true }).setDepth(UIConfig.depths.ui);
+        
+        this.add.text(x + width / 2, y + height / 2, label, UIConfig.fonts.buttonSmall)
+            .setOrigin(0.5).setDepth(UIConfig.depths.uiText);
 
         bg.on('pointerover', () => bg.setFillStyle(0x222222));
-        bg.on('pointerout', () => bg.setFillStyle(0x000000));
+        bg.on('pointerout', () => bg.setFillStyle(UIConfig.colors.black));
         bg.on('pointerdown', onClick);
     }
 
     createPauseButton(x, y, label, onClick, width = 200, height = 60) {
-        const bg = this.add.rectangle(x, y, width, height, 0x333333)
-            .setOrigin(0.5).setStrokeStyle(2, 0xffffff).setInteractive({ useHandCursor: true }).setDepth(202).setVisible(false);
+        const bg = this.add.rectangle(x, y, width, height, UIConfig.colors.buttonBg)
+            .setOrigin(0.5).setStrokeStyle(2, UIConfig.colors.white).setInteractive({ useHandCursor: true }).setDepth(UIConfig.depths.modalContent).setVisible(false);
         
-        const text = this.add.text(x, y, label, {
-            fontSize: '18px', color: '#ffffff', fontStyle: 'bold', align: 'center'
-        }).setOrigin(0.5).setDepth(202).setVisible(false);
+        const text = this.add.text(x, y, label, UIConfig.fonts.buttonLarge)
+            .setOrigin(0.5).setDepth(UIConfig.depths.modalContent).setVisible(false);
 
-        bg.on('pointerover', () => bg.setFillStyle(0x555555));
-        bg.on('pointerout', () => bg.setFillStyle(0x333333));
+        bg.on('pointerover', () => bg.setFillStyle(UIConfig.colors.buttonHover));
+        bg.on('pointerout', () => bg.setFillStyle(UIConfig.colors.buttonBg));
         bg.on('pointerdown', onClick);
 
         return {
             bg, text,
             setVisible: (v) => { bg.setVisible(v); text.setVisible(v); }
         };
-    }
-
-    createProjectileAnimations() {
-        const key = 'Susanoo_Stripe_projectile';
-        if (!this.anims.exists(key)) {
-            this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers('Susanoo_Stripe', { start: 0, end: 5 }),
-                frameRate: 10,
-                repeat: -1
-            });
-        }
     }
 
     togglePause() {
@@ -345,16 +415,12 @@ export default class UIManager extends Phaser.Scene {
             this.player.spentGold,
             this.player.playerHealth
         );
-
-
     }
 
     update(time, delta) {
         if (this.levelClosed) return;
-        
         this.timeManager?.update?.(delta);
         const scaledDelta = this.timeManager.getScaledDelta(delta);
-        
         this.updateUI();
 
         // Check if player lost
@@ -469,23 +535,10 @@ export default class UIManager extends Phaser.Scene {
         this.goldText?.setText?.(`Gold: ${this.player.gold}`);
         this.timerText?.setText?.(`Time: ${this.timeManager.getTime().toFixed(2)}s`);
         this.waveManager?.updateWaveText?.();
-        this.updateHealthCircle(this.player.playerHealth);
+        this.player?.updateHealthDisplay?.();
     }
 
-    updateHealthCircle(hp) {
-        const percent = Phaser.Math.Clamp(hp / this.hpMax, 0, 1);
-        const fillHeight = (this.hpRadius * 2) * percent;
 
-        this.hpFill.clear();
-        this.hpFill.fillStyle(0xCD1C18, 1);
-        this.hpFill.fillRect(
-            this.hpFrameX - this.hpRadius,
-            (this.hpFrameY + this.hpRadius) - fillHeight,
-            this.hpRadius * 2,
-            fillHeight
-        );
-        this.healthText?.setText?.(`${hp} / ${this.hpMax}`);
-    }
 
     cleanup() {
         this.waveManager?.stop?.();   
@@ -496,6 +549,10 @@ export default class UIManager extends Phaser.Scene {
 
         this.highlighter?.clear?.();
         this.rangeCircle?.clear?.();
+
+        this.inventoryManager?.destroy?.();
+        this.sidebarMenuElements = null;
+        this.sidebarSliderInfo = null;
 
         this.waveManager = null;
         this.enemyManager = null;

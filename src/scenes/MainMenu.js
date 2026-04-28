@@ -12,7 +12,6 @@ export default class MainMenu extends Phaser.Scene {
     preload() {
         this.load.image('gameTitle','assets/Titles/gameTitle.png');
         this.load.image('subtitleImage','assets/Titles/subtitleImage.png');
-        
         this.audioManager = new AudioManager(this);
         this.audioManager.preloadAudio();
     }
@@ -23,17 +22,16 @@ export default class MainMenu extends Phaser.Scene {
         const sData = SaveManager.get();
         console.log(sData.activeSlot);
         console.log(sData);
-        //console.log(sData.slots);
-        //console.log(SaveManager.getSlot().stats);
-        //
 
         const { width, height } = this.scale;
         this.add.rectangle(width / 2, height / 2, width, height, 0x0d1128).setOrigin(0.5);
         this.add.image(width / 2, 180, 'gameTitle').setScale(1.8);
         this.add.image(width / 2, 420, 'subtitleImage').setScale(1.5);
         
-        // Animated background
         this.createBackground();
+
+        // Audio controls in top right
+        this.createAudioControls(width, height);
 
         // Define button layout and actions
         const buttonData = [
@@ -45,10 +43,8 @@ export default class MainMenu extends Phaser.Scene {
                 action: () => {
                     SaveManager.setActiveSlot('Slot_2');
                     console.log(sData.activeSlot);
-                }
-                
+                }  
             }
-
         ];
         const startY = 520;
         const leftx = 280;
@@ -57,7 +53,6 @@ export default class MainMenu extends Phaser.Scene {
         // Create each button
         buttonData.forEach((btn, index) => {
             const ypos = startY + index * spacing;
-            
             const box = this.add.rectangle(leftx, ypos, 380, 80, 0x0f1534, 0.7)
                 .setStrokeStyle(3, 0x000000).setOrigin(0.5);
             box.setDepth(1);
@@ -72,7 +67,6 @@ export default class MainMenu extends Phaser.Scene {
 
             button.on('pointerover', () => button.setStyle({fill: "#7c3aed"}));
             button.on('pointerout', () => button.setStyle({fill: '#06b6d4'}));
-            
             if (btn.action) {
                 button.on('pointerdown', btn.action);
             }
@@ -98,6 +92,83 @@ export default class MainMenu extends Phaser.Scene {
         }
     }
 
+    // Create audio controls (volume slider and mute button) in top right
+    createAudioControls(width, height) {
+        const controlY = 40;
+        const sliderX = width - 230;
+        const sliderWidth = 150;
+        const muteButtonX = sliderX + sliderWidth / 2 + 60; // Position to the right of slider
+
+        // Mute button
+        const muteButton = this.add.text(muteButtonX, controlY + 12, this.audioManager.isMuted ? '🔇' : '🔊', {
+            fontSize: '32px',
+            color: '#06b6d4',
+            fontStyle: 'bold'
+        })
+        .setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(100);
+
+        muteButton.on('pointerdown', () => {
+            this.audioManager.toggleMute();
+            muteButton.setText(this.audioManager.isMuted ? '🔇' : '🔊');
+        });
+
+        muteButton.on('pointerover', () => muteButton.setStyle({ fill: '#7c3aed' }));
+        muteButton.on('pointerout', () => muteButton.setStyle({ fill: '#06b6d4' }));
+
+        // Volume slider background
+        const sliderHeight = 8;
+
+        const sliderBg = this.add.rectangle(sliderX, controlY + 10, sliderWidth, sliderHeight, 0x333333)
+            .setOrigin(0.5).setStrokeStyle(2, 0x06b6d4).setDepth(100);
+        const handleX = sliderX - (sliderWidth / 2) + (this.audioManager.getVolume() * sliderWidth);
+        const sliderHandle = this.add.circle(handleX, controlY + 10, 10, 0x06b6d4)
+            .setInteractive({ useHandCursor: true }).setDepth(101);
+
+        // Update volume when dragging slider
+        this.input.on('pointermove', (pointer) => {
+            if (pointer.isDown && sliderHandle.active) {
+                const newX = Phaser.Math.Clamp(pointer.x, sliderX - sliderWidth / 2, sliderX + sliderWidth / 2);
+                sliderHandle.setX(newX);
+                
+                const newVolume = (newX - (sliderX - sliderWidth / 2)) / sliderWidth;
+                this.audioManager.setVolume(newVolume);
+            }
+        });
+
+        // Allow clicking on the slider background to move handle
+        sliderBg.setInteractive({ useHandCursor: true });
+        sliderBg.on('pointerdown', (pointer) => {
+            const newX = Phaser.Math.Clamp(pointer.x, sliderX - sliderWidth / 2, sliderX + sliderWidth / 2);
+            sliderHandle.setX(newX);
+            const newVolume = (newX - (sliderX - sliderWidth / 2)) / sliderWidth;
+            this.audioManager.setVolume(newVolume);
+        });
+
+        this.volumeText = this.add.text(sliderX, controlY - 20, '100%', {
+            fontSize: '14px',
+            color: '#06b6d4',
+            fontStyle: 'bold',
+            align: 'center'
+        })
+        .setOrigin(0.5).setDepth(100);
+
+        // Update volume text and handle color
+        this.updateVolumeDisplay = () => {
+            const volume = Math.round(this.audioManager.getVolume() * 100);
+            this.volumeText.setText(`${volume}%`);
+            
+            if (this.audioManager.isMuted) {
+                sliderHandle.setFillStyle(0x666666);
+                sliderBg.setStrokeStyle(2, 0x666666);
+            } else {
+                sliderHandle.setFillStyle(0x06b6d4);
+                sliderBg.setStrokeStyle(2, 0x06b6d4);
+            }
+        };
+
+        this.updateVolumeDisplay();
+    }
+
     // Animate background circles floating upward
     update() {
         this.bgGraphics.clear();
@@ -109,6 +180,10 @@ export default class MainMenu extends Phaser.Scene {
             }
             this.bgGraphics.fillCircle(c.x, c.y, c.radius);
         });
+
+        if (this.updateVolumeDisplay) {
+            this.updateVolumeDisplay();
+        }
     }
     
     shutdown() {

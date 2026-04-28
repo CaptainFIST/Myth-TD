@@ -10,13 +10,15 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         this.pedestal = scene.add.image(0, 0, 'Pedestal').setDepth(9);
         this.projectiles = scene.add.group();
 
-        // Attack timing/state control
-        this.nextTic = scene.time.now + this.attackDelay;
+        // Attack timing/state control 
+        this.timeSinceLastAttack = this.attackDelay;  // Set to delay so it can attack immediately
         this.isAttacking = false;
         this.damageDealt = false;
 
         scene.add.existing(this);
-        this.setDepth(10).setScale(2).play(`${this.name}_idle`);
+        // Scale towers
+        const scale = this.name === 'Promachus' ? 1 : 2;
+        this.setDepth(10).setScale(scale).play(`${this.name}_idle`);
 
         // Reset tower after attack animation finishes
         this.on('animationcomplete', ({ key }) => {
@@ -33,22 +35,29 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         this.setPosition(cx, cy - 20);
         this.pedestal.setPosition(cx, cy);
 
-        // Reset attack cooldown when placed - set to 0 so it can attack on first update
-        // The update method will use the scaled time for cooldown calculations
-        this.nextTic = 0;
+        // Reset attack cooldown when placed - set to delay so it can attack on first update
+        this.timeSinceLastAttack = this.attackDelay;
     }
 
     update(time, delta) {
         if (!this.active) return;
         const enemy = this.getClosestEnemy();
 
-        // Start attack if cooldown is ready
-        if (enemy && time > this.nextTic && !this.isAttacking) {
-            this.fire(time, enemy);
+        // Scale delta by game speed multiplier
+        const gameSpeedScale = this.scene.timeManager?.getScale() || 1;
+        const scaledDelta = delta * gameSpeedScale;
+        
+        // Accumulate elapsed time since last attack
+        this.timeSinceLastAttack += scaledDelta;
+
+        // Start attack if cooldown is ready AND enemy in range
+        if (enemy && this.timeSinceLastAttack >= this.attackDelay && !this.isAttacking) {
+            this.fire(enemy);
+            this.timeSinceLastAttack = 0;
         }
 
-        // Direct-damage towers (non-projectile)
-        if (this.isAttacking && enemy && !this.damageDealt && this.name !== 'Susanoo') {
+        // Direct-damage towers (non-projectile) - only if enemy exists
+        if (this.isAttacking && enemy && !this.damageDealt && this.name !== 'Susanoo' && this.name !== 'Promachus') {
             enemy.takeDamage(this.damage);
             this.damageDealt = true;
         }
@@ -70,26 +79,39 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         return closest;
     }
 
-    fire(time, enemy) {
+    fire(enemy) {
         this.isAttacking = true;
         this.damageDealt = false;
         this.play(`${this.name}_attack`);
-        this.nextTic = time + this.attackDelay;
-
-        console.log("Tower firing! Attempting to play audio...", { hasAudioManager: !!this.scene.audioManager });
         this.scene.audioManager?.playTowerAttack();
         
-        // Only Susanoo uses projectile attacks
-        if (this.name === 'Susanoo') this.fireProjectile(enemy);
+        // Projectile attacks (Susanoo and Promachus)
+        if (this.name === 'Susanoo' || this.name === 'Promachus') this.fireProjectile(enemy);
     }
 
     fireProjectile(target) {
-        const p = this.scene.add.sprite(this.x, this.y, 'Susanoo_Stripe')
-            .setDepth(5).setScale(1.5).play('Susanoo_Stripe_projectile');
-
+        if (!target) return; // No target for projectile attack
+        let spriteKey, animKey, speed, scale;
+        
+        if (this.name === 'Susanoo') {
+            spriteKey = 'Susanoo_Stripe';
+            animKey = 'Susanoo_Stripe_projectile';
+            speed = 300;
+            scale = 1.5;
+        } else if (this.name === 'Promachus') {
+            spriteKey = 'Promachus_fire';
+            animKey = 'Promachus_fire_projectile';
+            speed = 400;
+            scale = 4.5;
+        } else {
+            return;
+        }
+        
+        const p = this.scene.add.sprite(this.x, this.y, spriteKey)
+            .setDepth(5).setScale(scale).play(animKey);
         Object.assign(p, {
             targetEnemy: target,
-            speed: 300,
+            speed,
             hasHit: false
         });
         this.projectiles.add(p);
@@ -125,7 +147,6 @@ export default class Tower extends Phaser.GameObjects.Sprite {
     destroy(fromScene) {
         if (this._destroyed) return;
         this._destroyed = true;
-
         this.pedestal?.destroy();
         this.projectiles?.clear(true, true);
         super.destroy(fromScene);

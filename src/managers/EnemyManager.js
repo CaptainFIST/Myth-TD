@@ -3,13 +3,13 @@ import Enemy from '../entities/Enemy.js';
 export default class EnemyManager {
     // [name, id, health, speed, reward, lastFrame]
     static testData = [
-        ['Oni', 0, 40, 1, 5, 15],
-        ['Yokai', 1, 60, 1, 7, 5],
-        ['Skeleton', 2, 50, 1, 10, 6],
-        ['Orc', 3, 65, 0.8, 15, 5],
+        ['Oni', 0, 20, 1, 500, 15],
+        ['Yokai', 1, 30, 1, 7, 5],
+        ['Skeleton', 2, 30, 1, 10, 6],
+        ['Orc', 3, 35, 0.8, 15, 5],
         ['Firespawn', 4, 30, 1.2, 20, 6],
         ['Plent', 5, 35, 0.9, 4, 10],
-        ['CurseWanderer', 6, 65, 0.7, 25, 8],
+        ['CurseWanderer', 6, 35, 0.7, 25, 8],
         ['Slime', 7, 20, 1, 3, 4]
     ];
 
@@ -25,7 +25,6 @@ export default class EnemyManager {
 
     createAnimations() {
         const { anims } = this.scene;
-
         EnemyManager.testData.forEach(([name, , , , , lastFrame]) => {
             const key = `${name}_walk`;
             // Only create animation if it doesn't already exist
@@ -72,4 +71,11 @@ export default class EnemyManager {
     }
     pause() { this.setActiveState(false); }
     resume() { this.setActiveState(true); }
+
+    preloadAssets() {
+        // Load enemy sprites
+        this.constructor.testData.forEach(([name]) => {
+            this.scene.load.spritesheet(name, `assets/Enemies/${name}.png`, { frameWidth: 64, frameHeight: 64 });
+        });
+    }
 }
