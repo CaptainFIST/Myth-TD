@@ -204,8 +204,10 @@ export default class UIManager extends Phaser.Scene {
             }
         });
 
-        // Merge/Win button
-        this.createButton(rightStart, startY, 'Merge', () => this.endLevel('win'));
+        // Merge button
+        this.createButton(rightStart, startY, 'Merge', () => {
+            this.inventoryManager.mergeTowers();
+        });
 
         // Inventory button
         this.createButton(rightStart + 170, startY, 'Inventory', () => {
