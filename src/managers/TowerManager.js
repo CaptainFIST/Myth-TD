@@ -29,18 +29,45 @@ export default class TowerManager {
     }
 
     getStatsByIndex(indexStr) {
+
+        let tier = 1;
+
+        if (indexStr.includes('_')) {
+            const parts = indexStr.split('_');
+            indexStr = parts[0];
+            tier = Number(parts[1]);
+        }
+
         const type = indexStr[0];
         const id = Number(indexStr.slice(1));
 
+        let base;
+
         switch (type) {
-            case 'p': return this.constructor.physicalData[id];
-            case 'a': return this.constructor.airData[id];
-            case 'w': return this.constructor.waterData[id];
-            case 'f': return this.constructor.fireData[id];
-            case 'd': return this.constructor.darkData[id];
-            case 'o': return this.constructor.otherData[id];
+            case 'p': base = this.constructor.physicalData[id]; break;
+            case 'a': base = this.constructor.airData[id]; break;
+            case 'w': base = this.constructor.waterData[id]; break;
+            case 'f': base = this.constructor.fireData[id]; break;
+            case 'd': base = this.constructor.darkData[id]; break;
+            case 'o': base = this.constructor.otherData[id]; break;
             default: return null;
         }
+
+        if (!base) return null;
+
+        const [name, dmg, range, atkSpeed, idleEnd, attackEnd] = base;
+
+        // Scaling per tier
+        const scale = 1 + (tier - 1) * 0.5;
+
+        return [
+            name,
+            dmg * scale,
+            range + (tier - 1),
+            atkSpeed * (1 + (tier - 1) * 0.2),
+            idleEnd,
+            attackEnd
+        ];
     }
 
     getRandomTowerIndex() {
