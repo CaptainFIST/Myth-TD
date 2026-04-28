@@ -25,5 +25,4 @@ export default class StatsManager {
         console.log(data.stats.goldSpent);
         SaveManager.commit();
     }
-
 }

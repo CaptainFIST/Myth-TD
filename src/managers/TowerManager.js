@@ -4,7 +4,8 @@ export default class TowerManager {
     // Tower stat tables: [name, damage, range, attackSpeed, idleEnd, attackEnd]
     static physicalData = [
         ['Izanami', 10, 2, 1.2, 2, 14],
-        ['Susanoo', 5, 3, 0.6, 6, 14]
+        ['Susanoo', 5, 3, 0.6, 6, 14],
+        ['Promachus', 20, 3, 2.5, 3, 12]
     ];
 
     static airData = [];
@@ -24,7 +25,7 @@ export default class TowerManager {
         this.selectedTower = null;
 
         // Available tower index list
-        this.towerIndex = ['p0', 'p1'];
+        this.towerIndex = ['p0', 'p1', 'p2'];
     }
 
     getStatsByIndex(indexStr) {
@@ -123,5 +124,37 @@ export default class TowerManager {
         this.activeTowers.children.each(t => {
             if (t) t.active = true;
         });
+    }
+
+    preloadAssets() {
+        // Load tower sprites and icons
+        this.constructor.physicalData.forEach(([name]) => {
+            this.scene.load.spritesheet(name, `assets/tower/${name}.png`, { frameWidth: 64, frameHeight: 64 });
+            this.scene.load.image(`${name}_Icon`, `assets/tower/TowerIcon/${name}_Icon.png`);
+        });
+    }
+
+    createProjectileAnimations() {
+        // Susanoo projectile animation
+        const susanooKey = 'Susanoo_Stripe_projectile';
+        if (!this.scene.anims.exists(susanooKey)) {
+            this.scene.anims.create({
+                key: susanooKey,
+                frames: this.scene.anims.generateFrameNumbers('Susanoo_Stripe', { start: 0, end: 5 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+
+        // Promachus fire projectile animation
+        const promachusKey = 'Promachus_fire_projectile';
+        if (!this.scene.anims.exists(promachusKey)) {
+            this.scene.anims.create({
+                key: promachusKey,
+                frames: this.scene.anims.generateFrameNumbers('Promachus_fire', { start: 0, end: 5 }),
+                frameRate: 12,
+                repeat: -1
+            });
+        }
     }
 }
