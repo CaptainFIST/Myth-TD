@@ -172,6 +172,8 @@ export default class InventoryManager {
         const newTier = Number(tier) + 1;
 
         return `${base}_${newTier}`;
+    }
+
     destroy() {
         // Clean up scroll listener
         if (this.scrollListener) {
