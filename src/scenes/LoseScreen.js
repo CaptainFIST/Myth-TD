@@ -30,6 +30,8 @@ export default class LoseScreen extends Phaser.Scene {
             usedGold: spentGold
         });
 
+        StatsManager.incLevelFails(1);
+
         const title = this.add.text(width / 2, height / 2 - 150, 'DEFEAT', {
             fontSize: '96px',
             fill: '#ff4444',                

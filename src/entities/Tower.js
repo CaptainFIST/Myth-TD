@@ -1,3 +1,9 @@
+import SaveManager from '../managers/SaveManager.js';
+import AchievementManager from '../managers/AchievementManager.js';
+import ProgressManager from '../managers/ProgressManager.js';
+import StatsManager from '../managers/StatsManager.js';
+
+
 export default class Tower extends Phaser.GameObjects.Sprite {
     constructor(scene, stats) {
         super(scene, 0, 0, stats[0]);
@@ -36,6 +42,8 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         // Reset attack cooldown when placed - set to 0 so it can attack on first update
         // The update method will use the scaled time for cooldown calculations
         this.nextTic = 0;
+
+        StatsManager.incTowersPlaced(1);
     }
 
     update(time, delta) {

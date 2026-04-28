@@ -1,3 +1,9 @@
+import SaveManager from '../managers/SaveManager.js';
+import AchievementManager from '../managers/AchievementManager.js';
+import ProgressManager from '../managers/ProgressManager.js';
+import StatsManager from '../managers/StatsManager.js';
+
+
 export default class Enemy extends Phaser.GameObjects.Sprite {
     constructor(scene, stats, path) {
         super(scene, 0, 0, stats[0]);
@@ -104,6 +110,8 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
         this.scene.audioManager?.playMonsterDeath();
         
         this.cleanup();
+
+        StatsManager.incEnemiesKilled(1);
     }
 
     cleanup() {

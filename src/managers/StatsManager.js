@@ -18,7 +18,44 @@ export default class StatsManager {
 
     static incPerfectClears(amount) {
         const data = SaveManager.getSlot();
-        data.stats.perfectClears += 0;
+        data.stats.perfectClears += amount;
+        console.log(data.stats.perfectClears);
+        SaveManager.commit();
+    }
+
+    static incLevelClears(amount) {
+        const data = SaveManager.getSlot();
+        data.stats.levelClears += amount;
+        console.log(data.stats.levelClears);
+        SaveManager.commit();
+    }
+
+    static incLevelFails(amount) {
+        const data = SaveManager.getSlot();
+        data.stats.levelFails += amount;
+        console.log(data.stats.levelFails);
+        SaveManager.commit();
+    }
+
+    static incEnemiesKilled(amount) {
+        const data = SaveManager.getSlot();
+        data.stats.enemiesKilled += amount;
+        console.log(data.stats.enemiesKilled);
+        SaveManager.commit();
+    }
+
+    static incTowersPlaced(amount) {
+        const data = SaveManager.getSlot();
+        data.stats.towersPlaced += amount;
+        console.log(data.stats.towersPlaced);
+        SaveManager.commit();
+    }
+
+    static incMergesDone(amount) {
+        const data = SaveManager.getSlot();
+        data.stats.mergesDone += amount;
+        console.log(data.stats.mergesDone);
+        SaveManager.commit();
     }
 
 }
@@ -32,5 +69,5 @@ stats:
             levelFails: 0,
             enemiesKilled: 0,
             towersPlaced: 0,
-            
+            mergesDone: 0
 */

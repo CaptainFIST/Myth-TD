@@ -61,6 +61,7 @@ export default class ProfileData extends Phaser.Scene {
             `Level Fails: ${this.stats.levelFails}`,
             `Enemies Killed: ${this.stats.enemiesKilled}`,
             `Towers Placed: ${this.stats.towersPlaced}`,
+            `Merges Done: ${this.stats.mergesDone}`,
         ];
         
         eStats.forEach((text, i) => {
