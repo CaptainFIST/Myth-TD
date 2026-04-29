@@ -8,7 +8,7 @@ export default class EnemyManager {
         ['Skeleton', 2, 50, 1, 10, 6],
         ['Orc', 3, 65, 0.8, 15, 5],
         ['Firespawn', 4, 30, 1.2, 20, 6],
-        ['Plent', 5, 35, 0.9, 4, 10],
+        ['Plent', 5, 55, 0.9, 4, 10],
         ['CurseWanderer', 6, 65, 0.7, 25, 8],
         ['Slime', 7, 20, 1, 3, 4]
     ];
@@ -25,7 +25,6 @@ export default class EnemyManager {
 
     createAnimations() {
         const { anims } = this.scene;
-
         EnemyManager.testData.forEach(([name, , , , , lastFrame]) => {
             const key = `${name}_walk`;
             // Only create animation if it doesn't already exist
@@ -72,4 +71,11 @@ export default class EnemyManager {
     }
     pause() { this.setActiveState(false); }
     resume() { this.setActiveState(true); }
+
+    preloadAssets() {
+        // Load enemy sprites
+        this.constructor.testData.forEach(([name]) => {
+            this.scene.load.spritesheet(name, `assets/Enemies/${name}.png`, { frameWidth: 64, frameHeight: 64 });
+        });
+    }
 }

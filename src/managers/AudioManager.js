@@ -1,6 +1,8 @@
 export default class AudioManager {
     constructor(scene) {
         this.scene = scene;
+        this.volume = 1.0;
+        this.isMuted = false;
         this.audioConfig = {
             mainMenuMusic: { file: 'assets/audio/MainMenuMusic.mp3', loop: true, volume: 0.5 },
             levelMusic: { file: 'assets/audio/LevelMusic.mp3', loop: true, volume: 0.2 },
@@ -24,10 +26,13 @@ export default class AudioManager {
             return;
         }
 
-        console.log(`🔊 Playing audio: ${audioKey}`, { loop: config.loop, volume: config.volume });
+        // Apply both config volume and manager volume level, respecting mute state
+        const finalVolume = config.volume * this.volume * (this.isMuted ? 0 : 1);
+        
+        console.log(`🔊 Playing audio: ${audioKey}`, { loop: config.loop, finalVolume, muted: this.isMuted });
         this.scene.sound.play(audioKey, {
             loop: config.loop,
-            volume: config.volume
+            volume: finalVolume
         });
     }
 
@@ -61,5 +66,31 @@ export default class AudioManager {
     playLevelMusic() {
         this.stopAll();
         this.playAudio('levelMusic');
+    }
+
+    setVolume(value) {
+        this.volume = Phaser.Math.Clamp(value, 0, 1);
+        this.scene.sound.volume = this.isMuted ? 0 : this.volume;
+        return this.volume;
+    }
+
+    getVolume() {
+        return this.volume;
+    }
+
+    toggleMute() {
+        this.isMuted = !this.isMuted;
+        this.scene.sound.volume = this.isMuted ? 0 : this.volume;
+        return this.isMuted;
+    }
+
+    setMute(muted) {
+        this.isMuted = muted;
+        this.scene.sound.volume = this.isMuted ? 0 : this.volume;
+        return this.isMuted;
+    }
+
+    isMutedState() {
+        return this.isMuted;
     }
 }

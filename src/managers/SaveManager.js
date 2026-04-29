@@ -83,9 +83,4 @@ export default class SaveManager {
         delete data.slots[slotName];
         this.commit();
     }
-
-
-
-
-
 }

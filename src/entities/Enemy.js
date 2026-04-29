@@ -11,7 +11,7 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
 
         // Basic enemy setup from stats array: [name, id, health, speed, reward, lastFrame]
         [this.name, , this.maxHealth, this.speed, this.reward] = stats;
-        this.damage = 1;  // All enemies deal 1 damage regardless of type
+        this.damage = 1;  
         this.health = this.maxHealth;
         this.path = path;
 
@@ -38,7 +38,6 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
         
         this.setDepth(10).setScale(scale).setPosition(path[0].x, path[0].y);
         this.play(`${this.name}_walk`);
-
         this.pIndex = 0;
 
         // Health bar graphics grouped for easier cleanup
@@ -46,16 +45,13 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
             bg: scene.add.graphics().setDepth(15),
             fill: scene.add.graphics().setDepth(16)
         };
-
         this.updateHealthBar();
     }
 
     update(_, delta) {
         if (!this.active || !this.path) return;
-
         const target = this.path[this.pIndex];
         if (!target) return;
-
         const dist = Phaser.Math.Distance.Between(this.x, this.y, target.x, target.y);
 
         // Move to next point or reach base
@@ -91,11 +87,8 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
 
     updateHealthBar() {
         if (!this.bar) return;
-
         const w = 40, h = 6;
-
         const hp = Math.max(0, this.health / this.maxHealth);
-
         const color = hp < 0.25 ? 0xff0000 : hp < 0.5 ? 0xffff00 : 0x00ff00;
 
         this.bar.bg.clear().fillStyle(0x000).fillRect(this.x - w / 2, this.y - 40, w, h);
@@ -105,10 +98,7 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
     die() {
         // Reward player on kill
         this.scene.player?.updateGold?.(this.reward);
-        
-        console.log("Enemy dying! Attempting to play audio...", { hasAudioManager: !!this.scene.audioManager });
         this.scene.audioManager?.playMonsterDeath();
-        
         this.cleanup();
 
         StatsManager.incEnemiesKilled(1);

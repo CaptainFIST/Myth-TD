@@ -63,7 +63,6 @@ export default class MapManager extends Phaser.Scene {
             cur.x * tileSize + tileSize / 2,
             cur.y * tileSize + tileSize / 2
         );
-
         const key = (x, y) => `${x},${y}`;
 
         // Traverse connected path tiles

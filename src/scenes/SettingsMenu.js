@@ -137,7 +137,6 @@ export default class SettingsMenu extends Phaser.Scene {
                 this.updateVolumeSlider(pointer, bar, fill, barX, barWidth, valueText, callback);
             }
         });
-        
         return { fill, valueText };
     }
 
