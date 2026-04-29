@@ -44,6 +44,9 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         this.nextTic = 0;
 
         StatsManager.incTowersPlaced(1);
+        AchievementManager.check({
+            place: SaveManager.getSlot().stats.towersPlaced,
+        });
     }
 
     update(time, delta) {

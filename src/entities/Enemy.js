@@ -112,6 +112,9 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
         this.cleanup();
 
         StatsManager.incEnemiesKilled(1);
+        AchievementManager.check({
+            kill: SaveManager.getSlot().stats.enemiesKilled,
+        });
     }
 
     cleanup() {

@@ -31,13 +31,15 @@ export default class WinScreen extends Phaser.Scene {
             time: passTime,
             gainedGold: gainGold,
             usedGold: spentGold,
-            pHealth: playerHealth
+            pHealth: playerHealth,
         });
 
         StatsManager.incLevelClears(1);
         if(playerHealth === 20) {
             StatsManager.incPerfectClears(1);
         }
+
+        this.getLevel(levelNumber);
         
 
         const title = this.add.text(width / 2, height / 2 - 150, 'VICTORY!', {
@@ -96,6 +98,15 @@ export default class WinScreen extends Phaser.Scene {
         this.createButton(width / 2 + 180, height / 2 + 140, 'MENU', '#6366f1', () => {
             this.scene.start('MainMenu');
         });
+    }
+
+    getLevel(levelId) {
+        const levels = {
+            1: 'Level1',
+            2: 'Level2'
+        };
+        const sceneKey = levels[levelId] || 'Level1';
+        ProgressManager.completeLevel(levelId);
     }
 
     // Helper function to create clickable buttons
