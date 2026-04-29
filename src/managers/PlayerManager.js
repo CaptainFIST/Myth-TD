@@ -1,3 +1,8 @@
+import SaveManager from '../managers/SaveManager.js';
+import AchievementManager from '../managers/AchievementManager.js';
+import ProgressManager from '../managers/ProgressManager.js';
+import StatsManager from '../managers/StatsManager.js';
+
 export default class PlayerManager extends Phaser.Scene {
     constructor(data) {
         super({ key: 'PlayerManager' });
@@ -17,6 +22,7 @@ export default class PlayerManager extends Phaser.Scene {
             this.audioManager = data.audioManager;
         }
     }
+
 
     income() {
         this.gold += this.goldPerSec;
@@ -41,6 +47,7 @@ export default class PlayerManager extends Phaser.Scene {
         if (change > 0) {
             this.gold += change;
             this.gainGold += change;
+            StatsManager.incTotalGold(change);
             return;
         }
 
@@ -51,6 +58,7 @@ export default class PlayerManager extends Phaser.Scene {
         }
         this.gold += change;
         this.spentGold -= change;
+        StatsManager.incGoldSpent(-change);
     }
 
     status(condition) {

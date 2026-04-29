@@ -93,7 +93,7 @@ export default class Level2 extends Phaser.Scene {
     }
 
     // Handle level completion or failure
-    closeLevel(reason, time) {
+    closeLevel(reason, time, gainGold, spentGold, playerHealth) {
         this.scene.stop('MapManager');  // Stop map rendering
         this.scene.stop('UIManager');   // Stop UI and game logic
 

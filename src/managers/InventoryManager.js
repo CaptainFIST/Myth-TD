@@ -1,3 +1,9 @@
+import SaveManager from '../managers/SaveManager.js';
+import AchievementManager from '../managers/AchievementManager.js';
+import ProgressManager from '../managers/ProgressManager.js';
+import StatsManager from '../managers/StatsManager.js';
+
+
 export default class InventoryManager {
     constructor(scene, towerManager, initialItems = []) {
         this.scene = scene;
@@ -156,6 +162,10 @@ export default class InventoryManager {
                 console.log(`Merged 3x ${type} → ${upgradedType}`);
 
                 this.updateInventoryUI();
+                StatsManager.incMergesDone(1);
+                AchievementManager.check({
+                    merge: SaveManager.getSlot().stats.mergesDone,
+                });
                 return;
             }
         }

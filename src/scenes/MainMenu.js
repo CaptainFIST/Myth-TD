@@ -23,6 +23,11 @@ export default class MainMenu extends Phaser.Scene {
         console.log(sData.activeSlot);
         console.log(sData);
 
+        //console.log(sData.slots);
+        //console.log(SaveManager.getSlot().stats);
+        //console.log(ProgressManager.isUnlocked(2));
+
+
         const { width, height } = this.scale;
         this.add.rectangle(width / 2, height / 2, width, height, 0x0d1128).setOrigin(0.5);
         this.add.image(width / 2, 180, 'gameTitle').setScale(1.8);

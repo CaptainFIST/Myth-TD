@@ -15,8 +15,9 @@ export default class SaveManager {
                 levelFails: 0,
                 enemiesKilled: 0,
                 towersPlaced: 0,
+                mergesDone: 0,
             },
-            save: null
+            //save: null
         };
     }
 

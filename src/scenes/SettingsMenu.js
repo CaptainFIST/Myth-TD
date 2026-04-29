@@ -1,3 +1,5 @@
+import SaveManager from '../managers/SaveManager.js';
+
 export default class SettingsMenu extends Phaser.Scene {
     constructor() {
         super({key: 'SettingsMenu'});
@@ -76,13 +78,17 @@ export default class SettingsMenu extends Phaser.Scene {
             fontFamily: 'Arial, sans-serif'
         }).setOrigin(0, 0).setInteractive({ useHandCursor: true });
 
-        const deleteBtn = this.add.text(width / 2, height - 120, 'DELETE ALL DATA', {
+        const deleteBtn = this.add.text(width / 2, height - 120, 'DELETE CURRENT SLOT DATA', {
             fontSize: '28px',
             color: '#ff6b6b',
             fontStyle: 'bold',
             align: 'center',
             fontFamily: 'Arial, sans-serif'
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+        deleteBtn.on('pointerdown', () => {
+            SaveManager.resetSlot(`${SaveManager.get().activeSlot}`);
+        });
 
         const backBtn = this.add.text(width / 2, height - 40, 'BACK TO MENU', {
             fontSize: '32px',
