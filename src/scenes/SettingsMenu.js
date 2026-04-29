@@ -1,13 +1,17 @@
-export default class SettingsMenu extends Phaser.Scene {
+import SaveManager from '../managers/SaveManager.js';
 
+export default class SettingsMenu extends Phaser.Scene {
     constructor() {
         super({key: 'SettingsMenu'});
     }
 
+    // Build the settings UI with audio controls
     create() {
         const { width, height } = this.scale;
         this.bgGraphics = this.add.graphics();
-        this.circles = [];
+        this.circles = [];  
+        
+        // Create animated circles similar to main menu
         for (let i = 0; i < 20; i++) {
             this.circles.push({
                 x: Phaser.Math.Between(0, width),
@@ -17,6 +21,7 @@ export default class SettingsMenu extends Phaser.Scene {
                 speed: Phaser.Math.FloatBetween(0.1, 0.4)
             });
         } 
+        
         this.add.text(width / 2, height / 4 - 80, 'SETTINGS', {
             fontSize: '68px',
             color: '#64d5ff',
@@ -42,6 +47,7 @@ export default class SettingsMenu extends Phaser.Scene {
             this.masterVol = val;
          }
          );
+        
         // Sound Volume Slider
         this.soundVolCont = this.createVolumeControl(width / 2 - 450, audioY + 50, 'SOUND VOLUME', 
         this.soundVol || 0.4,
@@ -50,6 +56,7 @@ export default class SettingsMenu extends Phaser.Scene {
             this.soundVol = val;
         }
         );
+        
         // Music Volume Slider
         this.musicVolCont = this.createVolumeControl(width / 2 - 450, audioY + 100, 'MUSIC VOLUME', 
         this.musicVol || 0.4,
@@ -59,7 +66,7 @@ export default class SettingsMenu extends Phaser.Scene {
         }
         );
 
-        
+        // Mute toggle button
         const muteY = audioY + 160;
         const isMuted = false;
         this.muteBtn = this.add.text(width / 2 - 450, muteY, `MUTE: ${isMuted ? 'ON' : 'OFF'}`, {
@@ -71,13 +78,17 @@ export default class SettingsMenu extends Phaser.Scene {
             fontFamily: 'Arial, sans-serif'
         }).setOrigin(0, 0).setInteractive({ useHandCursor: true });
 
-        const deleteBtn = this.add.text(width / 2, height - 120, 'DELETE ALL DATA', {
+        const deleteBtn = this.add.text(width / 2, height - 120, 'DELETE CURRENT SLOT DATA', {
             fontSize: '28px',
             color: '#ff6b6b',
             fontStyle: 'bold',
             align: 'center',
             fontFamily: 'Arial, sans-serif'
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+        deleteBtn.on('pointerdown', () => {
+            SaveManager.resetSlot(`${SaveManager.get().activeSlot}`);
+        });
 
         const backBtn = this.add.text(width / 2, height - 40, 'BACK TO MENU', {
             fontSize: '32px',
@@ -92,6 +103,7 @@ export default class SettingsMenu extends Phaser.Scene {
         });
     }
 
+    // Helper function to create a volume slider with label and value display
     createVolumeControl(x, y, label,  initialValue, callback) { 
         this.add.text(x, y, label, {
             fontSize: '18px',
@@ -99,25 +111,27 @@ export default class SettingsMenu extends Phaser.Scene {
             fontFamily: 'Arial, sans-serif'
         }).setOrigin(0, 0);
 
+        // Slider background bar
         const barWidth = 200;
         const barHeight = 20;
         const barX = x + 200;
-        const bar = this.add.rectangle(barX, y + 9, barWidth, barHeight, 0x333333).setOrigin(0, 0.5).setStrokeStyle(2, 0x64d5ff, 1);
+        const bar = this.add.rectangle(barX, y + 9, barWidth, barHeight, 0x333333)
+            .setOrigin(0, 0.5).setStrokeStyle(2, 0x64d5ff, 1);
 
-        const fill = this.add.rectangle(barX, y + 9, barWidth * initialValue, barHeight, 0x64d5ff)
-            .setOrigin(0, 0.5);
+        const fill = this.add.rectangle(barX, y + 9, barWidth * initialValue, barHeight, 0x64d5ff).setOrigin(0, 0.5);
 
+        // Volume percentage display
         const valueText = this.add.text(barX + barWidth + 20, y, Math.round(initialValue * 100) + '%', {
             fontSize: '16px',
             color: '#64d5ff',
             fontFamily: 'Arial, sans-serif'
         }).setOrigin(0, 0);
-
         bar.setInteractive({ useHandCursor: true });
         bar.on('pointerdown', (pointer) => {
             this.updateVolumeSlider(pointer, bar, fill, barX, barWidth, valueText, callback);
         });
 
+        // Update while dragging
         bar.on('pointermove', (pointer) => {
             if (pointer.isDown) {
                 this.updateVolumeSlider(pointer, bar, fill, barX, barWidth, valueText, callback);
@@ -126,13 +140,15 @@ export default class SettingsMenu extends Phaser.Scene {
         return { fill, valueText };
     }
 
+    // Adjust volume slider based on mouse position
     updateVolumeSlider(pointer, bar, fill, barX, barWidth, valueText, callback) {
         const relativeX = pointer.x - barX;
         const clampedX = Math.max(0, Math.min(barWidth, relativeX));
-        const volumePercent = clampedX / barWidth;
+        const volumePercent = clampedX / barWidth;  // Convert to 0-1 range
 
         fill.setSize(clampedX, fill.height);
         valueText.setText(Math.round(volumePercent * 100) + '%');
+        
         if (callback) {
             callback(volumePercent);
         }

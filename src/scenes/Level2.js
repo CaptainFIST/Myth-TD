@@ -1,11 +1,11 @@
 import PlayerManager from '../managers/PlayerManager.js';
-
+import AudioManager from '../managers/AudioManager.js';
 export default class Level2 extends Phaser.Scene {
     constructor() {
         super({ key: 'Level2' });
     }
 
-    static level = 2;
+    static level = 2;  
 
     static mapData = [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -41,52 +41,80 @@ export default class Level2 extends Phaser.Scene {
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     ];
 
+    // Wave format: array of [count, enemyIndex] pairs per wave
+    // Enemy indices: 0=Oni, 1=flying_fly, 2=Minotaur
+
+    static waveData = [
+        { enemies: [{ type: 0, count: 2 }] },
+        { enemies: [{ type: 1, count: 3 }] },
+        { enemies: [{ type: 2, count: 2 }, { type: 0, count: 2 }] },
+        { enemies: [{ type: 0, count: 3 }, { type: 1, count: 2 }] },
+        { enemies: [{ type: 2, count: 3 }, { type: 1, count: 3 }] },
+        { enemies: [{ type: 1, count: 4 }, { type: 0, count: 2 }] },
+        { enemies: [{ type: 2, count: 3 }, { type: 0, count: 3 }, { type: 1, count: 1 }] },
+        { enemies: [{ type: 0, count: 4 }, { type: 1, count: 4 }] }
+    ];
+
     static tileTypes = {
-        0: 'snow',
-        1: 'path',
-        2: 'path',
-        3: 'path'
+        0: 'snow',   
+        1: 'path',   
+        2: 'path',   
+        3: 'path'    
     };
 
     static decoTypes = {
-        2: 'rock'
+        2: 'rock'   
     };
 
     preload() {
         this.load.image('snow', 'assets/tiles/level2/snow.png');
         this.load.image('path', 'assets/tiles/level2/snow_path.png');
         this.load.image('rock', 'assets/decorations/level2/snowy_rock.png');
+        
+        this.audioManager = new AudioManager(this);
+        this.audioManager.preloadAudio();
     }
 
+    // Initialize the level when scene starts
     create() {
         this.scene.launch('MapManager', { level: Level2 });
 
-        this.player = new PlayerManager({ sceneL: this });
-        this.inventory = [];
+        // Create player instance and initialize inventory
+        this.player = new PlayerManager({ sceneL: this, audioManager: this.audioManager });
+        this.inventory = [];  
 
+        // Launch UIManager scene which handles all UI and game logic
         this.scene.launch('UIManager', {
             player: this.player,
             inventory: this.inventory,
-            sceneL: this,
-            levelId: 2
+            sceneL: this,           
+            levelId: 2              
         });
     }
 
-    closeLevel(reason, time) {
-        this.scene.stop('MapManager');
-        this.scene.stop('UIManager');
+    // Handle level completion or failure
+    closeLevel(reason, time, gainGold, spentGold, playerHealth) {
+        this.scene.stop('MapManager');  // Stop map rendering
+        this.scene.stop('UIManager');   // Stop UI and game logic
 
+        // Determine outcome and transition to appropriate scene
         if (reason === 'return') {
             this.scene.start('MainMenu');
         } else if (reason === 'win') {
             this.scene.start('WinScreen', {
                 levelId: 2,
-                passTime: time
+                passTime: time,
+                gainGold: gainGold,
+                spentGold: spentGold,
+                playerHealth: playerHealth
             });
         } else if (reason === 'lose') {
             this.scene.start('LoseScreen', {
                 levelId: 2,
-                passTime: time
+                passTime: time,
+                gainGold: gainGold,
+                spentGold: spentGold,
+                playerHealth: playerHealth
             });
         }
     }

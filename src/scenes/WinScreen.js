@@ -1,27 +1,55 @@
+import SaveManager from '../managers/SaveManager.js';
+import AchievementManager from '../managers/AchievementManager.js';
+import ProgressManager from '../managers/ProgressManager.js';
+import StatsManager from '../managers/StatsManager.js';
+
 export default class WinScreen extends Phaser.Scene {
     constructor() {
         super({ key: 'WinScreen' });
     }
 
+    // Build the victory screen UI
     create(data = {}) {
         const { width, height } = this.scale;
 
         this.add.rectangle(width / 2, height / 2, width, height, 0x0a0e27).setDepth(-1);
         this.add.rectangle(width / 2, height / 2, width, height, 0x1a1f42)
             .setDepth(-1).setAlpha(0.5);
-
         this.add.rectangle(width / 2, height / 2, width, height, 0x000000)
-            .setDepth(2999).setAlpha(0.85);
+            .setDepth(2999).setAlpha(0.85);  
 
+        // Extract data from level completion
         const levelNumber = data.levelId ?? 1;
         const passTime = data.passTime ?? 0;
+        const gainGold = data.gainGold ?? 0;
+        const spentGold = data.spentGold ?? 0;
+        const playerHealth = data.playerHealth ?? 0;
+
+
+        AchievementManager.check({
+            type: 'Win',
+            time: passTime,
+            gainedGold: gainGold,
+            usedGold: spentGold,
+            pHealth: playerHealth,
+        });
+
+        StatsManager.incLevelClears(1);
+        if(playerHealth === 20) {
+            StatsManager.incPerfectClears(1);
+        }
+
+        //this.getLevel(levelNumber);
+        
+        ProgressManager.completeLevel(levelNumber);
+        
 
         const title = this.add.text(width / 2, height / 2 - 150, 'VICTORY!', {
             fontSize: '96px',
-            fill: '#FFD700',
+            fill: '#FFD700',               
             fontFamily: 'Arial',
             fontStyle: 'bold',
-            stroke: '#FFA500',
+            stroke: '#FFA500',              
             strokeThickness: 6
         }).setOrigin(0.5).setDepth(3000);
 
@@ -34,7 +62,7 @@ export default class WinScreen extends Phaser.Scene {
 
         this.add.text(width / 2, height / 2 - 70, `LEVEL ${levelNumber} COMPLETE!`, {
             fontSize: '32px',
-            fill: '#90EE90',
+            fill: '#90EE90',                
             fontFamily: 'Arial',
             fontStyle: 'italic'
         }).setOrigin(0.5).setDepth(3000);
@@ -59,7 +87,6 @@ export default class WinScreen extends Phaser.Scene {
 
         timeBox.add([bg, label, value]);
         timeBox.setDepth(3000);
-
         this.createButton(width / 2 - 180, height / 2 + 140, 'NEXT LEVEL', '#7c3aed', () => {
             const nextLevel = levelNumber + 1;
             const nextScene = `Level${nextLevel}`;
@@ -70,16 +97,24 @@ export default class WinScreen extends Phaser.Scene {
                 this.scene.start('LevelSelect');
             }
         });
-
         this.createButton(width / 2 + 180, height / 2 + 140, 'MENU', '#6366f1', () => {
             this.scene.start('MainMenu');
         });
     }
 
+    getLevel(levelId) {
+        const levels = {
+            1: 'Level1',
+            2: 'Level2'
+        };
+        const sceneKey = levels[levelId] || 'Level1';
+        ProgressManager.completeLevel(levelId);
+    }
+
+    // Helper function to create clickable buttons
     createButton(x, y, text, color, callback) {
         const bg = this.add.rectangle(x, y, 300, 70, color)
             .setDepth(3000).setStrokeStyle(2, '#ffffff');
-
         const txt = this.add.text(x, y, text, {
             fontSize: '28px',
             fill: '#ffffff',
@@ -87,15 +122,16 @@ export default class WinScreen extends Phaser.Scene {
             fontStyle: 'bold'
         }).setOrigin(0.5).setDepth(3001);
 
+        // Interactive behavior
         bg.setInteractive({ useHandCursor: true })
-            .on('pointerover', () => {
+            .on('pointerover', () => {          
                 bg.setScale(1.08);
                 txt.setScale(1.08);
             })
-            .on('pointerout', () => {
+            .on('pointerout', () => {           
                 bg.setScale(1);
                 txt.setScale(1);
             })
-            .on('pointerdown', callback);
+            .on('pointerdown', callback);       
     }
 }
