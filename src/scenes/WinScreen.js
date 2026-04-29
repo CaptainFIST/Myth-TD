@@ -41,6 +41,9 @@ export default class WinScreen extends Phaser.Scene {
 
         this.getLevel(levelNumber);
         
+        ProgressManager.completeLevel(levelNumber);
+        StatsManager.incTotalGold(gainGold);
+        StatsManager.incGoldSpent(spentGold);
 
         const title = this.add.text(width / 2, height / 2 - 150, 'VICTORY!', {
             fontSize: '96px',
