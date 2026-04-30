@@ -1,5 +1,4 @@
 import SaveManager from './SaveManager.js';
-
 export default class StatsManager {
 
     static incTotalGold(amount) {
@@ -57,7 +56,6 @@ export default class StatsManager {
         console.log(data.stats.mergesDone);
         SaveManager.commit();
     }
-
 }
 
 /*
@@ -71,4 +69,3 @@ stats:
             towersPlaced: 0,
             mergesDone: 0
 */
-

@@ -7,8 +7,23 @@ export default class TowerManager {
         ['Susanoo', 5, 3, 0.6, 6, 14],
         ['Promachus', 20, 3, 2.5, 3, 12],
         ['Kitsune', 15, 2.5, 1, 4, 10],
-        ['Satyr', 18, 2.5, 0.8, 3, 8]
+        ['Satyr', 18, 2.5, 0.8, 3, 8],
+        ['Nattvolva', 22, 3, 1.5, 3, 7]
     ];
+
+    static FRAME_DIMENSIONS = {
+        Kitsune: { frameWidth: 82, frameHeight: 81 },
+        Satyr: { frameWidth: 64, frameHeight: 75 },
+        Nattvolva: { frameWidth: 75, frameHeight: 88 }
+    };
+
+    static PROJECTILE_ANIMATIONS = {
+        Susanoo_Stripe_projectile: { sprite: 'Susanoo_Stripe', start: 0, end: 5, frameRate: 10 },
+        Promachus_fire_projectile: { sprite: 'Promachus_fire', start: 0, end: 5, frameRate: 12 },
+        Kitsune_charge_projectile: { sprite: 'Kitsune_charge', start: 0, end: 10, frameRate: 10 },
+        Satyr_leaf_projectile: { sprite: 'Satyr_leaf', start: 0, end: 10, frameRate: 10 },
+        nattvolva_dark_projectile: { sprite: 'nattvolva_dark', start: 0, end: 7, frameRate: 12 }
+    };
 
     static airData = [];
     static waterData = [];
@@ -27,7 +42,7 @@ export default class TowerManager {
         this.selectedTower = null;
 
         // Available tower index list
-        this.towerIndex = ['p0', 'p1', 'p2', 'p3', 'p4'];
+        this.towerIndex = ['p0', 'p1', 'p2', 'p3', 'p4', 'p5'];
     }
 
     getStatsByIndex(indexStr) {
@@ -158,59 +173,34 @@ export default class TowerManager {
     preloadAssets() {
         // Load tower sprites and icons
         this.constructor.physicalData.forEach(([name]) => {
-            let frameWidth = 64, frameHeight = 64;
-            if (name === 'Kitsune') { frameWidth = 82; frameHeight = 81; }
-            else if (name === 'Satyr') { frameWidth = 64; frameHeight = 75; }
-            this.scene.load.spritesheet(name, `assets/tower/${name}.png`, { frameWidth, frameHeight });
+            const dims = this.constructor.FRAME_DIMENSIONS[name] || { frameWidth: 64, frameHeight: 64 };
+            this.scene.load.spritesheet(name, `assets/tower/${name}.png`, dims);
             this.scene.load.image(`${name}_Icon`, `assets/tower/TowerIcon/${name}_Icon.png`);
         });
+        
+        // Load projectile assets
+        this.scene.load.spritesheet('nattvolva_dark', 'assets/tower/nattvolva_dark.png', { frameWidth: 64, frameHeight: 81 });
         this.scene.load.spritesheet('Kitsune_charge', 'assets/Abilities/Kitsune_charge.png', { frameWidth: 64, frameHeight: 64 });
         this.scene.load.spritesheet('Satyr_leaf', 'assets/Abilities/Satyr_leaf.png', { frameWidth: 64, frameHeight: 64 });
     }
 
     createProjectileAnimations() {
-        // Susanoo projectile animation
-        const susanooKey = 'Susanoo_Stripe_projectile';
-        if (!this.scene.anims.exists(susanooKey)) {
-            this.scene.anims.create({
-                key: susanooKey,
-                frames: this.scene.anims.generateFrameNumbers('Susanoo_Stripe', { start: 0, end: 5 }),
-                frameRate: 10,
-                repeat: -1
-            });
-        }
-
-        // Promachus fire projectile animation
-        const promachusKey = 'Promachus_fire_projectile';
-        if (!this.scene.anims.exists(promachusKey)) {
-            this.scene.anims.create({
-                key: promachusKey,
-                frames: this.scene.anims.generateFrameNumbers('Promachus_fire', { start: 0, end: 5 }),
-                frameRate: 12,
-                repeat: -1
-            });
-        }
-
-        // Kitsune charge projectile animation
-        const kitsuneKey = 'Kitsune_charge_projectile';
-        if (!this.scene.anims.exists(kitsuneKey)) {
-            this.scene.anims.create({
-                key: kitsuneKey,
-                frames: this.scene.anims.generateFrameNumbers('Kitsune_charge', { start: 0, end: 10 }),
-                frameRate: 10,
-                repeat: -1
-            });
-        }
-
-        // Satyr leaf projectile animation
-        const satyrKey = 'Satyr_leaf_projectile';
-        if (!this.scene.anims.exists(satyrKey)) {
-            this.scene.anims.create({
-                key: satyrKey,
-                frames: this.scene.anims.generateFrameNumbers('Satyr_leaf', { start: 0, end: 10 }),
-                frameRate: 10,
-                repeat: -1
-            });
-        }
+        Object.entries(this.constructor.PROJECTILE_ANIMATIONS).forEach(([key, config]) => {
+            if (!this.scene.anims.exists(key)) {
+                // Only create if sprite exists (for nattvolva_dark)
+                if (!this.scene.textures.exists(config.sprite)) return;
+                
+                try {
+                    this.scene.anims.create({
+                        key,
+                        frames: this.scene.anims.generateFrameNumbers(config.sprite, { start: config.start, end: config.end }),
+                        frameRate: config.frameRate,
+                        repeat: -1
+                    });
+                } catch (e) {
+                    console.warn(`Failed to create animation ${key}:`, e);
+                }
+            }
+        });
     }
 }

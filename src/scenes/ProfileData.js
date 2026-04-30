@@ -89,7 +89,34 @@ export default class ProfileData extends Phaser.Scene {
         );
     });
         
-        const backBtn = this.add.text(width / 2, height - 40, 'BACK TO MENU', {
+        // Save slot button
+        const sData = SaveManager.get();
+        const slotBtnY = height - 120;
+        const slotBox = this.add.rectangle(width / 2 - 200, slotBtnY, 180, 60, 0x0f1534, 0.7)
+            .setStrokeStyle(3, 0x000000).setOrigin(0.5);
+        slotBox.setDepth(1);
+        
+        const slotBtn = this.add.text(width / 2 - 200, slotBtnY, `SAVE\n${sData.activeSlot}`, {
+            fontSize: '20px',
+            color: '#06b6d4',
+            fontStyle: 'bold',
+            align: 'center',
+            fontFamily: 'Arial, sans-serif'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+        slotBtn.on('pointerover', () => slotBtn.setStyle({ fill: '#7c3aed' }));
+        slotBtn.on('pointerout', () => slotBtn.setStyle({ fill: '#06b6d4' }));
+        slotBtn.on('pointerdown', () => {
+            const slots = ['Slot_1', 'Slot_2', 'Slot_3'];
+            const currentIndex = slots.indexOf(sData.activeSlot);
+            const nextSlot = slots[(currentIndex + 1) % slots.length];
+            SaveManager.setActiveSlot(nextSlot);
+            slotBtn.setText(`SAVE\n${nextSlot}`);
+            sData = SaveManager.get();
+        });
+        slotBtn.setDepth(2);
+        
+        const backBtn = this.add.text(width / 2 + 200, slotBtnY, 'BACK TO MENU', {
             fontSize: '32px',
             color: '#64d5ff',
             fontStyle: 'bold',
