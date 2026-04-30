@@ -25,13 +25,12 @@ export default class WinScreen extends Phaser.Scene {
         const spentGold = data.spentGold ?? 0;
         const playerHealth = data.playerHealth ?? 0;
 
-
         AchievementManager.check({
             type: 'Win',
             time: passTime,
             gainedGold: gainGold,
             usedGold: spentGold,
-            pHealth: playerHealth,
+            pHealth: playerHealth
         });
 
         StatsManager.incLevelClears(1);
@@ -100,15 +99,6 @@ export default class WinScreen extends Phaser.Scene {
         this.createButton(width / 2 + 180, height / 2 + 140, 'MENU', '#6366f1', () => {
             this.scene.start('MainMenu');
         });
-    }
-
-    getLevel(levelId) {
-        const levels = {
-            1: 'Level1',
-            2: 'Level2'
-        };
-        const sceneKey = levels[levelId] || 'Level1';
-        ProgressManager.completeLevel(levelId);
     }
 
     // Helper function to create clickable buttons
