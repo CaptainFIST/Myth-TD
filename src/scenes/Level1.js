@@ -55,9 +55,9 @@ export default class Level1 extends Phaser.Scene {
 
     static tileTypes = {
         0: 'grass',
-        1: 'path',
-        2: 'path',
-        3: 'path'
+        1: 'dPath',
+        2: 'dPath',
+        3: 'dPath'
     };
 
     static decoTypes = {
@@ -66,7 +66,7 @@ export default class Level1 extends Phaser.Scene {
 
     preload() {
         this.load.image('grass', 'assets/tiles/level1/grass_new.png');
-        this.load.image('path', 'assets/tiles/level1/dirt_path.png');
+        this.load.image('dPath', 'assets/tiles/level1/dirt_path.png');
         this.load.image('tree', 'assets/decorations/tree1.png');
         
         this.audioManager = new AudioManager(this);

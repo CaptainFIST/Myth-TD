@@ -29,6 +29,8 @@ export default class LevelSelect extends Phaser.Scene {
             const x = width / 2 + (i - 1) * 400;  
             const y = height / 2;
             const isUnlocked = ProgressManager.isUnlocked(lvl.num);
+            //  For testing purposes
+            //const isUnlocked = true;
             
             // Card background
             const cardColor = isUnlocked ? 0x1a3f5e : 0x0a1a2e;

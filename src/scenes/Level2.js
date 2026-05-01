@@ -57,9 +57,9 @@ export default class Level2 extends Phaser.Scene {
 
     static tileTypes = {
         0: 'snow',   
-        1: 'path',   
-        2: 'path',   
-        3: 'path'    
+        1: 'sPath',   
+        2: 'sPath',   
+        3: 'sPath'    
     };
 
     static decoTypes = {
@@ -68,7 +68,7 @@ export default class Level2 extends Phaser.Scene {
 
     preload() {
         this.load.image('snow', 'assets/tiles/level2/snow.png');
-        this.load.image('path', 'assets/tiles/level2/snow_path.png');
+        this.load.image('sPath', 'assets/tiles/level2/snow_path.png');
         this.load.image('rock', 'assets/decorations/level2/snowy_rock.png');
         
         this.audioManager = new AudioManager(this);
