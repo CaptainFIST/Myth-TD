@@ -11,20 +11,22 @@ export default class Tutorial extends Phaser.Scene {
         
         // Array of tutorial cards with title and description
         const tutorialData = [
-            ['💰 FARMING', 'Earn 2-3 gold per second passively'],
-            ['🎯 PLACEMENT', 'Click anywhere off the path to place towers'],
-            ['⬆️ UPGRADE', 'Click existing towers to upgrade'],
-            ['🌊 WAVES', 'Defeat all enemies in each wave to progress'],
-            ['❤️ HEALTH', 'Protect your base! 0 health = game over'],
-            ['⚡ SPEED', 'Use speed buttons to control game pace'],
-            ['🎯 TYPES', 'Basic | Power | Sniper'],
-            ['🔄 RANGE', 'Overlapping ranges are more effective against groups'],
-            ['📊 STRATEGY', 'Upgrade range first, then damage as you earn gold'],
-            ['🏆 TIPS', 'Build towers ahead of the path for better coverage']
+            ['🎯 PLACEMENT', 'Click on grass tiles to place towers on the battlefield. You can only build on grass, not on the enemy path or decorations.'],
+            ['🔀 MERGING', 'Drag towers together to merge them and create stronger units. The more merges, the more powerful your tower becomes with increased stats.'],
+            ['🌊 WAVES', 'Enemies spawn in waves. Defeat all enemies in a wave to progress to the next. Keep your defense strong throughout all waves to survive.'],
+            ['❤️ HEALTH', 'Each level have a set of health. When enemies reach the end of the path, they deal damage to your base. Protect your base at all costs!'],
+            ['⚡ SPEED', 'Use the speed controls during battles to slow down, play at normal speed, or fast forward. Pause to plan your strategy.'],
+            ['💰 GOLD', 'Earn gold by defeating enemies in combat. Use this gold wisely to purchase new towers and build your defense strategically.'],
+            ['🗡️ TOWERS', 'Deploy mythological towers with unique attack patterns and abilities. See the Catalog for detailed stats on each tower type.'],
+            ['👹 ENEMIES', 'Face diverse enemy types with different speeds, health, and behaviors. Learn their patterns - view the Catalog for complete enemy details.'],
+            ['📋 PROGRESSION', 'Complete Level 1 to unlock Level 2, then Level 3. Progress sequentially by beating each level to face new challenges.'],
+            ['🎮 CONTROLS', 'Left Click to place towers | Drag to merge | ESC to cancel placement and return tower to inventory. Use these controls to build efficiently!'],
+            ['💡 TIPS', 'Spread towers along the path for coverage, merge them to boost power, and anticipate enemy movement. Plan ahead for success!'],
+            ['🏆 VICTORY', 'Defeat all enemies in each wave without losing your base. Complete all waves to win the level and progress to the next challenge.']
         ];
 
         // Create cards in a 2-column grid
-        const cardW = 480, cardH = 180, gap = 40;        
+        const cardW = 480, cardH = 143, gap = 40;        
         const startX = width / 2 - cardW - gap / 2;
         const startY = 200;
         
