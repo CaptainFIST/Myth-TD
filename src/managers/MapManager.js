@@ -79,15 +79,19 @@ export default class MapManager extends Phaser.Scene {
                 { x: 1, y: 0 },
                 { x: 0, y: 1 },
                 { x: -1, y: 0 }
-            ]) {
+                ]) 
+            {
                 const nx = cur.x + dx;
                 const ny = cur.y + dy;
 
                 if (
-                    map[ny] &&
-                    (map[ny][nx] === 1 || map[ny][nx] === 3) &&
+                    map[ny] 
+                        &&
+                    (map[ny][nx] === 1 || map[ny][nx] === 3) 
+                        &&
                     !visited.has(key(nx, ny))
-                ) {
+                    ) 
+                {
                     next = { x: nx, y: ny };
                     break;
                 }
