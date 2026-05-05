@@ -5,9 +5,9 @@ export default class TowerManager {
     static physicalData = [
         ['Izanami', 10, 2, 1.2, 2, 14],
         ['Susanoo', 5, 3, 0.6, 6, 14],
-        ['Promachus', 20, 3, 2.5, 3, 12],
-        ['Kitsune', 15, 2.5, 1, 4, 10],
-        ['Satyr', 18, 2.5, 0.8, 3, 8],
+        ['Promachus', 20, 3, 2.5, 3, 7],
+        ['Kitsune', 15, 2.5, 1, 4, 6],
+        ['Satyr', 18, 2.5, 0.8, 5, 8],
         ['Nattvolva', 22, 3, 1.5, 3, 7]
     ];
 
@@ -20,9 +20,9 @@ export default class TowerManager {
     static PROJECTILE_ANIMATIONS = {
         Susanoo_Stripe_projectile: { sprite: 'Susanoo_Stripe', start: 0, end: 5, frameRate: 10 },
         Promachus_fire_projectile: { sprite: 'Promachus_fire', start: 0, end: 5, frameRate: 12 },
-        Kitsune_charge_projectile: { sprite: 'Kitsune_charge', start: 0, end: 10, frameRate: 10 },
-        Satyr_leaf_projectile: { sprite: 'Satyr_leaf', start: 0, end: 10, frameRate: 10 },
-        Nattvolva_dark_projectile: { sprite: 'Nattvolva_dark', start: 0, end: 7, frameRate: 12 }
+        Kitsune_charge_projectile: { sprite: 'Kitsune_charge', start: 0, end: 5, frameRate: 10 },
+        Satyr_leaf_projectile: { sprite: 'Satyr_leaf', start: 0, end: 5, frameRate: 10 },
+        nattvolva_dark_projectile: { sprite: 'Nattvolva_dark', start: 0, end: 5, frameRate: 9 }
     };
 
     static airData = [];

@@ -1,8 +1,23 @@
 import SaveManager from '../managers/SaveManager.js';
+import AudioManager from '../managers/AudioManager.js';
 
 export default class SettingsMenu extends Phaser.Scene {
     constructor() {
         super({key: 'SettingsMenu'});
+    }
+
+    preload() {
+        // Initialize AudioManager for this scene
+        if (!this.audioManager) {
+            this.audioManager = new AudioManager(this);
+            this.audioManager.preloadAudio();
+            
+            // Load saved audio settings
+            const volume = SaveManager.getVolumeForSlot();
+            const isMuted = SaveManager.getMuteForSlot();
+            this.audioManager.setVolume(volume);
+            this.audioManager.setMute(isMuted);
+        }
     }
 
     // Build the settings UI with audio controls
@@ -39,36 +54,39 @@ export default class SettingsMenu extends Phaser.Scene {
             fontFamily: 'Arial, sans-serif'
         }).setOrigin(0, 0);
 
-        // Master Volume Slider
+        // Master Volume Slider - connected to AudioManager
         this.masterVolCont = this.createVolumeControl(width / 2 - 450, audioY, 'MASTER VOLUME',
-         this.masterVol || 0.3,
+         this.audioManager.getVolume(),
          (val) => {
             console.log('Setting master volume to: ', val);
-            this.masterVol = val;
+            this.audioManager.setVolume(val);
+            SaveManager.setVolumeForSlot(val);
          }
          );
         
         // Sound Volume Slider
         this.soundVolCont = this.createVolumeControl(width / 2 - 450, audioY + 50, 'SOUND VOLUME', 
-        this.soundVol || 0.4,
+        this.audioManager.getVolume(),
         (val) => {
             console.log('Setting sound volume to: ', val);
-            this.soundVol = val;
+            this.audioManager.setVolume(val);
+            SaveManager.setVolumeForSlot(val);
         }
         );
         
         // Music Volume Slider
         this.musicVolCont = this.createVolumeControl(width / 2 - 450, audioY + 100, 'MUSIC VOLUME', 
-        this.musicVol || 0.4,
+        this.audioManager.getVolume(),
         (val) => {
             console.log('Setting music volume to: ', val);
-            this.musicVol = val;
+            this.audioManager.setVolume(val);
+            SaveManager.setVolumeForSlot(val);
         }
         );
 
         // Mute toggle button
         const muteY = audioY + 160;
-        const isMuted = false;
+        const isMuted = this.audioManager.isMutedState();
         this.muteBtn = this.add.text(width / 2 - 450, muteY, `MUTE: ${isMuted ? 'ON' : 'OFF'}`, {
             fontSize: '20px',
             color: isMuted ? '#ff6b6b' : '#64d5ff',
@@ -77,6 +95,18 @@ export default class SettingsMenu extends Phaser.Scene {
             padding: { x: 15, y: 10 },
             fontFamily: 'Arial, sans-serif'
         }).setOrigin(0, 0).setInteractive({ useHandCursor: true });
+
+        this.muteBtn.on('pointerdown', () => {
+            this.audioManager.playButtonPress();
+            this.audioManager.toggleMute();
+            const newMuteState = this.audioManager.isMutedState();
+            this.muteBtn.setText(`MUTE: ${newMuteState ? 'ON' : 'OFF'}`);
+            this.muteBtn.setStyle({
+                color: newMuteState ? '#ff6b6b' : '#64d5ff',
+                backgroundColor: newMuteState ? '#4a2a2a' : '#1a3a3e'
+            });
+            SaveManager.setMuteForSlot(newMuteState);
+        });
 
         const deleteBtn = this.add.text(width / 2, height - 120, 'DELETE CURRENT SLOT DATA', {
             fontSize: '28px',
@@ -87,6 +117,7 @@ export default class SettingsMenu extends Phaser.Scene {
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
         deleteBtn.on('pointerdown', () => {
+            this.audioManager.playButtonPress();
             SaveManager.resetSlot(`${SaveManager.get().activeSlot}`);
         });
 
@@ -99,7 +130,16 @@ export default class SettingsMenu extends Phaser.Scene {
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
         backBtn.on('pointerdown', () => {
+            this.audioManager.playButtonPress();
             this.scene.start('MainMenu');
+        });
+
+        // Save audio settings when leaving the scene
+        this.events.on('shutdown', () => {
+            if (this.audioManager) {
+                SaveManager.setVolumeForSlot(this.audioManager.getVolume());
+                SaveManager.setMuteForSlot(this.audioManager.isMutedState());
+            }
         });
     }
 

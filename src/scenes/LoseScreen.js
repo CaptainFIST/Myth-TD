@@ -1,4 +1,5 @@
 import SaveManager from '../managers/SaveManager.js';
+import AudioManager from '../managers/AudioManager.js';
 import AchievementManager from '../managers/AchievementManager.js';
 import ProgressManager from '../managers/ProgressManager.js';
 import StatsManager from '../managers/StatsManager.js';
@@ -8,10 +9,28 @@ export default class LoseScreen extends Phaser.Scene {
         super({ key: 'LoseScreen' });
     }
 
+    preload() {
+        // Load only the audio this scene needs
+        this.load.audio('loseMusic', 'assets/audio/Lose.mp3');
+        this.load.audio('buttonPress', 'assets/audio/ButtonPress.mp3');
+    }
+
     // Build the defeat screen UI
     create(data) {
         const { width, height } = this.scale;
-        
+
+        // Initialize AudioManager in create (after preload completes)
+        if (!this.audioManager) {
+            this.audioManager = new AudioManager(this);
+            // Load saved audio settings
+            const volume = SaveManager.getVolumeForSlot();
+            const isMuted = SaveManager.getMuteForSlot();
+            this.audioManager.setVolume(volume);
+            this.audioManager.setMute(isMuted);
+        }
+
+        // Play lose music
+        this.audioManager.playLoseMusic();
 
         // Red/dark layered background for defeat theme
         this.add.rectangle(width / 2, height / 2, width, height, 0x1a0000).setDepth(-1);
@@ -58,10 +77,12 @@ export default class LoseScreen extends Phaser.Scene {
         }).setOrigin(0.5);
 
         this.createButton(width / 2 - 180, height / 2 + 140, 'RETRY', '#ef4444', () => {
+            this.audioManager.stopAll();
             this.retryLevel(levelId);
         });
         
         this.createButton(width / 2 + 180, height / 2 + 140, 'MENU', '#6366f1', () => {
+            this.audioManager.stopAll();
             this.scene.start('MainMenu');
         });
     }
@@ -98,6 +119,11 @@ export default class LoseScreen extends Phaser.Scene {
             label.setScale(1);
         });
 
-        bg.on('pointerdown', callback);     
+        bg.on('pointerdown', () => {
+            // Play button press sound
+            this.audioManager.playButtonPress();
+            // Execute callback
+            callback();
+        });     
     }
 }
