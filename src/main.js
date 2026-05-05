@@ -7,8 +7,10 @@ import LoseScreen from './scenes/LoseScreen.js';
 import MapManager from './managers/MapManager.js';
 import Level1 from './scenes/Level1.js';
 import Level2 from './scenes/Level2.js';
+import Level3 from './scenes/Level3.js';
 import LevelSelect from './scenes/LevelSelect.js';
 import UIManager from './managers/UIManager.js';
+import Catalog from './scenes/Catalog.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -25,12 +27,14 @@ const config = {
         SettingsMenu,
         ProfileData,
         Tutorial,
+        Catalog,
         WinScreen,
         LoseScreen,
         MapManager,
         UIManager,
         Level1,
-        Level2
+        Level2,
+        Level3
     ],
     scale: {
         mode: Phaser.Scale.FIT,

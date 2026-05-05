@@ -1,5 +1,6 @@
 import PlayerManager from '../managers/PlayerManager.js';
 import AudioManager from '../managers/AudioManager.js';
+import SaveManager from '../managers/SaveManager.js';
 export default class Level2 extends Phaser.Scene {
     constructor() {
         super({ key: 'Level2' });
@@ -57,9 +58,9 @@ export default class Level2 extends Phaser.Scene {
 
     static tileTypes = {
         0: 'snow',   
-        1: 'path',   
-        2: 'path',   
-        3: 'path'    
+        1: 'sPath',   
+        2: 'sPath',   
+        3: 'sPath'    
     };
 
     static decoTypes = {
@@ -68,11 +69,17 @@ export default class Level2 extends Phaser.Scene {
 
     preload() {
         this.load.image('snow', 'assets/tiles/level2/snow.png');
-        this.load.image('path', 'assets/tiles/level2/snow_path.png');
+        this.load.image('sPath', 'assets/tiles/level2/snow_path.png');
         this.load.image('rock', 'assets/decorations/level2/snowy_rock.png');
         
         this.audioManager = new AudioManager(this);
         this.audioManager.preloadAudio();
+
+        // Restore audio settings from saved slot
+        const volume = SaveManager.getVolumeForSlot();
+        const isMuted = SaveManager.getMuteForSlot();
+        this.audioManager.setVolume(volume);
+        this.audioManager.setMute(isMuted);
     }
 
     // Initialize the level when scene starts
@@ -116,6 +123,14 @@ export default class Level2 extends Phaser.Scene {
                 spentGold: spentGold,
                 playerHealth: playerHealth
             });
+        }
+    }
+
+    shutdown() {
+        // Save audio settings when leaving the level
+        if (this.audioManager) {
+            SaveManager.setVolumeForSlot(this.audioManager.getVolume());
+            SaveManager.setMuteForSlot(this.audioManager.isMutedState());
         }
     }
 }

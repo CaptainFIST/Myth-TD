@@ -1,5 +1,6 @@
 import PlayerManager from '../managers/PlayerManager.js';
 import AudioManager from '../managers/AudioManager.js';
+import SaveManager from '../managers/SaveManager.js';
 
 export default class Level1 extends Phaser.Scene {
     constructor() {
@@ -27,18 +28,18 @@ export default class Level1 extends Phaser.Scene {
 
     static decoData = [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
+        [0,0,0,0,4,0,0,0,0,0,2,0,0,0,0,0,5,0,0,0,3,0,0,2,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,2,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
-        [0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,2,0,0],
+        [0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0],
+        [0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,2,2,2],
+        [0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0],
+        [0,0,2,0,0,0,0,0,5,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,5,0,0,0,3,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0],
+        [0,0,4,0,0,0,0,0,0,0,0,0,4,0,3,0,0,0,0,0,4,0,0,2,0,0,5,0,0],
+        [0,0,0,0,0,0,2,0,0,5,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     ];
 
@@ -55,22 +56,34 @@ export default class Level1 extends Phaser.Scene {
 
     static tileTypes = {
         0: 'grass',
-        1: 'path',
-        2: 'path',
-        3: 'path'
+        1: 'dPath',
+        2: 'dPath',
+        3: 'dPath'
     };
 
     static decoTypes = {
-        2: 'tree'
+        2: 'tree',
+        3: 'rock1',
+        4: 'bush',
+        5: 'bush2'
     };
 
     preload() {
         this.load.image('grass', 'assets/tiles/level1/grass_new.png');
         this.load.image('path', 'assets/tiles/level1/dirt_path.png');
         this.load.image('tree', 'assets/decorations/tree1.png');
+        this.load.image('rock1', 'assets/decorations/rock1.png');
+        this.load.image('bush', 'assets/decorations/Bush1.png');
+        this.load.image('bush2', 'assets/decorations/Bush2.png');
         
         this.audioManager = new AudioManager(this);
         this.audioManager.preloadAudio();
+        
+        // Restore audio settings from saved state
+        const volume = SaveManager.getVolumeForSlot();
+        const isMuted = SaveManager.getMuteForSlot();
+        this.audioManager.setVolume(volume);
+        this.audioManager.setMute(isMuted);
     }
     
     // Initialize the level when scene starts
@@ -110,6 +123,14 @@ export default class Level1 extends Phaser.Scene {
                 spentGold: spentGold,
                 playerHealth: playerHealth
             });
+        }
+    }
+
+    shutdown() {
+        // Save audio settings when leaving the level
+        if (this.audioManager) {
+            SaveManager.setVolumeForSlot(this.audioManager.getVolume());
+            SaveManager.setMuteForSlot(this.audioManager.isMutedState());
         }
     }
 }

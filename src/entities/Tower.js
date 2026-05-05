@@ -5,6 +5,25 @@ import StatsManager from '../managers/StatsManager.js';
 
 
 export default class Tower extends Phaser.GameObjects.Sprite {
+    // Tower configuration lookup tables
+    static SCALES = { Promachus: 1, Kitsune: 0.9, Izanami: 2, Susanoo: 2.3, Nattvolva: 0.95, default: 0.9 };
+    static OFFSETS = {
+        Promachus: { x: 0, y: -25 },
+        Kitsune: { x: -5, y: -28 },
+        Satyr: { x: 5, y: -30 },
+        Nattvolva: { x: 15, y: -40 },
+        Izanami: { x: 10, y: -20 },
+        Susanoo: { x: 0, y: -20 }
+    };
+    static PROJECTILE_TOWERS = new Set(['Susanoo', 'Promachus', 'Kitsune', 'Satyr', 'Nattvolva']);
+    static PROJECTILE_DATA = {
+        Susanoo: { sprite: 'Susanoo_Stripe', anim: 'Susanoo_Stripe_projectile', speed: 300, scale: 1.5 },
+        Promachus: { sprite: 'Promachus_fire', anim: 'Promachus_fire_projectile', speed: 400, scale: 4.5 },
+        Kitsune: { sprite: 'Kitsune_charge', anim: 'Kitsune_charge_projectile', speed: 350, scale: 3.5 },
+        Satyr: { sprite: 'Satyr_leaf', anim: 'Satyr_leaf_projectile', speed: 300, scale: 3.5 },
+        Nattvolva: { sprite: 'Nattvolva_dark', anim: 'Nattvolva_dark_projectile', speed: 320, scale: 3.5 }
+    };
+
     constructor(scene, stats) {
         super(scene, 0, 0, stats[0]);
         this.scene = scene;
@@ -22,8 +41,7 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         this.damageDealt = false;
 
         scene.add.existing(this);
-        // Scale towers (Kitsune is 82x81, Promachus is 64x64, Satyr is 64x75, others are standard)
-        const scale = this.name === 'Promachus' ? 1 : (this.name === 'Kitsune' ? 0.9 : (this.name === 'Izanami' ? 2 : (this.name === 'Susanoo' ? 2 : 0.9)));
+        const scale = this.constructor.SCALES[this.name] || this.constructor.SCALES.default;
         this.setDepth(10).setScale(scale).play(`${this.name}_idle`);
 
         // Reset tower after attack animation finishes
@@ -38,22 +56,18 @@ export default class Tower extends Phaser.GameObjects.Sprite {
 
     place(x, y) {
         const cx = x + 32, cy = y + 32;
-        this.setPosition(cx, cy - 20);
+        const offset = this.constructor.OFFSETS[this.name] || { x: 0, y: -20 };
+        
+        this.setPosition(cx + offset.x, cy + offset.y);
         this.pedestal.setPosition(cx, cy);
 
-
-    // Reset attack cooldown when placed - set to delay so it can attack on first update
-
-        //this.nextTic = 0;
+        // Reset attack cooldown when placed - set to delay so it can attack on first update
         this.timeSinceLastAttack = this.attackDelay;
 
         StatsManager.incTowersPlaced(1);
         AchievementManager.check({
             place: SaveManager.getSlot().stats.towersPlaced,
         });
-
-        
-
     }
 
     update(time, delta) {
@@ -72,7 +86,7 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         }
 
         // Direct-damage towers (non-projectile) - only if enemy exists
-        if (this.isAttacking && enemy && !this.damageDealt && this.name !== 'Susanoo' && this.name !== 'Promachus' && this.name !== 'Kitsune' && this.name !== 'Satyr') {
+        if (this.isAttacking && enemy && !this.damageDealt && !this.constructor.PROJECTILE_TOWERS.has(this.name)) {
             enemy.takeDamage(this.damage);
             this.damageDealt = true;
         }
@@ -100,40 +114,21 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         this.play(`${this.name}_attack`);
         this.scene.audioManager?.playTowerAttack();
         
-        // Projectile attacks (Susanoo, Promachus, Kitsune, and Satyr)
-        if (this.name === 'Susanoo' || this.name === 'Promachus' || this.name === 'Kitsune' || this.name === 'Satyr') this.fireProjectile(enemy);
+        if (this.constructor.PROJECTILE_TOWERS.has(this.name)) {
+            this.fireProjectile(enemy);
+        }
     }
 
     fireProjectile(target) {
         if (!target) return; // No target for projectile attack
-        let spriteKey, animKey, speed, scale;
         
-        if (this.name === 'Susanoo') {
-            spriteKey = 'Susanoo_Stripe';
-            animKey = 'Susanoo_Stripe_projectile';
-            speed = 300;
-            scale = 1.5;
-        } else if (this.name === 'Promachus') {
-            spriteKey = 'Promachus_fire';
-            animKey = 'Promachus_fire_projectile';
-            speed = 400;
-            scale = 4.5;
-        } else if (this.name === 'Kitsune') {
-            spriteKey = 'Kitsune_charge';
-            animKey = 'Kitsune_charge_projectile';
-            speed = 350;
-            scale = 3.5;
-        } else if (this.name === 'Satyr') {
-            spriteKey = 'Satyr_leaf';
-            animKey = 'Satyr_leaf_projectile';
-            speed = 300;
-            scale = 3.5;
-        } else {
-            return;
-        }
+        const projData = this.constructor.PROJECTILE_DATA[this.name];
+        if (!projData) return;
         
-        const p = this.scene.add.sprite(this.x, this.y, spriteKey)
-            .setDepth(5).setScale(scale).play(animKey);
+        const { sprite, anim, speed, scale } = projData;
+        
+        const p = this.scene.add.sprite(this.x, this.y, sprite)
+            .setDepth(5).setScale(scale).play(anim);
         Object.assign(p, {
             targetEnemy: target,
             speed,

@@ -55,6 +55,11 @@ export const AssetConfig = {
             path: 'assets/tower/TowerIcon/Satyr_Icon.png'
         },
         {
+            name: 'Nattvolva_Icon',
+            type: 'image',
+            path: 'assets/tower/TowerIcon/Nattvolva_Icon.png'
+        },
+        {
             name: 'Kitsune_charge',
             type: 'spritesheet',
             path: 'assets/Abilities/Kitsune_charge.png',
@@ -67,6 +72,13 @@ export const AssetConfig = {
             path: 'assets/Abilities/Satyr_leaf.png',
             frameWidth: 64,
             frameHeight: 64
+        },
+        {
+            name: 'Nattvolva_dark',
+            type: 'spritesheet',
+            path: 'assets/Abilities/Nattvolva_dark.png',
+            frameWidth: 64,
+            frameHeight: 81
         },
         {
             name: 'Pedestal',

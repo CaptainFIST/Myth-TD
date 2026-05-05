@@ -16,6 +16,7 @@ export default class InventoryManager {
         this.towerIcons = null;
         this.onTowerSelected = null;
         this.scrollOffset = 0;
+        this.hoverTooltip = null; // Tooltip text display
     }
 
     initialize(inventoryImage, towerIcons) {
@@ -54,6 +55,13 @@ export default class InventoryManager {
         if (!this.towerIcons || !this.inventoryImage) return;
 
         this.towerIcons.clear(true, true);
+        
+        // Destroy existing tooltip if any
+        if (this.hoverTooltip) {
+            this.hoverTooltip.destroy();
+            this.hoverTooltip = null;
+        }
+        
         if (!this.inventoryImage.visible) return;
 
         // Get inventory bounds
@@ -71,7 +79,18 @@ export default class InventoryManager {
         const startRow = Math.floor(this.scrollOffset / rowHeight);
         const endRow = startRow + maxRows + 1;
 
-        this.items.forEach(({ type }, i) => {
+        // Sort items by tier (descending - higher tier first)
+        const sortedItems = [...this.items].sort((a, b) => {
+            const getTier = (type) => {
+                if (type.includes('_')) {
+                    return Number(type.split('_')[1]);
+                }
+                return 1;
+            };
+            return getTier(b.type) - getTier(a.type);
+        });
+
+        sortedItems.forEach(({ type }, i) => {
             const row = Math.floor(i / cols);
             const col = i % cols;
             
@@ -95,8 +114,35 @@ export default class InventoryManager {
 
             const icon = this.scene.add.image(x, y, key)
                 .setDisplaySize(size, size).setDepth(51).setInteractive({ useHandCursor: true });
-
             this.towerIcons.add(icon);
+
+            // Add hover tooltip
+            const towerName = stats ? stats[0] : 'Unknown';
+            const tierColor = this.getTierColor(type);
+            
+            icon.on('pointerover', () => {
+                // Create or update tooltip
+                if (this.hoverTooltip) {
+                    this.hoverTooltip.destroy();
+                }
+                
+                this.hoverTooltip = this.scene.add.text(x, y - 30, towerName, {
+                    fontSize: '18px',
+                    color: `#${tierColor.toString(16).padStart(6, '0')}`,
+                    fontStyle: 'bold',
+                    backgroundColor: '#0f1534',
+                    padding: { x: 8, y: 4 },
+                    align: 'center'
+                }).setDepth(52).setOrigin(0.5, 1);
+            });
+
+            icon.on('pointerout', () => {
+                // Hide tooltip
+                if (this.hoverTooltip) {
+                    this.hoverTooltip.destroy();
+                    this.hoverTooltip = null;
+                }
+            });
 
             // Select tower and close inventory on click
             icon.once('pointerdown', () => {
@@ -125,6 +171,26 @@ export default class InventoryManager {
             this.updateInventoryUI();
         };
         this.scene.input.on('wheel', this.scrollListener);
+    }
+
+    getTierColor(type) {
+        // Extract tier from type (e.g., "p0" = tier 1, "p0_2" = tier 2, "p0_3" = tier 3, etc.)
+        let tier = 1;
+        if (type.includes('_')) {
+            const parts = type.split('_');
+            tier = Number(parts[1]);
+        }
+
+        // Map tier to color
+        const tierColors = {
+            1: 0xFFFFFF,  // White
+            2: 0x22C55E,  // Green
+            3: 0x3B82F6,  // Blue
+            4: 0xA855F7,  // Purple
+            5: 0xFCD34D   // Gold
+        };
+
+        return tierColors[tier] || 0xFFFFFF; // Default to white if tier not found
     }
 
     setTowerSelectedCallback(cb) {
@@ -169,7 +235,6 @@ export default class InventoryManager {
                 return;
             }
         }
-
         console.log("No towers available to merge");
     }
 
@@ -177,10 +242,8 @@ export default class InventoryManager {
         if (!type.includes('_')) {
             return `${type}_2`;
         }
-
         const [base, tier] = type.split('_');
         const newTier = Number(tier) + 1;
-
         return `${base}_${newTier}`;
     }
 
@@ -188,6 +251,12 @@ export default class InventoryManager {
         // Clean up scroll listener
         if (this.scrollListener) {
             this.scene.input.off('wheel', this.scrollListener);
+        }
+        
+        // Clean up tooltip
+        if (this.hoverTooltip) {
+            this.hoverTooltip.destroy();
+            this.hoverTooltip = null;
         }
     }
 }

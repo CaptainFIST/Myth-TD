@@ -1,4 +1,5 @@
 import SaveManager from '../managers/SaveManager.js';
+import AudioManager from '../managers/AudioManager.js';
 import AchievementManager from '../managers/AchievementManager.js';
 import ProgressManager from '../managers/ProgressManager.js';
 import StatsManager from '../managers/StatsManager.js';
@@ -8,9 +9,28 @@ export default class WinScreen extends Phaser.Scene {
         super({ key: 'WinScreen' });
     }
 
+    preload() {
+        // Load only the audio this scene needs
+        this.load.audio('winMusic', 'assets/audio/Win.mp3');
+        this.load.audio('buttonPress', 'assets/audio/ButtonPress.mp3');
+    }
+
     // Build the victory screen UI
     create(data = {}) {
         const { width, height } = this.scale;
+
+        // Initialize AudioManager in create (after preload completes)
+        if (!this.audioManager) {
+            this.audioManager = new AudioManager(this);
+            // Load saved audio settings
+            const volume = SaveManager.getVolumeForSlot();
+            const isMuted = SaveManager.getMuteForSlot();
+            this.audioManager.setVolume(volume);
+            this.audioManager.setMute(isMuted);
+        }
+
+        // Play win music
+        this.audioManager.playWinMusic();
 
         this.add.rectangle(width / 2, height / 2, width, height, 0x0a0e27).setDepth(-1);
         this.add.rectangle(width / 2, height / 2, width, height, 0x1a1f42)
@@ -25,24 +45,17 @@ export default class WinScreen extends Phaser.Scene {
         const spentGold = data.spentGold ?? 0;
         const playerHealth = data.playerHealth ?? 0;
 
-
         AchievementManager.check({
             type: 'Win',
             time: passTime,
             gainedGold: gainGold,
             usedGold: spentGold,
-            pHealth: playerHealth,
+            pHealth: playerHealth
         });
 
-        StatsManager.incLevelClears(1);
-        if(playerHealth === 20) {
-            StatsManager.incPerfectClears(1);
-        }
-
-        //this.getLevel(levelNumber);
-        
         ProgressManager.completeLevel(levelNumber);
-        
+        StatsManager.incTotalGold(gainGold);
+        StatsManager.incGoldSpent(spentGold);
 
         const title = this.add.text(width / 2, height / 2 - 150, 'VICTORY!', {
             fontSize: '96px',
@@ -92,23 +105,17 @@ export default class WinScreen extends Phaser.Scene {
             const nextScene = `Level${nextLevel}`;
 
             if (this.scene.get(nextScene)) {
+                this.audioManager.stopAll();
                 this.scene.start(nextScene);
             } else {
+                this.audioManager.stopAll();
                 this.scene.start('LevelSelect');
             }
         });
         this.createButton(width / 2 + 180, height / 2 + 140, 'MENU', '#6366f1', () => {
+            this.audioManager.stopAll();
             this.scene.start('MainMenu');
         });
-    }
-
-    getLevel(levelId) {
-        const levels = {
-            1: 'Level1',
-            2: 'Level2'
-        };
-        const sceneKey = levels[levelId] || 'Level1';
-        ProgressManager.completeLevel(levelId);
     }
 
     // Helper function to create clickable buttons
@@ -132,6 +139,11 @@ export default class WinScreen extends Phaser.Scene {
                 bg.setScale(1);
                 txt.setScale(1);
             })
-            .on('pointerdown', callback);       
+            .on('pointerdown', () => {
+                // Play button press sound
+                this.audioManager.playButtonPress();
+                // Execute callback after brief delay
+                callback();
+            });       
     }
 }

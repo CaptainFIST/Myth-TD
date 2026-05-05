@@ -16,7 +16,7 @@ export default class SaveManager {
                 enemiesKilled: 0,
                 towersPlaced: 0,
                 mergesDone: 0,
-            },
+            }
             //save: null
         };
     }
@@ -24,6 +24,10 @@ export default class SaveManager {
     static defaultData() {
         return {
             activeSlot: 'Slot_1',
+            settings: {
+                volume: 0.5,
+                isMuted: false
+            },
             slots: {
                 Slot_1: this.defaultSlot(),
                 Slot_2: this.defaultSlot(),
@@ -82,5 +86,40 @@ export default class SaveManager {
         const data = this.get();
         delete data.slots[slotName];
         this.commit();
+    }
+
+    static setVolumeForSlot(volume) {
+        const data = this.get();
+        if (data && data.settings) {
+            // Validate volume - ensure it's a valid number between 0 and 1
+            if (typeof volume === 'number' && volume >= 0 && volume <= 1) {
+                data.settings.volume = volume;
+                this.commit();
+            }
+        }
+    }
+
+    static setMuteForSlot(isMuted) {
+        const data = this.get();
+        if (data && data.settings) {
+            data.settings.isMuted = isMuted;
+            this.commit();
+        }
+    }
+
+    static getVolumeForSlot() {
+        const data = this.get();
+        const volume = data?.settings?.volume;
+        // Validate volume is a number between 0-1, use default 0.5 if not
+        if (typeof volume === 'number' && volume >= 0 && volume <= 1) {
+            return volume;
+        }
+        return 0.5;
+    }
+
+    static getMuteForSlot() {
+        const data = this.get();
+        const isMuted = data?.settings?.isMuted;
+        return typeof isMuted === 'boolean' ? isMuted : false;
     }
 }
