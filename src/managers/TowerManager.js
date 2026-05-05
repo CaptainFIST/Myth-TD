@@ -22,7 +22,7 @@ export default class TowerManager {
         Promachus_fire_projectile: { sprite: 'Promachus_fire', start: 0, end: 5, frameRate: 12 },
         Kitsune_charge_projectile: { sprite: 'Kitsune_charge', start: 0, end: 10, frameRate: 10 },
         Satyr_leaf_projectile: { sprite: 'Satyr_leaf', start: 0, end: 10, frameRate: 10 },
-        nattvolva_dark_projectile: { sprite: 'nattvolva_dark', start: 0, end: 7, frameRate: 12 }
+        Nattvolva_dark_projectile: { sprite: 'Nattvolva_dark', start: 0, end: 7, frameRate: 12 }
     };
 
     static airData = [];
@@ -179,7 +179,7 @@ export default class TowerManager {
         });
         
         // Load projectile assets
-        this.scene.load.spritesheet('nattvolva_dark', 'assets/tower/nattvolva_dark.png', { frameWidth: 64, frameHeight: 81 });
+        this.scene.load.spritesheet('Nattvolva_dark', 'assets/Abilities/Nattvolva_dark.png', { frameWidth: 64, frameHeight: 81 });
         this.scene.load.spritesheet('Kitsune_charge', 'assets/Abilities/Kitsune_charge.png', { frameWidth: 64, frameHeight: 64 });
         this.scene.load.spritesheet('Satyr_leaf', 'assets/Abilities/Satyr_leaf.png', { frameWidth: 64, frameHeight: 64 });
     }

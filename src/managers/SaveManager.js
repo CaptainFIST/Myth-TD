@@ -21,6 +21,9 @@ export default class SaveManager {
         };
     }
 
+    //cheat save
+    //static cheatSlot
+
     static defaultData() {
         return {
             activeSlot: 'Slot_1',
