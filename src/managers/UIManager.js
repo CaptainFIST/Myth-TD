@@ -4,6 +4,7 @@ import EnemyManager from './EnemyManager.js';
 import WaveManager from './WaveManager.js';
 import InventoryManager from './InventoryManager.js';
 import AudioManager from './AudioManager.js';
+import SaveManager from './SaveManager.js';
 import { AssetConfig } from '../config/AssetConfig.js';
 import { UIConfig } from '../config/UIConfig.js';
 
@@ -194,7 +195,10 @@ export default class UIManager extends Phaser.Scene {
             ? this.add.image(x, y, assetKey).setOrigin(0.5, 0).setScale(0.1)
             : this.add.image(x, y, assetKey).setOrigin(0.5, 0).setScale(0.2);
         
-        btn.setInteractive({ useHandCursor: true }).setDepth(UIConfig.depths.ui).on('pointerdown', onClick);
+        btn.setInteractive({ useHandCursor: true }).setDepth(UIConfig.depths.ui).on('pointerdown', () => {
+            this.audioManager.playButtonPress();
+            onClick();
+        });
         return btn;
     }
 
@@ -208,7 +212,10 @@ export default class UIManager extends Phaser.Scene {
 
         this.speedButtonBg.on('pointerover', () => this.speedButtonBg.setFillStyle(UIConfig.colors.buttonHover));
         this.speedButtonBg.on('pointerout', () => this.speedButtonBg.setFillStyle(UIConfig.colors.buttonBg));
-        this.speedButtonBg.on('pointerdown', () => this.cycleGameSpeed());
+        this.speedButtonBg.on('pointerdown', () => {
+            this.audioManager.playButtonPress();
+            this.cycleGameSpeed();
+        });
 
         return { bg: this.speedButtonBg, text: this.speedButtonText };
     }
@@ -249,6 +256,7 @@ export default class UIManager extends Phaser.Scene {
             .setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(UIConfig.depths.modalContent).setVisible(false);
         
         this.sidebarMuteBtn.on('pointerdown', () => {
+            this.audioManager.playButtonPress();
             this.audioManager.toggleMute();
             this.sidebarMuteBtn.setText(this.audioManager.isMuted ? '🔇' : '🔊');
         });
@@ -265,11 +273,12 @@ export default class UIManager extends Phaser.Scene {
 
         // Buttons
         const { btn: resumeBtn, txt: resumeText } = this.createSidebarButton(centerX, centerY + 50, 'Resume', () => this.toggleSidebarMenu());
-        const { btn: menuBtn, txt: menuText } = this.createSidebarButton(centerX, centerY + 130, 'Main Menu', () => this.endLevel('return'));
+        const { btn: catalogBtn, txt: catalogText } = this.createSidebarButton(centerX, centerY + 110, 'Catalog', () => this.showCatalogPopup());
+        const { btn: menuBtn, txt: menuText } = this.createSidebarButton(centerX, centerY + 170, 'Main Menu', () => this.endLevel('return'));
 
         this.sidebarMenuElements = [
             this.sidebarOverlay, this.sidebarMenuBg, audioLabel, this.sidebarMuteBtn,
-            sliderBg, sliderHandle, divider, resumeBtn, resumeText, menuBtn, menuText
+            sliderBg, sliderHandle, divider, resumeBtn, resumeText, catalogBtn, catalogText, menuBtn, menuText
         ];
     }
 
@@ -311,23 +320,38 @@ export default class UIManager extends Phaser.Scene {
 
         this.sidebarSliderInfo = { bg: sliderBg, handle: sliderHandle, sliderX, sliderY, sliderWidth, sliderHeight };
 
+        // Track if we're actively dragging the slider
+        let isDraggingSlider = false;
+
         // Volume update handler
         const updateVolume = (newX) => {
             const clampedX = Phaser.Math.Clamp(newX, sliderX - sliderWidth / 2, sliderX + sliderWidth / 2);
             sliderHandle.setX(clampedX);
             const newVolume = (clampedX - (sliderX - sliderWidth / 2)) / sliderWidth;
             this.audioManager.setVolume(newVolume);
+            SaveManager.setVolumeForSlot(newVolume);
             this.updateSidebarMenuDisplay();
         };
 
+        sliderHandle.on('pointerdown', () => {
+            isDraggingSlider = true;
+        });
+
+        this.input.on('pointerup', () => {
+            isDraggingSlider = false;
+        });
+
         this.input.on('pointermove', (pointer) => {
-            if (pointer.isDown && sliderHandle.active && sliderHandle.visible) {
+            if (pointer.isDown && isDraggingSlider && sliderHandle.visible) {
                 updateVolume(pointer.x);
             }
         });
 
         sliderBg.setInteractive({ useHandCursor: true });
-        sliderBg.on('pointerdown', (pointer) => updateVolume(pointer.x));
+        sliderBg.on('pointerdown', (pointer) => {
+            isDraggingSlider = true;
+            updateVolume(pointer.x);
+        });
 
         return { sliderBg, sliderHandle };
     }
@@ -348,7 +372,10 @@ export default class UIManager extends Phaser.Scene {
 
         bg.on('pointerover', () => bg.setFillStyle(0x222222));
         bg.on('pointerout', () => bg.setFillStyle(UIConfig.colors.black));
-        bg.on('pointerdown', onClick);
+        bg.on('pointerdown', () => {
+            this.audioManager.playButtonPress();
+            onClick();
+        });
     }
 
     createPauseButton(x, y, label, onClick, width = 200, height = 60) {
@@ -360,7 +387,10 @@ export default class UIManager extends Phaser.Scene {
 
         bg.on('pointerover', () => bg.setFillStyle(UIConfig.colors.buttonHover));
         bg.on('pointerout', () => bg.setFillStyle(UIConfig.colors.buttonBg));
-        bg.on('pointerdown', onClick);
+        bg.on('pointerdown', () => {
+            this.audioManager.playButtonPress();
+            onClick();
+        });
 
         return {
             bg, text,
@@ -415,6 +445,122 @@ export default class UIManager extends Phaser.Scene {
             this.player.spentGold,
             this.player.playerHealth
         );
+    }
+
+    showCatalogPopup() {
+        this.audioManager.playButtonPress();
+        
+        // Catalog data (same as Catalog scene)
+        const TOWER_AFFINITIES = {
+            'Izanami': 'Physical',
+            'Kitsune': 'Neutral',
+            'Nattvolva': 'Dark',
+            'Promachus': 'Fire',
+            'Satyr': 'Air',
+            'Susanoo': 'Water'
+        };
+
+        const ENEMY_AFFINITIES = {
+            'Oni': 'Physical',
+            'CurseWanderer': 'Neutral',
+            'Firespawn': 'Fire',
+            'Orc': 'Neutral',
+            'Yokai': 'Air',
+            'Slime': 'Water',
+            'Plent': 'Dark',
+            'Skeleton': 'Dark'
+        };
+
+        const centerX = this.scale.width / 2;
+        const centerY = this.scale.height / 2;
+        const catalogDepth = UIConfig.depths.modalContent + 100;
+
+        // Create overlay
+        const overlay = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x000000, 0.7)
+            .setInteractive().setDepth(catalogDepth);
+
+        // Create popup background
+        const popupW = 1000, popupH = 650;
+        const popupBg = this.add.rectangle(centerX, centerY, popupW, popupH, 0x0f1534)
+            .setStrokeStyle(2, UIConfig.colors.primary).setDepth(catalogDepth);
+
+        // Title
+        const title = this.add.text(centerX, centerY - popupH / 2 + 25, 'CATALOG', {
+            fontSize: '48px',
+            color: '#64d5ff',
+            fontStyle: 'bold'
+        }).setOrigin(0.5).setDepth(catalogDepth);
+
+        // Left column - TOWERS
+        const leftColX = centerX - popupW / 4;
+        const towerTitle = this.add.text(leftColX, centerY - popupH / 2 + 70, 'TOWERS', {
+            fontSize: '32px',
+            color: '#64d5ff',
+            fontStyle: 'bold'
+        }).setOrigin(0.5).setDepth(catalogDepth);
+
+        let towerText = '';
+        Object.entries(TOWER_AFFINITIES).forEach(([tower, affinity]) => {
+            towerText += `${tower}\n[${affinity}]\n\n`;
+        });
+
+        const towerContent = this.add.text(leftColX, centerY - popupH / 2 + 140, towerText, {
+            fontSize: '20px',
+            color: '#a8daff',
+            wordWrap: { width: 350 },
+            align: 'center'
+        }).setOrigin(0.5, 0).setDepth(catalogDepth);
+
+        // Right column - ENEMIES
+        const rightColX = centerX + popupW / 4;
+        const enemyTitle = this.add.text(rightColX, centerY - popupH / 2 + 70, 'ENEMIES', {
+            fontSize: '32px',
+            color: '#64d5ff',
+            fontStyle: 'bold'
+        }).setOrigin(0.5).setDepth(catalogDepth);
+
+        let enemyText = '';
+        Object.entries(ENEMY_AFFINITIES).forEach(([enemy, defense]) => {
+            enemyText += `${enemy}\n[${defense}]\n\n`;
+        });
+
+        const enemyContent = this.add.text(rightColX, centerY - popupH / 2 + 140, enemyText, {
+            fontSize: '20px',
+            color: '#a8daff',
+            wordWrap: { width: 350 },
+            align: 'center'
+        }).setOrigin(0.5, 0).setDepth(catalogDepth);
+
+        // Close button
+        const btnW = 120, btnH = 40;
+        const closeBtn = this.add.rectangle(centerX, centerY + popupH / 2 - 30, btnW, btnH, UIConfig.colors.buttonBg)
+            .setOrigin(0.5).setStrokeStyle(2, UIConfig.colors.white).setInteractive({ useHandCursor: true })
+            .setDepth(catalogDepth);
+
+        const closeText = this.add.text(centerX, centerY + popupH / 2 - 30, 'CLOSE', {
+            fontSize: '18px',
+            color: '#fff',
+            fontStyle: 'bold'
+        }).setOrigin(0.5).setDepth(catalogDepth);
+
+        closeBtn.on('pointerover', () => closeBtn.setFillStyle(UIConfig.colors.buttonHover));
+        closeBtn.on('pointerout', () => closeBtn.setFillStyle(UIConfig.colors.buttonBg));
+        
+        const closeCatalog = () => {
+            this.audioManager.playButtonPress();
+            overlay.destroy();
+            popupBg.destroy();
+            title.destroy();
+            towerTitle.destroy();
+            towerContent.destroy();
+            enemyTitle.destroy();
+            enemyContent.destroy();
+            closeBtn.destroy();
+            closeText.destroy();
+        };
+
+        closeBtn.on('pointerdown', closeCatalog);
+        overlay.on('pointerdown', closeCatalog);
     }
 
     update(time, delta) {
@@ -557,5 +703,13 @@ export default class UIManager extends Phaser.Scene {
         this.waveManager = null;
         this.enemyManager = null;
         this.towerManager = null;
+    }
+
+    shutdown() {
+        // Save audio settings when leaving the level
+        if (this.audioManager) {
+            SaveManager.setVolumeForSlot(this.audioManager.getVolume());
+            SaveManager.setMuteForSlot(this.audioManager.isMutedState());
+        }
     }
 }

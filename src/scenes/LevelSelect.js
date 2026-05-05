@@ -1,8 +1,24 @@
 import ProgressManager from '../managers/ProgressManager.js';
+import AudioManager from '../managers/AudioManager.js';
+import SaveManager from '../managers/SaveManager.js';
 
 export default class LevelSelect extends Phaser.Scene {
     constructor() {
         super('LevelSelect');
+    }
+
+    preload() {
+        // Initialize AudioManager for this scene
+        if (!this.audioManager) {
+            this.audioManager = new AudioManager(this);
+            this.audioManager.preloadAudio();
+            
+            // Load saved audio settings
+            const volume = SaveManager.getVolumeForSlot();
+            const isMuted = SaveManager.getMuteForSlot();
+            this.audioManager.setVolume(volume);
+            this.audioManager.setMute(isMuted);
+        }
     }
 
     // Build the level selection UI
@@ -29,8 +45,6 @@ export default class LevelSelect extends Phaser.Scene {
             const x = width / 2 + (i - 1) * 400;  
             const y = height / 2;
             const isUnlocked = ProgressManager.isUnlocked(lvl.num);
-            //  For testing purposes
-            //const isUnlocked = true;
             
             // Card background
             const cardColor = isUnlocked ? 0x1a3f5e : 0x0a1a2e;
@@ -53,6 +67,7 @@ export default class LevelSelect extends Phaser.Scene {
                 card.on('pointerover', () => card.setScale(1.08));
                 card.on('pointerout', () => card.setScale(1));
                 card.on('pointerdown', () => {
+                    this.audioManager.playButtonPress();
                     this.sound.stopAll();
                     this.scene.start(lvl.scene);
                 });
@@ -76,7 +91,10 @@ export default class LevelSelect extends Phaser.Scene {
 
         back.on('pointerover', () => { back.setColor('#ffffff'); back.setScale(1.1); });
         back.on('pointerout', () => { back.setColor('#64d5ff'); back.setScale(1); });
-        back.on('pointerdown', () => this.scene.start('MainMenu'));
+        back.on('pointerdown', () => {
+            this.audioManager.playButtonPress();
+            this.scene.start('MainMenu');
+        });
         this.input.keyboard.on('keydown-ESC', () => this.scene.start('MainMenu'));
     }
 }

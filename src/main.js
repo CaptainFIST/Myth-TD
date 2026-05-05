@@ -10,6 +10,7 @@ import Level2 from './scenes/Level2.js';
 import Level3 from './scenes/Level3.js';
 import LevelSelect from './scenes/LevelSelect.js';
 import UIManager from './managers/UIManager.js';
+import Catalog from './scenes/Catalog.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -26,6 +27,7 @@ const config = {
         SettingsMenu,
         ProfileData,
         Tutorial,
+        Catalog,
         WinScreen,
         LoseScreen,
         MapManager,

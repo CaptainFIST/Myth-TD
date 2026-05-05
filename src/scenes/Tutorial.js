@@ -1,6 +1,23 @@
+import AudioManager from '../managers/AudioManager.js';
+import SaveManager from '../managers/SaveManager.js';
+
 export default class Tutorial extends Phaser.Scene {
     constructor() {
         super('Tutorial');
+    }
+
+    preload() {
+        // Initialize AudioManager for this scene
+        if (!this.audioManager) {
+            this.audioManager = new AudioManager(this);
+            this.audioManager.preloadAudio();
+            
+            // Load saved audio settings
+            const volume = SaveManager.getVolumeForSlot();
+            const isMuted = SaveManager.getMuteForSlot();
+            this.audioManager.setVolume(volume);
+            this.audioManager.setMute(isMuted);
+        }
     }
 
     // Build the tutorial UI with scrollable content
@@ -93,6 +110,7 @@ export default class Tutorial extends Phaser.Scene {
         btn.on('pointerout', () => { btn.setFillStyle(0x1a5f3e); txt.setScale(1); });
         
         btn.on('pointerdown', () => {
+            this.audioManager.playButtonPress();
             localStorage.setItem('mythological_defense_tutorial_seen', 'true');
             this.scene.start('Level1'); 
         });

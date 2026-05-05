@@ -1,5 +1,6 @@
 import PlayerManager from '../managers/PlayerManager.js';
 import AudioManager from '../managers/AudioManager.js';
+import SaveManager from '../managers/SaveManager.js';
 
 export default class Level3 extends Phaser.Scene {
     constructor() {
@@ -71,6 +72,12 @@ export default class Level3 extends Phaser.Scene {
         
         this.audioManager = new AudioManager(this);
         this.audioManager.preloadAudio();
+
+        // Restore audio settings from saved slot
+        const volume = SaveManager.getVolumeForSlot();
+        const isMuted = SaveManager.getMuteForSlot();
+        this.audioManager.setVolume(volume);
+        this.audioManager.setMute(isMuted);
     }
     
     // Initialize the level when scene starts
@@ -110,6 +117,14 @@ export default class Level3 extends Phaser.Scene {
                 spentGold: spentGold,
                 playerHealth: playerHealth
             });
+        }
+    }
+
+    shutdown() {
+        // Save audio settings when leaving the level
+        if (this.audioManager) {
+            SaveManager.setVolumeForSlot(this.audioManager.getVolume());
+            SaveManager.setMuteForSlot(this.audioManager.isMutedState());
         }
     }
 }
