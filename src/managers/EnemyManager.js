@@ -2,15 +2,39 @@ import Enemy from '../entities/Enemy.js';
 
 export default class EnemyManager {
     // [name, id, health, speed, reward, lastFrame]
-    static testData = [
-        ['Oni', 0, 40, 1, 5, 15],
-        ['Yokai', 1, 60, 1, 7, 5],
-        ['Skeleton', 2, 50, 1, 10, 6],
+    static neutralEnemy = [
         ['Orc', 3, 65, 0.8, 15, 6],
-        ['Firespawn', 4, 30, 1.2, 20, 6],
-        ['Plent', 5, 55, 0.9, 4, 8],
-        ['CurseWanderer', 6, 65, 0.7, 25, 7],
-        ['Slime', 7, 20, 1, 3, 7]
+        ['CurseWanderer', 6, 65, 0.7, 25, 7]
+    ];
+    static physicalEnemy = [['Oni', 0, 40, 1, 5, 15]];
+    static airEnemy = [['Yokai', 1, 60, 1, 7, 5]];
+    static waterEnemy = [['Slime', 7, 20, 1, 3, 7]];
+    static fireEnemy = [['Firespawn', 4, 30, 1.2, 20, 6]];
+    static darkEnemy = [        
+        ['Skeleton', 2, 50, 1, 10, 6],
+        ['Plent', 5, 55, 0.9, 4, 8]
+    ];
+
+    static get allEnemyData() {
+        return [
+        ...this.neutralEnemy,
+        ...this.physicalEnemy,
+        ...this.airEnemy,
+        ...this.waterEnemy,
+        ...this.fireEnemy,
+        ...this.darkEnemy
+        ];
+    }
+
+    static enemyAffinity = [
+        ['Orc', 0],
+        ['CurseWanderer', 0],
+        ['Oni', 1],
+        ['Yokai', 2],
+        ['Slime', 3],
+        ['Firespawn', 4],
+        ['Skeleton', 5],
+        ['Plent', 5]
     ];
 
     constructor(scene) {
@@ -18,14 +42,32 @@ export default class EnemyManager {
         this.activeEnemies = scene.add.group({ runChildUpdate: true });
     }
 
-    getStatsByIndex(indexStr) {
-        const id = +indexStr.slice(1);
-        return indexStr[0] === 't' ? EnemyManager.testData[id] : null;
+    getStatsByIndex(index) {
+        // Handle numbers from Level1 waveData (e.g., 0, 1, 7)
+        if (typeof index === 'number') {
+            return EnemyManager.allEnemyData.find(enemy => enemy[1] === index);
+        }
+
+        // Handle strings if you ever use them (e.g., 'p0')
+        if (typeof index === 'string') {
+            const type = index[0];
+            const id = parseInt(index.slice(1));
+            switch (type) {
+                case 'p': return EnemyManager.physicalEnemy[id];
+                case 'a': return EnemyManager.airEnemy[id];
+                case 'w': return EnemyManager.waterEnemy[id];
+                case 'f': return EnemyManager.fireEnemy[id];
+                case 'd': return EnemyManager.darkEnemy[id];
+                case 'n': return EnemyManager.neutralEnemy[id];
+                default: return null;
+            }
+        }
+        return null;
     }
 
     createAnimations() {
         const { anims } = this.scene;
-        EnemyManager.testData.forEach(([name, , , , , lastFrame]) => {
+        EnemyManager.allEnemyData.forEach(([name, , , , , lastFrame]) => {
             const key = `${name}_walk`;
             // Only create animation if it doesn't already exist
             if (!anims.exists(key)) {
@@ -41,10 +83,16 @@ export default class EnemyManager {
 
     createEnemy(index, path) {
         if (!path?.length) return console.error("EnemyManager: Invalid path");
-        const stats = EnemyManager.testData[index];
-        if (!stats) return console.error("Invalid enemy index:", index);
+        
+        // index could be 7 (number) or 'w0' (string)
+        const stats = this.getStatsByIndex(index);
+        if (!stats) return console.error("Invalid enemy index or ID:", index);
 
-        const enemy = new Enemy(this.scene, stats, path);
+        const affinityData = EnemyManager.enemyAffinity.find(a => a[0] === stats[0]);
+        const affinityID = affinityData ? affinityData[1] : 0;
+
+        const enemy = new Enemy(this.scene, stats, path, affinityID);
+
         this.activeEnemies.add(enemy);
         return enemy;
     }
@@ -74,7 +122,7 @@ export default class EnemyManager {
 
     preloadAssets() {
         // Load enemy sprites
-        this.constructor.testData.forEach(([name]) => {
+        this.constructor.allEnemyData.forEach(([name]) => {
             this.scene.load.spritesheet(name, `assets/Enemies/${name}.png`, { frameWidth: 64, frameHeight: 64 });
         });
     }

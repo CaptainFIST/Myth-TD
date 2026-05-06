@@ -2,6 +2,7 @@ import SaveManager from '../managers/SaveManager.js';
 import AchievementManager from '../managers/AchievementManager.js';
 import ProgressManager from '../managers/ProgressManager.js';
 import StatsManager from '../managers/StatsManager.js';
+import TimeManager from '../managers/TimeManager.js';
 
 
 export default class Tower extends Phaser.GameObjects.Sprite {
@@ -28,9 +29,11 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         super(scene, 0, 0, stats[0]);
         this.scene = scene;
 
-        // Tower stats: [name, damage, range, attackSpeed]
-        [this.name, this.damage, this.range, this.attackSpeed] = stats;
-        this.attackDelay = this.attackSpeed * 1000;
+        // Tower stats: [name, damage, range, attackSpeed, idleEnd, attackEnd, affinityID]
+        [this.name, this.damage, this.range, this.attackSpeed, this.idleEnd, this.attackEnd, this.affinityID] = stats;
+        if (this.affinityID === undefined) this.affinityID = 0;
+
+        this.attackDelay = 1000 / this.attackSpeed;
 
         this.pedestal = scene.add.image(0, 0, 'Pedestal').setDepth(9);
         this.projectiles = scene.add.group();
@@ -52,6 +55,21 @@ export default class Tower extends Phaser.GameObjects.Sprite {
                 this.play(`${this.name}_idle`);
             }
         });
+
+        this.affinityID = stats[6] || 0;
+    }
+
+    calculateDamage(enemy) {
+        // Get the table from TowerManager's static property
+        const table = this.scene.towerManager.constructor.towerAffinityCoeff;
+        
+        // Identify enemy type ID
+        const enemyTypeID = enemy.affinityID || 0; 
+        
+        // Look up coefficient table [TowerRow][EnemyColumn]
+        const coeff = table[this.affinityID][enemyTypeID];
+        console.log(`${this.name} dealt ${this.damage*coeff} damage!`);
+        return this.damage * coeff;
     }
 
     place(x, y) {
@@ -72,27 +90,50 @@ export default class Tower extends Phaser.GameObjects.Sprite {
 
     update(time, delta) {
         if (!this.active) return;
-        const enemy = this.getClosestEnemy();
+        this.timeSinceLastAttack += delta;
 
-        // Scale delta by game speed multiplier
-        const gameSpeedScale = this.scene.timeManager?.getScale() || 1;
-        const scaledDelta = delta * gameSpeedScale;
-        this.timeSinceLastAttack += scaledDelta;
+        const enemy = this.getTargetEnemy();
 
-        // Start attack if cooldown is ready AND enemy in range
-        if (enemy && this.timeSinceLastAttack >= this.attackDelay && !this.isAttacking) {
+        if (enemy && this.timeSinceLastAttack >= this.attackDelay) {
             this.fire(enemy);
             this.timeSinceLastAttack = 0;
         }
 
         // Direct-damage towers (non-projectile) - only if enemy exists
         if (this.isAttacking && enemy && !this.damageDealt && !this.constructor.PROJECTILE_TOWERS.has(this.name)) {
-            enemy.takeDamage(this.damage);
+            const finalDamage = this.calculateDamage(enemy);
+            enemy.takeDamage(finalDamage);
             this.damageDealt = true;
         }
 
         // Update all active projectiles
         this.projectiles.children.each(p => p.active && this.updateProjectile(p, delta));
+    }
+
+    // UPDATED: Attacks the enemy furthest along the path
+    getTargetEnemy() {
+        const enemies = this.scene.enemyManager?.activeEnemies?.getChildren();
+        if (!enemies?.length) return null;
+
+        let leadEnemy = null;
+        let maxProgress = -1;
+        const rangeInPixels = this.range * 64;
+
+        for (const e of enemies) {
+            if (!e.active) continue;
+
+            const dist = Phaser.Math.Distance.Between(this.x, this.y, e.x, e.y);
+            
+            // Check if within range
+            if (dist <= rangeInPixels) {
+                // Priority: Use distanceTraveled which we added to Enemy.js
+                if (e.distanceTraveled > maxProgress) {
+                    maxProgress = e.distanceTraveled;
+                    leadEnemy = e;
+                }
+            }
+        }
+        return leadEnemy;
     }
 
     getClosestEnemy() {
@@ -111,7 +152,13 @@ export default class Tower extends Phaser.GameObjects.Sprite {
     fire(enemy) {
         this.isAttacking = true;
         this.damageDealt = false;
-        this.play(`${this.name}_attack`);
+
+        const anim = this.play(`${this.name}_attack`);
+
+        if (anim && anim.anims) {
+            anim.anims.msPerFrame = (1000/12) / (this.scene.TimeManager?.getScale() || 1);
+        }
+
         this.scene.audioManager?.playTowerAttack();
         
         if (this.constructor.PROJECTILE_TOWERS.has(this.name)) {
@@ -139,8 +186,6 @@ export default class Tower extends Phaser.GameObjects.Sprite {
 
     updateProjectile(p, delta) {
         const t = p.targetEnemy;
-
-        // Remove projectile if target is gone
         if (!t?.active) return p.destroy();
 
         const angle = Phaser.Math.Angle.Between(p.x, p.y, t.x, t.y);
@@ -153,7 +198,10 @@ export default class Tower extends Phaser.GameObjects.Sprite {
         // Collision check with enemy
         if (!p.hasHit && Phaser.Math.Distance.Between(p.x, p.y, t.x, t.y) < 20) {
             p.hasHit = true;
-            t.takeDamage(this.damage);
+
+            const finalDamage = this.calculateDamage(t);
+            t.takeDamage(finalDamage);
+
             return p.destroy();
         }
 

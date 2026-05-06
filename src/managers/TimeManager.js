@@ -46,6 +46,7 @@ export default class TimeManager {
 
     setScale(newScale) {
         this.scale = newScale;
+        this.scene.time.timeScale = newScale;
     }
 
     cycleSpeed() {
