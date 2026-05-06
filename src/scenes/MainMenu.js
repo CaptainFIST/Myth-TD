@@ -14,6 +14,12 @@ export default class MainMenu extends Phaser.Scene {
         this.load.image('subtitleImage','assets/Titles/subtitleImage.png');
         this.audioManager = new AudioManager(this);
         this.audioManager.preloadAudio();
+        
+        // Initialize audio settings from saved slot early
+        const volume = SaveManager.getVolumeForSlot();
+        const isMuted = SaveManager.getMuteForSlot();
+        this.audioManager.setVolume(volume);
+        this.audioManager.setMute(isMuted);
     }
 
     // Build the main menu UI
@@ -81,7 +87,10 @@ export default class MainMenu extends Phaser.Scene {
             button.on('pointerover', () => button.setStyle({fill: "#7c3aed"}));
             button.on('pointerout', () => button.setStyle({fill: '#06b6d4'}));
             if (btn.action) {
-                button.on('pointerdown', btn.action);
+                button.on('pointerdown', () => {
+                    this.audioManager.playButtonPress();
+                    btn.action();
+                });
             }
             button.setDepth(2);
         }); 
@@ -121,8 +130,10 @@ export default class MainMenu extends Phaser.Scene {
         .setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(100);
 
         muteButton.on('pointerdown', () => {
+            this.audioManager.playButtonPress();
             this.audioManager.toggleMute();
             muteButton.setText(this.audioManager.isMuted ? '🔇' : '🔊');
+            SaveManager.setMuteForSlot(this.audioManager.isMuted);
         });
 
         muteButton.on('pointerover', () => muteButton.setStyle({ fill: '#7c3aed' }));
@@ -137,14 +148,26 @@ export default class MainMenu extends Phaser.Scene {
         const sliderHandle = this.add.circle(handleX, controlY + 10, 10, 0x06b6d4)
             .setInteractive({ useHandCursor: true }).setDepth(101);
 
-        // Update volume when dragging slider
+        // Track if we're actively dragging the slider
+        let isDraggingSlider = false;
+
+        // Only update volume when actually dragging the slider handle
+        sliderHandle.on('pointerdown', () => {
+            isDraggingSlider = true;
+        });
+
+        this.input.on('pointerup', () => {
+            isDraggingSlider = false;
+        });
+
         this.input.on('pointermove', (pointer) => {
-            if (pointer.isDown && sliderHandle.active) {
+            if (pointer.isDown && isDraggingSlider) {
                 const newX = Phaser.Math.Clamp(pointer.x, sliderX - sliderWidth / 2, sliderX + sliderWidth / 2);
                 sliderHandle.setX(newX);
                 
                 const newVolume = (newX - (sliderX - sliderWidth / 2)) / sliderWidth;
                 this.audioManager.setVolume(newVolume);
+                SaveManager.setVolumeForSlot(newVolume);
             }
         });
 
@@ -155,6 +178,8 @@ export default class MainMenu extends Phaser.Scene {
             sliderHandle.setX(newX);
             const newVolume = (newX - (sliderX - sliderWidth / 2)) / sliderWidth;
             this.audioManager.setVolume(newVolume);
+            SaveManager.setVolumeForSlot(newVolume);
+            isDraggingSlider = true;
         });
 
         this.volumeText = this.add.text(sliderX, controlY - 20, '100%', {
@@ -200,6 +225,6 @@ export default class MainMenu extends Phaser.Scene {
     }
     
     shutdown() {
-        this.audioManager.stopAudio('mainMenuMusic');
+        this.audioManager.stopAll();
     }
 }
