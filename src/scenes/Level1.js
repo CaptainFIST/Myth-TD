@@ -23,7 +23,7 @@ export default class Level1 extends Phaser.Scene {
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
     ];
 
     static decoData = [
@@ -70,7 +70,7 @@ export default class Level1 extends Phaser.Scene {
 
     preload() {
         this.load.image('grass', 'assets/tiles/level1/grass_new.png');
-        this.load.image('path', 'assets/tiles/level1/dirt_path.png');
+        this.load.image('dPath', 'assets/tiles/level1/dirt_path.png');
         this.load.image('tree', 'assets/decorations/tree1.png');
         this.load.image('rock1', 'assets/decorations/rock1.png');
         this.load.image('bush', 'assets/decorations/Bush1.png');

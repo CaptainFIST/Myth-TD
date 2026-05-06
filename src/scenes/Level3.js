@@ -8,22 +8,24 @@ export default class Level3 extends Phaser.Scene {
     }
 
     static level = 3;
+    static showDebugGrid = false;
+    static showDebugPaths = false;
 
     static mapData = [
         [0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4],
         [0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,1,1,0,0,1,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0],
-        [3,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [3,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0],
+        [0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0],
+        [0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0],
     ];
 
     static decoData = [
@@ -44,21 +46,23 @@ export default class Level3 extends Phaser.Scene {
     ];
 
     static waveData = [
-        { enemies: [{ type: 0, count: 5 }, { type: 1, count: 3 }, {type: 3, count: 2}] },
-        { enemies: [{ type: 1, count: 4 }, { type: 4, count: 6 }] },
-        { enemies: [{ type: 2, count: 5 }, { type: 1, count: 5 }] },
-        { enemies: [{ type: 0, count: 2 }, { type: 1, count: 2 }, { type: 2, count: 2 }] },
-        { enemies: [{ type: 5, count: 3 }, { type: 6, count: 2 }] },
-        { enemies: [{ type: 0, count: 7 }, { type: 2, count: 5 }, { type: 1, count: 1 }] },
-        { enemies: [{ type: 2, count: 4 }, { type: 7, count: 5 }] },
-        { enemies: [{ type: 4, count: 10 }, { type: 1, count: 10 }, { type: 2, count: 5 }, ] }, 
+        { enemies: [{ type: 0, count: 3, spawnPoint: 2 }, { type: 1, count: 2, spawnPoint: 4 }, { type: 3, count: 2, spawnPoint: 5 }] },
+        { enemies: [{ type: 1, count: 4, spawnPoint: 4 }, { type: 4, count: 6, spawnPoint: 5 }] },
+        { enemies: [{ type: 2, count: 5, spawnPoint: 2 }, { type: 1, count: 5, spawnPoint: 5 }] },
+        { enemies: [{ type: 0, count: 2, spawnPoint: 4 }, { type: 1, count: 2, spawnPoint: 2 }, { type: 2, count: 2, spawnPoint: 5 }] },
+        { enemies: [{ type: 5, count: 3, spawnPoint: 5 }, { type: 6, count: 2, spawnPoint: 4 }] },
+        { enemies: [{ type: 0, count: 7, spawnPoint: 2 }, { type: 2, count: 5, spawnPoint: 4 }, { type: 1, count: 1, spawnPoint: 5 }] },
+        { enemies: [{ type: 2, count: 4, spawnPoint: 5 }, { type: 7, count: 5, spawnPoint: 2 }] },
+        { enemies: [{ type: 4, count: 10, spawnPoint: 4 }, { type: 1, count: 10, spawnPoint: 5 }, { type: 2, count: 5, spawnPoint: 2 }] },
     ];
 
     static tileTypes = {
         0: 'volcanic',
         1: 'vPath',
         2: 'vPath',
-        3: 'vPath'
+        3: 'vPath',
+        4: 'vPath',
+        5: 'vPath'
     };
 
     static decoTypes = {
