@@ -8,6 +8,7 @@ export default class WaveManager {
 
         this.waveData = [];
         this.path = null;
+        this.spawnPoints = {}; // Maps spawn point ID to path
         this.waveText = null;
         this.isWaveActive = false;
 
@@ -36,8 +37,22 @@ export default class WaveManager {
         this.path = path;
     }
 
+    // Initialize with spawn points (multiple paths)
+    initializeWithSpawnPoints(waveText, spawnPoints) {
+        this.waveText = waveText;
+        this.spawnPoints = spawnPoints;
+        // Keep path for backward compatibility (use first spawn point)
+        const firstSpawnId = Object.keys(spawnPoints)[0];
+        this.path = spawnPoints[firstSpawnId]?.worldPath || null;
+        console.log("WaveManager initialized with spawn points:", Object.keys(spawnPoints));
+    }
+
     setPath(path) {
         this.path = path;
+    }
+
+    setSpawnPoints(spawnPoints) {
+        this.spawnPoints = spawnPoints;
     }
 
     setOnGameCompleteCallback(cb) {
@@ -74,7 +89,7 @@ export default class WaveManager {
 
     startWave() {
         if (this.isWaveActive) return;
-        if (!this.path?.length) return;
+        if (!this.path?.length && Object.keys(this.spawnPoints).length === 0) return;
         if (!this.waveData?.length) return;
         
         // Check if wave data exists before proceeding
@@ -91,11 +106,12 @@ export default class WaveManager {
 
         // Build spawn schedule
         let totalSpawns = 0;
-        waveConfig.enemies.forEach(({ type, count }) => {
+        waveConfig.enemies.forEach(({ type, count, spawnPoint }) => {
             for (let i = 0; i < count; i++) {
                 this.spawnedEnemies.push({
                     spawnTime: totalSpawns * 500, // milliseconds
                     type: type,
+                    spawnPoint: spawnPoint ?? Object.keys(this.spawnPoints)[0] ?? 2, // Default to first spawn point or 2
                     spawned: false
                 });
                 totalSpawns++;
@@ -119,8 +135,13 @@ export default class WaveManager {
             return;
         }
 
-        if (!this.path?.length || !this.waveData?.length) {
-            console.warn("WaveManager: missing path or waveData");
+        if (!this.path?.length && Object.keys(this.spawnPoints).length === 0) {
+            console.warn("WaveManager: missing path or spawnPoints");
+            return;
+        }
+        
+        if (!this.waveData?.length) {
+            console.warn("WaveManager: missing waveData");
             return;
         }
 
@@ -155,7 +176,15 @@ export default class WaveManager {
         if (this.isWaveActive) {
             this.spawnedEnemies.forEach(spawn => {
                 if (!spawn.spawned && this.elapsedTime >= this.waveStartTime + spawn.spawnTime) {
-                    this.enemyManager?.createEnemy?.(spawn.type, this.path);
+                    // Get path for the spawn point
+                    const spawnPointId = spawn.spawnPoint;
+                    const path = this.spawnPoints[spawnPointId]?.worldPath || this.path;
+                    
+                    if (path?.length) {
+                        this.enemyManager?.createEnemy?.(spawn.type, path);
+                    } else {
+                        console.warn(`No path found for spawn point ${spawnPointId}`);
+                    }
                     spawn.spawned = true;
                 }
             });
@@ -187,6 +216,7 @@ export default class WaveManager {
     hardReset() {
         this.stop();
         this.path = null;
+        this.spawnPoints = {};
         this.waveData = [];
         this.waveText = null;
         this.scene = null;

@@ -6,12 +6,14 @@ export default class Level2 extends Phaser.Scene {
         super({ key: 'Level2' });
     }
 
-    static level = 2;  
+    static level = 2;
+    static showDebugGrid = false;
+    static showDebugPaths = false;
 
     static mapData = [
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [2,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [2,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,3],
@@ -20,7 +22,7 @@ export default class Level2 extends Phaser.Scene {
         [0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,1,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [4,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     ];
@@ -42,25 +44,28 @@ export default class Level2 extends Phaser.Scene {
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     ];
 
-    // Wave format: array of [count, enemyIndex] pairs per wave
-    // Enemy indices: 0=Oni, 1=flying_fly, 2=Minotaur
+    // Wave format: one object per wave with enemy groups.
+    // Each enemy group can specify type, count, and spawnPoint.
+    // Enemy types: 0=Oni, 1=flying_fly, 2=Minotaur
 
     static waveData = [
-        { enemies: [{ type: 0, count: 2 }] },
-        { enemies: [{ type: 1, count: 3 }] },
-        { enemies: [{ type: 2, count: 2 }, { type: 0, count: 2 }] },
-        { enemies: [{ type: 0, count: 3 }, { type: 1, count: 2 }] },
-        { enemies: [{ type: 2, count: 3 }, { type: 1, count: 3 }] },
-        { enemies: [{ type: 1, count: 4 }, { type: 0, count: 2 }] },
-        { enemies: [{ type: 2, count: 3 }, { type: 0, count: 3 }, { type: 1, count: 1 }] },
-        { enemies: [{ type: 0, count: 4 }, { type: 1, count: 4 }] }
+        { enemies: [{ type: 0, count: 2, spawnPoint: 2 }] },
+        { enemies: [{ type: 1, count: 3, spawnPoint: 4 }] },
+        { enemies: [{ type: 2, count: 2, spawnPoint: 5 }, { type: 0, count: 2, spawnPoint: 2 }] },
+        { enemies: [{ type: 0, count: 3, spawnPoint: 4 }, { type: 1, count: 2, spawnPoint: 5 }] },
+        { enemies: [{ type: 2, count: 3, spawnPoint: 2 }, { type: 1, count: 3, spawnPoint: 4 }] },
+        { enemies: [{ type: 1, count: 4, spawnPoint: 5 }, { type: 0, count: 2, spawnPoint: 2 }] },
+        { enemies: [{ type: 2, count: 3, spawnPoint: 4 }, { type: 0, count: 3, spawnPoint: 5 }, { type: 1, count: 1, spawnPoint: 2 }] },
+        { enemies: [{ type: 0, count: 4, spawnPoint: 2 }, { type: 1, count: 4, spawnPoint: 4 }] }
     ];
 
     static tileTypes = {
         0: 'snow',   
         1: 'sPath',   
         2: 'sPath',   
-        3: 'sPath'    
+        3: 'sPath',   
+        4: 'sPath',   
+        5: 'sPath'
     };
 
     static decoTypes = {

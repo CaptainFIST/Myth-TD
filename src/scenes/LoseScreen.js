@@ -91,7 +91,8 @@ export default class LoseScreen extends Phaser.Scene {
     retryLevel(levelId) {
         const levels = {
             1: 'Level1',
-            2: 'Level2'
+            2: 'Level2',
+            3: 'Level3'
         };
         const sceneKey = levels[levelId] || 'Level1';
         this.scene.start(sceneKey);
