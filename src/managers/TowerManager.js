@@ -2,12 +2,12 @@ import Tower from '../entities/Tower.js';
 
 export default class TowerManager {
     // Tower stat tables: [name, damage, range, attackSpeed, idleEnd, attackEnd, affinityID]
-    static neutralData = [['Kitsune', 15, 3, 1.5, 4, 6, 0]];
-    static physicalData = [['Izanami', 25, 2, 2, 2, 14, 1]];
+    static neutralData = [['Kitsune', 10, 3, 1.25, 4, 6, 0]];
+    static physicalData = [['Izanami', 20, 2, 2, 2, 14, 1]];
     static airData = [['Satyr', 15, 3, 2, 5, 8, 2]];
-    static waterData = [['Susanoo', 6, 5, 3, 6, 14, 3]];
-    static fireData = [['Promachus', 30, 2, 1.5, 3, 7, 4]];
-    static darkData = [['Nattvolva', 20, 7, 0.2, 3, 7, 5]];
+    static waterData = [['Susanoo', 4, 5, 4, 6, 14, 3]];
+    static fireData = [['Promachus', 30, 2, 0.8, 3, 7, 4]];
+    static darkData = [['Nattvolva', 20, 8, 0.25, 3, 7, 5]];
     static otherData = [['Shrine', 0, 0, 0, 0, 0, 0]];
 
     static get allTowerData() {
@@ -24,11 +24,11 @@ export default class TowerManager {
 
     static towerAffinityCoeff = [
         [1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
-        [0.75, 1.5, 0.5, 0.5, 0.5, 0.5],
-        [0.75, 0.5, 1.5, 0.5, 0.5, 0.5],
-        [0.75, 0.5, 0.5, 1.5, 0.5, 0.5],
-        [0.75, 0.5, 0.5, 0.5, 1.5, 0.5],
-        [0.75, 0.5, 0.5, 0.5, 0.5, 1.5]
+        [0.75, 1.5, 0.3, 0.3, 0.3, 0.3],
+        [0.75, 0.3, 1.5, 0.3, 0.3, 0.3],
+        [0.75, 0.3, 0.3, 1.5, 0.3, 0.3],
+        [0.75, 0.3, 0.3, 0.3, 1.5, 0.3],
+        [0.75, 0.75, 0.75, 0.75, 0.75, 2]
     ];
 
     static FRAME_DIMENSIONS = {

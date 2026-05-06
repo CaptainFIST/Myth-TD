@@ -3,16 +3,16 @@ import Enemy from '../entities/Enemy.js';
 export default class EnemyManager {
     // [name, id, health, speed, reward, lastFrame]
     static neutralEnemy = [
-        ['Orc', 3, 65, 0.8, 15, 6],
-        ['CurseWanderer', 6, 65, 0.7, 25, 7]
+        ['Orc', 3, 250, 0.75, 15, 6],
+        ['CurseWanderer', 6, 115, 1.25, 25, 7]
     ];
-    static physicalEnemy = [['Oni', 0, 40, 1, 5, 15]];
-    static airEnemy = [['Yokai', 1, 60, 1, 7, 5]];
-    static waterEnemy = [['Slime', 7, 20, 1, 3, 7]];
-    static fireEnemy = [['Firespawn', 4, 30, 1.2, 20, 6]];
+    static physicalEnemy = [['Oni', 0, 60, 1.5, 5, 15]];
+    static airEnemy = [['Yokai', 1, 40, 5, 7, 5]];
+    static waterEnemy = [['Slime', 7, 70, 1, 3, 7]];
+    static fireEnemy = [['Firespawn', 4, 50, 4, 20, 6]];
     static darkEnemy = [        
-        ['Skeleton', 2, 50, 1, 10, 6],
-        ['Plent', 5, 55, 0.9, 4, 8]
+        ['Skeleton', 2, 75, 1.5, 10, 6],
+        ['Plent', 5, 275, 0.5, 8, 8]
     ];
 
     static get allEnemyData() {
