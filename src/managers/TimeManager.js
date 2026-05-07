@@ -51,7 +51,7 @@ export default class TimeManager {
 
     cycleSpeed() {
         // Cycles through speeds: 1 -> 2 -> 4 -> 8 -> 1
-        const speeds = [1, 2, 4, 8];
+        const speeds = [1, 2, 3];
         const currentIndex = speeds.indexOf(this.scale);
         const nextIndex = (currentIndex + 1) % speeds.length;
         this.scale = speeds[nextIndex];
