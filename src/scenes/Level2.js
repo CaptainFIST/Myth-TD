@@ -49,14 +49,14 @@ export default class Level2 extends Phaser.Scene {
     // Enemy types: 0=Oni, 1=flying_fly, 2=Minotaur
 
     static waveData = [
-        { enemies: [{ type: 0, count: 2, spawnPoint: 2 }] },
-        { enemies: [{ type: 1, count: 3, spawnPoint: 4 }] },
-        { enemies: [{ type: 2, count: 2, spawnPoint: 5 }, { type: 0, count: 2, spawnPoint: 2 }] },
-        { enemies: [{ type: 0, count: 3, spawnPoint: 4 }, { type: 1, count: 2, spawnPoint: 5 }] },
-        { enemies: [{ type: 2, count: 3, spawnPoint: 2 }, { type: 1, count: 3, spawnPoint: 4 }] },
-        { enemies: [{ type: 1, count: 4, spawnPoint: 5 }, { type: 0, count: 2, spawnPoint: 2 }] },
-        { enemies: [{ type: 2, count: 3, spawnPoint: 4 }, { type: 0, count: 3, spawnPoint: 5 }, { type: 1, count: 1, spawnPoint: 2 }] },
-        { enemies: [{ type: 0, count: 4, spawnPoint: 2 }, { type: 1, count: 4, spawnPoint: 4 }] }
+        { enemies: [{ type: 0, count: 6, spawnPoint: 2 }] },
+        { enemies: [{ type: 1, count: 9, spawnPoint: 4 }] },
+        { enemies: [{ type: 2, count: 6, spawnPoint: 5 }, { type: 0, count: 6, spawnPoint: 2 }] },
+        { enemies: [{ type: 0, count: 9, spawnPoint: 4 }, { type: 1, count: 6, spawnPoint: 5 }] },
+        { enemies: [{ type: 2, count: 9, spawnPoint: 2 }, { type: 1, count: 9, spawnPoint: 4 }] },
+        { enemies: [{ type: 1, count: 12, spawnPoint: 5 }, { type: 0, count: 6, spawnPoint: 2 }] },
+        { enemies: [{ type: 2, count: 9, spawnPoint: 4 }, { type: 0, count: 9, spawnPoint: 5 }, { type: 1, count: 4, spawnPoint: 2 }] },
+        { enemies: [{ type: 0, count: 12, spawnPoint: 2 }, { type: 1, count: 12, spawnPoint: 4 }] }
     ];
 
     static tileTypes = {
