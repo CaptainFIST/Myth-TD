@@ -1,14 +1,34 @@
 import Tower from '../entities/Tower.js';
 
 export default class TowerManager {
-    // Tower stat tables: [name, damage, range, attackSpeed, idleEnd, attackEnd]
-    static physicalData = [
-        ['Izanami', 10, 2, 1.2, 2, 14],
-        ['Susanoo', 5, 3, 0.6, 6, 14],
-        ['Promachus', 20, 3, 2.5, 3, 7],
-        ['Kitsune', 15, 2.5, 1, 4, 6],
-        ['Satyr', 18, 2.5, 0.8, 5, 8],
-        ['Nattvolva', 22, 3, 1.5, 3, 7]
+    // Tower stat tables: [name, damage, range, attackSpeed, idleEnd, attackEnd, affinityID]
+    static neutralData = [['Kitsune', 10, 3, 1.25, 4, 6, 0]];
+    static physicalData = [['Izanami', 20, 2, 2, 2, 14, 1]];
+    static airData = [['Satyr', 15, 3, 2, 5, 8, 2]];
+    static waterData = [['Susanoo', 4, 5, 4, 6, 14, 3]];
+    static fireData = [['Promachus', 30, 2, 0.8, 3, 7, 4]];
+    static darkData = [['Nattvolva', 20, 8, 0.25, 3, 7, 5]];
+    static otherData = [['Shrine', 0, 0, 0, 0, 0, 0]];
+
+    static get allTowerData() {
+        return [
+        ...this.neutralData,
+        ...this.physicalData,
+        ...this.airData,
+        ...this.waterData,
+        ...this.fireData,
+        ...this.darkData,
+        ...this.otherData
+        ];
+    }
+
+    static towerAffinityCoeff = [
+        [1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+        [0.75, 1.5, 0.3, 0.3, 0.3, 0.3],
+        [0.75, 0.3, 1.5, 0.3, 0.3, 0.3],
+        [0.75, 0.3, 0.3, 1.5, 0.3, 0.3],
+        [0.75, 0.3, 0.3, 0.3, 1.5, 0.3],
+        [0.75, 0.75, 0.75, 0.75, 0.75, 2]
     ];
 
     static FRAME_DIMENSIONS = {
@@ -25,13 +45,6 @@ export default class TowerManager {
         nattvolva_dark_projectile: { sprite: 'Nattvolva_dark', start: 0, end: 5, frameRate: 9 }
     };
 
-    static airData = [];
-    static waterData = [];
-    static fireData = [];
-    static darkData = [];
-    static neutralData = [];
-    static otherData = [['Shrine', 0, 0, 0, 0, 0]];
-
     constructor(scene) {
         this.scene = scene;
 
@@ -42,7 +55,7 @@ export default class TowerManager {
         this.selectedTower = null;
 
         // Available tower index list
-        this.towerIndex = ['p0', 'p1', 'p2', 'p3', 'p4', 'p5'];
+        this.towerIndex = ['p0', 'a0', 'w0', 'f0', 'd0', 'n0'];
     }
 
     getStatsByIndex(indexStr) {
@@ -66,13 +79,14 @@ export default class TowerManager {
             case 'w': base = this.constructor.waterData[id]; break;
             case 'f': base = this.constructor.fireData[id]; break;
             case 'd': base = this.constructor.darkData[id]; break;
+            case 'n': base = this.constructor.neutralData[id]; break;
             case 'o': base = this.constructor.otherData[id]; break;
             default: return null;
         }
 
         if (!base) return null;
 
-        const [name, dmg, range, atkSpeed, idleEnd, attackEnd] = base;
+        const [name, dmg, range, atkSpeed, idleEnd, attackEnd, affinityID] = base;
 
         // Scaling per tier
         const scale = 1 + (tier - 1) * 0.5;
@@ -83,7 +97,8 @@ export default class TowerManager {
             range + (tier - 1),
             atkSpeed * (1 + (tier - 1) * 0.2),
             idleEnd,
-            attackEnd
+            attackEnd,
+            affinityID
         ];
     }
 
@@ -94,7 +109,9 @@ export default class TowerManager {
     }
 
     createAnimations() {
-        this.constructor.physicalData.forEach(([name, , , , idleEnd, attackEnd]) => {
+        this.constructor.allTowerData.forEach(([name, , , , idleEnd, attackEnd]) => {
+            if (name === 'Shrine') return;
+
             const idleKey = `${name}_idle`;
             const attackKey = `${name}_attack`;
 
@@ -172,7 +189,9 @@ export default class TowerManager {
 
     preloadAssets() {
         // Load tower sprites and icons
-        this.constructor.physicalData.forEach(([name]) => {
+        this.constructor.allTowerData.forEach(([name]) => {
+            if (name === 'Shrine') return;
+
             const dims = this.constructor.FRAME_DIMENSIONS[name] || { frameWidth: 64, frameHeight: 64 };
             this.scene.load.spritesheet(name, `assets/tower/${name}.png`, dims);
             this.scene.load.image(`${name}_Icon`, `assets/tower/TowerIcon/${name}_Icon.png`);

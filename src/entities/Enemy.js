@@ -5,15 +5,19 @@ import StatsManager from '../managers/StatsManager.js';
 
 
 export default class Enemy extends Phaser.GameObjects.Sprite {
-    constructor(scene, stats, path) {
+    constructor(scene, stats, path, affinityID) {
         super(scene, 0, 0, stats[0]);
         this.scene = scene;
 
         // Basic enemy setup from stats array: [name, id, health, speed, reward, lastFrame]
         [this.name, , this.maxHealth, this.speed, this.reward] = stats;
+
+        this.affinityID = affinityID || 0;
+
         this.damage = 1;  
         this.health = this.maxHealth;
         this.path = path;
+        this.distanceTraveled = 0;
 
         if (!path?.length) {
             console.error("Invalid path:", path);
@@ -35,7 +39,6 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
         };
         
         const scale = scaleMap[this.name] || 1.5;
-        
         this.setDepth(10).setScale(scale).setPosition(path[0].x, path[0].y);
         this.play(`${this.name}_walk`);
         this.pIndex = 0;
@@ -50,12 +53,19 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
 
     update(_, delta) {
         if (!this.active || !this.path) return;
+
         const target = this.path[this.pIndex];
         if (!target) return;
+
         const dist = Phaser.Math.Distance.Between(this.x, this.y, target.x, target.y);
 
         // Move to next point or reach base
-        if (dist < 5 && ++this.pIndex >= this.path.length) return this.reachedBase();
+        if (dist < 5) {
+            this.pIndex++;
+            if (this.pIndex >= this.path.length) {
+                return this.reachedBase();
+            }
+        }
 
         const next = this.path[this.pIndex];
 
@@ -65,6 +75,9 @@ export default class Enemy extends Phaser.GameObjects.Sprite {
 
         this.x += Math.cos(angle) * move;
         this.y += Math.sin(angle) * move;
+
+        // update enemy progression tracker
+        this.distanceTraveled += move;
 
         // Flip sprite based on direction (left or right)
         this.setFlipX(angle > Math.PI / 2 && angle < 3 * Math.PI / 2);
