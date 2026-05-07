@@ -46,14 +46,14 @@ export default class Level3 extends Phaser.Scene {
     ];
 
     static waveData = [
-        { enemies: [{ type: 0, count: 3, spawnPoint: 2 }, { type: 1, count: 2, spawnPoint: 4 }, { type: 3, count: 2, spawnPoint: 5 }] },
-        { enemies: [{ type: 1, count: 4, spawnPoint: 4 }, { type: 4, count: 6, spawnPoint: 5 }] },
-        { enemies: [{ type: 2, count: 5, spawnPoint: 2 }, { type: 1, count: 5, spawnPoint: 5 }] },
-        { enemies: [{ type: 0, count: 2, spawnPoint: 4 }, { type: 1, count: 2, spawnPoint: 2 }, { type: 2, count: 2, spawnPoint: 5 }] },
-        { enemies: [{ type: 5, count: 3, spawnPoint: 5 }, { type: 6, count: 2, spawnPoint: 4 }] },
-        { enemies: [{ type: 0, count: 7, spawnPoint: 2 }, { type: 2, count: 5, spawnPoint: 4 }, { type: 1, count: 1, spawnPoint: 5 }] },
-        { enemies: [{ type: 2, count: 4, spawnPoint: 5 }, { type: 7, count: 5, spawnPoint: 2 }] },
-        { enemies: [{ type: 4, count: 10, spawnPoint: 4 }, { type: 1, count: 10, spawnPoint: 5 }, { type: 2, count: 5, spawnPoint: 2 }] },
+        { enemies: [{ type: 0, count: 12, spawnPoint: 2 }, { type: 1, count: 6, spawnPoint: 4 }, { type: 3, count: 6, spawnPoint: 5 }] },
+        { enemies: [{ type: 1, count: 16, spawnPoint: 4 }, { type: 4, count: 8, spawnPoint: 5 }] },
+        { enemies: [{ type: 2, count: 15, spawnPoint: 2 }, { type: 1, count: 8, spawnPoint: 5 }] },
+        { enemies: [{ type: 0, count: 6, spawnPoint: 4 }, { type: 1, count: 8, spawnPoint: 2 }, { type: 2, count: 6, spawnPoint: 5 }] },
+        { enemies: [{ type: 5, count: 10, spawnPoint: 5 }, { type: 6, count: 2, spawnPoint: 4 }] },
+        { enemies: [{ type: 0, count: 15, spawnPoint: 2 }, { type: 2, count: 6, spawnPoint: 4 }, { type: 1, count: 5, spawnPoint: 5 }] },
+        { enemies: [{ type: 2, count: 8, spawnPoint: 5 }, { type: 7, count: 9, spawnPoint: 2 }] },
+        { enemies: [{ type: 4, count: 14, spawnPoint: 4 }, { type: 1, count: 12, spawnPoint: 5 }, { type: 2, count: 5, spawnPoint: 2 }] },
     ];
 
     static tileTypes = {
