@@ -84,7 +84,7 @@ export default class ProfileData extends Phaser.Scene {
         ];
         
         eStats.forEach((text, i) => {
-        const t = this.add.text(width / 2 - 500, (audioY) + i * 40, text, {
+        const t = this.add.text(width / 2 - 500, (audioY - 100) + i * 40, text, {
             fontSize: '28px',
             color: 'white',
             fontStyle: 'bold',
@@ -98,7 +98,7 @@ export default class ProfileData extends Phaser.Scene {
         const isUnlocked = !!this.unlockAchieve[id];
 
         const x = (width / 2 + 50) + (i % 4) * 200;
-        const y = (audioY) + Math.floor(i / 4) * 120;
+        const y = (audioY - 100) + Math.floor(i / 4) * 120;
 
         const bg = this.add.rectangle(x, y, 180, 100,
             isUnlocked ? 0x2ecc71 : 0xFF0000
