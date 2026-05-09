@@ -2,12 +2,12 @@ import Tower from '../entities/Tower.js';
 
 export default class TowerManager {
     // Tower stat tables: [name, damage, range, attackSpeed, idleEnd, attackEnd, affinityID]
-    static neutralData = [['Kitsune', 10, 3, 1.25, 4, 6, 0]];
+    static neutralData = [['Kitsune', 15, 3, 1.25, 4, 6, 0]];
     static physicalData = [['Izanami', 20, 2, 2, 2, 14, 1]];
     static airData = [['Satyr', 15, 3, 2, 5, 8, 2]];
     static waterData = [['Susanoo', 4, 5, 4, 6, 14, 3]];
-    static fireData = [['Promachus', 30, 2, 0.8, 3, 7, 4]];
-    static darkData = [['Nattvolva', 20, 8, 0.25, 3, 7, 5]];
+    static fireData = [['Promachus', 30, 2.5, 1, 3, 7, 4]];
+    static darkData = [['Nattvolva', 40, 8, 0.25, 3, 7, 5]];
     static otherData = [['Shrine', 0, 0, 0, 0, 0, 0]];
 
     static get allTowerData() {
@@ -42,7 +42,7 @@ export default class TowerManager {
         Promachus_fire_projectile: { sprite: 'Promachus_fire', start: 0, end: 5, frameRate: 12 },
         Kitsune_charge_projectile: { sprite: 'Kitsune_charge', start: 0, end: 5, frameRate: 10 },
         Satyr_leaf_projectile: { sprite: 'Satyr_leaf', start: 0, end: 5, frameRate: 10 },
-        nattvolva_dark_projectile: { sprite: 'Nattvolva_dark', start: 0, end: 5, frameRate: 9 }
+        Nattvolva_dark_projectile: { sprite: 'Nattvolva_dark', start: 0, end: 5, frameRate: 9 }
     };
 
     constructor(scene) {
