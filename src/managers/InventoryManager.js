@@ -144,10 +144,9 @@ export default class InventoryManager {
                 }
             });
 
-            // Select tower and close inventory on click
+            // Select tower and keep inventory open
             icon.once('pointerdown', () => {
                 this.towerManager?.selectTower(type);
-                this.toggleInventory();
                 this.onTowerSelected?.();
             });
         });

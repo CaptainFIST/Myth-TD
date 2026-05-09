@@ -697,8 +697,6 @@ export default class UIManager extends Phaser.Scene {
         this.player?.updateHealthDisplay?.();
     }
 
-
-
     cleanup() {
         this.waveManager?.stop?.();   
         this.time.removeAllEvents();
