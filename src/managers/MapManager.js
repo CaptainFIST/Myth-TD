@@ -29,6 +29,15 @@ export default class MapManager extends Phaser.Scene {
             this.worldPath = this.actualWorldPath(this.mappedPath);
         }
 
+        this.spawnTooltip = this.add.text(0, 0, '', {
+            fontSize: '16px',
+            color: '#ffffff',
+            fontStyle: 'bold',
+            backgroundColor: '#000000',
+            padding: { x: 8, y: 6 },
+            align: 'center'
+        }).setDepth(0.8).setOrigin(0.5, 1).setVisible(false);
+
         // Draw tiles + decorations
         for (let row = 0; row < mapData.length; row++) {
             for (let col = 0; col < mapData[row].length; col++) {
@@ -39,6 +48,61 @@ export default class MapManager extends Phaser.Scene {
                 const decoKey = decoTypes[decoData[row][col]];
                 if (tileKey) this.add.image(x, y, tileKey).setOrigin(0);
                 if (decoKey) this.add.image(x, y, decoKey).setOrigin(0).setDepth(0.5);
+                
+                // Add spawn point visual indicator
+                const tileValue = mapData[row][col];
+                if (tileValue >= 2 && tileValue !== 3) { // Spawn points (2, 4, 5, etc.)
+                    const centerX = x + tileSize / 2;
+                    const centerY = y + tileSize / 2;
+
+                    const glowTile = this.add.rectangle(centerX, centerY, tileSize, tileSize, 0x00ffff, 0.14)
+                        .setDepth(0.6);
+                    glowTile.setStrokeStyle(2, 0x00ffff, 0.35);
+
+                    const pulseRing = this.add.rectangle(centerX, centerY, tileSize, tileSize, 0x000000, 0)
+                        .setStrokeStyle(2, 0x00ffff, 0.7)
+                        .setDepth(0.55);
+
+                    this.tweens.add({
+                        targets: pulseRing,
+                        scaleX: { from: 1, to: 1.4 },
+                        scaleY: { from: 1, to: 1.4 },
+                        alpha: { from: 0.7, to: 0 },
+                        duration: 1200,
+                        ease: 'Sine.easeInOut',
+                        repeat: -1
+                    });
+
+                    const hoverZone = this.add.zone(centerX, centerY, tileSize, tileSize)
+                        .setOrigin(0.5)
+                        .setInteractive({ useHandCursor: true })
+                        .setDepth(0.7);
+
+                    hoverZone.on('pointerover', () => {
+                        this.spawnTooltip.setText('Spawn Point');
+                        const bounds = this.spawnTooltip.getBounds();
+                        let tooltipX = centerX;
+                        let tooltipY = y - 8;
+                        const halfWidth = bounds.width / 2;
+
+                        if (tooltipX - halfWidth < 4) {
+                            tooltipX = halfWidth + 4;
+                        }
+                        if (tooltipX + halfWidth > this.scale.width - 4) {
+                            tooltipX = this.scale.width - halfWidth - 4;
+                        }
+                        if (tooltipY - bounds.height < 4) {
+                            tooltipY = y + tileSize + bounds.height + 8;
+                        }
+
+                        this.spawnTooltip.setPosition(tooltipX, tooltipY);
+                        this.spawnTooltip.setVisible(true);
+                    });
+
+                    hoverZone.on('pointerout', () => {
+                        this.spawnTooltip.setVisible(false);
+                    });
+                }
             }
         }
         console.log("Spawn Points:", this.spawnPoints);

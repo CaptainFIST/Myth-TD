@@ -43,6 +43,9 @@ export default class Level1 extends Phaser.Scene {
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     ];
 
+    // Wave format: one object per wave with enemy groups.
+    // Each enemy group can specify type, count, and spawnPoint.
+    // Enemy types: 0=Oni, 1=Yokai, 2=Skeleton, 3=Orc, 4=Firespawn, 5=Plent, 6=CurseWanderer, 7=Slime
     static waveData = [
         { enemies: [{ type: 0, count: 10 }, { type: 7, count: 6 }] },
         { enemies: [{ type: 1, count: 6 }, { type: 0, count: 8 }] },
@@ -75,6 +78,8 @@ export default class Level1 extends Phaser.Scene {
         this.load.image('rock1', 'assets/decorations/rock1.png');
         this.load.image('bush', 'assets/decorations/Bush1.png');
         this.load.image('bush2', 'assets/decorations/Bush2.png');
+        this.load.image('SpawnPoint', 'assets/Tower Placement/SpawnPoint.png');
+
         
         this.audioManager = new AudioManager(this);
         this.audioManager.preloadAudio();
