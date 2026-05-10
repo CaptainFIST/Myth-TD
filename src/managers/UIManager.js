@@ -66,6 +66,7 @@ export default class UIManager extends Phaser.Scene {
         this.waveManager = new WaveManager(this, this.enemyManager);
         this.player = data.player;
         this.sceneL = data.sceneL;
+        this.levelId = data.levelId;
         this.timeManager = new TimeManager();
 
         // Pass audioManager to player for health loss sounds
@@ -75,7 +76,10 @@ export default class UIManager extends Phaser.Scene {
         // Play level music
         this.audioManager.playLevelMusic();
         
-        this.grid = this.mapManager.drawGrid(this.scale.width, this.scale.height);
+        // Draw debug grid if enabled by the current level
+        if (this.mapManager.showDebugGrid) {
+            this.grid = this.mapManager.drawGrid(this.scale.width, this.scale.height);
+        }
         this.highlighter = this.add.graphics().setDepth(1);
 
         // Setup UI
@@ -85,17 +89,26 @@ export default class UIManager extends Phaser.Scene {
 
     waitForMapReady() {
         const pathReady = this.mapManager?.worldPath?.length;
+        const spawnPointsReady = Object.keys(this.mapManager?.spawnPoints || {}).length > 0;
         const waveDataReady = this.sceneL?.constructor?.waveData?.length;
 
-        if (pathReady && waveDataReady) {
+        if ((pathReady || spawnPointsReady) && waveDataReady) {
             this.path = this.mapManager.worldPath;
             this.waveManager.setWaveData(
                 this.sceneL.constructor.waveData,
                 this.sceneL.constructor.waveData.length
             );
 
-            this.waveManager.setPath(this.path);
-            this.waveManager.initialize(this.waveText, this.path);
+            // Initialize with spawn points if available, otherwise use legacy path
+            if (spawnPointsReady) {
+                this.waveManager.setSpawnPoints(this.mapManager.spawnPoints);
+                this.waveManager.initializeWithSpawnPoints(this.waveText, this.mapManager.spawnPoints);
+                console.log("✓ WaveManager initialized with spawn points");
+            } else {
+                this.waveManager.setPath(this.path);
+                this.waveManager.initialize(this.waveText, this.path);
+                console.log("✓ WaveManager initialized with legacy path");
+            }
 
             console.log("✓ Path + WaveData initialized");
 
@@ -683,8 +696,6 @@ export default class UIManager extends Phaser.Scene {
         this.waveManager?.updateWaveText?.();
         this.player?.updateHealthDisplay?.();
     }
-
-
 
     cleanup() {
         this.waveManager?.stop?.();   

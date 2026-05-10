@@ -1,21 +1,42 @@
 export default class MapManager extends Phaser.Scene {
     constructor() {
         super({ key: 'MapManager' });
+        this.spawnPoints = {}; // Maps spawn point ID to path
     }
 
     create(data) {
         const level = data.level;
         const { mapData, decoData, tileTypes, decoTypes } = level;
+        this.spawnPoints = {};
+        this.mappedPath = [];
+        this.worldPath = [];
         this.levelData = { mapData, decoData, tileTypes, decoTypes };
+        this.level = level.level; // Store level number
+        this.showDebugGrid = level.showDebugGrid !== undefined ? level.showDebugGrid : true;
+        this.showDebugPaths = level.showDebugPaths !== undefined ? level.showDebugPaths : true;
         const tileSize = this.tileSize || 64;
 
-        // Build enemy path before rendering map
-        this.findOpening(mapData, 'Ex');
-        this.mappedPath = this.findPath(mapData);
-        this.clearPathDecorations(this.mappedPath, decoData);
+        const spawnPointIds = this.findAllSpawnPoints(mapData);
+        
+        if (spawnPointIds.length > 1) {
+            // Multiple spawn points - build paths for each
+            this.buildAllPaths(mapData, decoData);
+        } else {
+            // Single spawn point - use legacy system
+            this.findOpening(mapData, 'Ex');
+            this.mappedPath = this.findPath(mapData);
+            this.clearPathDecorations(this.mappedPath, decoData);
+            this.worldPath = this.actualWorldPath(this.mappedPath);
+        }
 
-        // Convert tile path → world coordinates for movement
-        this.worldPath = this.actualWorldPath(this.mappedPath);
+        this.spawnTooltip = this.add.text(0, 0, '', {
+            fontSize: '16px',
+            color: '#ffffff',
+            fontStyle: 'bold',
+            backgroundColor: '#000000',
+            padding: { x: 8, y: 6 },
+            align: 'center'
+        }).setDepth(0.8).setOrigin(0.5, 1).setVisible(false);
 
         // Draw tiles + decorations
         for (let row = 0; row < mapData.length; row++) {
@@ -27,10 +48,188 @@ export default class MapManager extends Phaser.Scene {
                 const decoKey = decoTypes[decoData[row][col]];
                 if (tileKey) this.add.image(x, y, tileKey).setOrigin(0);
                 if (decoKey) this.add.image(x, y, decoKey).setOrigin(0).setDepth(0.5);
+                
+                // Add spawn point visual indicator
+                const tileValue = mapData[row][col];
+                if (tileValue >= 2 && tileValue !== 3) { // Spawn points (2, 4, 5, etc.)
+                    const centerX = x + tileSize / 2;
+                    const centerY = y + tileSize / 2;
+
+                    const glowTile = this.add.rectangle(centerX, centerY, tileSize, tileSize, 0x00ffff, 0.14)
+                        .setDepth(0.6);
+                    glowTile.setStrokeStyle(2, 0x00ffff, 0.35);
+
+                    const pulseRing = this.add.rectangle(centerX, centerY, tileSize, tileSize, 0x000000, 0)
+                        .setStrokeStyle(2, 0x00ffff, 0.7)
+                        .setDepth(0.55);
+
+                    this.tweens.add({
+                        targets: pulseRing,
+                        scaleX: { from: 1, to: 1.4 },
+                        scaleY: { from: 1, to: 1.4 },
+                        alpha: { from: 0.7, to: 0 },
+                        duration: 1200,
+                        ease: 'Sine.easeInOut',
+                        repeat: -1
+                    });
+
+                    const hoverZone = this.add.zone(centerX, centerY, tileSize, tileSize)
+                        .setOrigin(0.5)
+                        .setInteractive({ useHandCursor: true })
+                        .setDepth(0.7);
+
+                    hoverZone.on('pointerover', () => {
+                        this.spawnTooltip.setText('Spawn Point');
+                        const bounds = this.spawnTooltip.getBounds();
+                        let tooltipX = centerX;
+                        let tooltipY = y - 8;
+                        const halfWidth = bounds.width / 2;
+
+                        if (tooltipX - halfWidth < 4) {
+                            tooltipX = halfWidth + 4;
+                        }
+                        if (tooltipX + halfWidth > this.scale.width - 4) {
+                            tooltipX = this.scale.width - halfWidth - 4;
+                        }
+                        if (tooltipY - bounds.height < 4) {
+                            tooltipY = y + tileSize + bounds.height + 8;
+                        }
+
+                        this.spawnTooltip.setPosition(tooltipX, tooltipY);
+                        this.spawnTooltip.setVisible(true);
+                    });
+
+                    hoverZone.on('pointerout', () => {
+                        this.spawnTooltip.setVisible(false);
+                    });
+                }
             }
         }
+        console.log("Spawn Points:", this.spawnPoints);
         console.log(this.mappedPath);
         console.log(this.worldPath);
+    }
+
+    // Build paths for all spawn points
+    buildAllPaths(mapData, decoData) {
+        const spawnPointIds = this.findAllSpawnPoints(mapData);
+        console.log("Found spawn points:", spawnPointIds);
+
+        spawnPointIds.forEach(spawnId => {
+            const mappedPath = this.findPathFromSpawnPoint(mapData, spawnId);
+            const worldPath = this.actualWorldPath(mappedPath);
+            this.clearPathDecorations(mappedPath, decoData);
+            this.spawnPoints[spawnId] = {
+                mappedPath,
+                worldPath
+            };
+            console.log(`Spawn point ${spawnId} path:`, mappedPath);
+        });
+    }
+
+    // Find all spawn point values in the map (2, 4, 5, etc. - all non-1, non-3, non-0)
+    findAllSpawnPoints(map) {
+        const spawnIds = new Set();
+        for (let y = 0; y < map.length; y++) {
+            for (let x = 0; x < map[0].length; x++) {
+                const val = map[y][x];
+                // Values 2+ are potential spawn points (0=grass, 1=path, 3=exit)
+                if (val >= 2 && val !== 3) {
+                    spawnIds.add(val);
+                }
+            }
+        }
+        return Array.from(spawnIds).sort();
+    }
+
+// Find path from a specific spawn point to exit using BFS
+    findPathFromSpawnPoint(map, spawnPointId) {
+        const tileSize = this.tileSize || 64;
+        const start = this.findSpawnPointLocation(map, spawnPointId);
+        if (!start) {
+            console.error(`No spawn point ${spawnPointId} found`);
+            return [];
+        }
+
+        const queue = [start];
+        const visited = new Set();
+        const parent = new Map();
+        visited.add(`${start.x},${start.y}`);
+
+        let found = false;
+        let exitPos = null;
+
+        while (queue.length > 0) {
+            const cur = queue.shift();
+            if (map[cur.y][cur.x] === 3) {
+                found = true;
+                exitPos = cur;
+                break;
+            }
+
+            for (const { x: dx, y: dy } of [
+                { x: 0, y: -1 }, // up
+                { x: 1, y: 0 }, // right
+                { x: 0, y: 1 }, // down
+                { x: -1, y: 0 } // left
+            ]) {
+                const nx = cur.x + dx;
+                const ny = cur.y + dy;
+                const key = `${nx},${ny}`;
+                if (
+                    map[ny] &&
+                    (map[ny][nx] === 1 || map[ny][nx] === 3) &&
+                    !visited.has(key)
+                ) {
+                    visited.add(key);
+                    queue.push({ x: nx, y: ny });
+                    parent.set(key, cur);
+                }
+            }
+        }
+
+        if (!found) {
+            console.error(`No path found from spawn ${spawnPointId} to exit`);
+            return [];
+        }
+
+        // Reconstruct path from start to exit
+        const path = [];
+        let cur = exitPos;
+        while (cur) {
+            path.unshift(cur);
+            const key = `${cur.x},${cur.y}`;
+            cur = parent.get(key);
+        }
+
+        if (this.showDebugPaths) {
+            const graphics = this.add.graphics();
+            graphics.setDepth(1);
+            const drawPath = this.add.path(
+                path[0].x * tileSize + tileSize / 2,
+                path[0].y * tileSize + tileSize / 2
+            );
+            for (let i = 1; i < path.length; i++) {
+                drawPath.lineTo(
+                    path[i].x * tileSize + tileSize / 2,
+                    path[i].y * tileSize + tileSize / 2
+                );
+            }
+            graphics.lineStyle(3, 0xffffff, 1);
+            drawPath.draw(graphics);
+        }
+        console.log(`Path found for spawn ${spawnPointId}:`, path.length, 'steps');
+        return path;
+    }
+
+    // Locate a specific spawn point in the map grid
+    findSpawnPointLocation(map, spawnPointId) {
+        for (let y = 0; y < map.length; y++) {
+            for (let x = 0; x < map[0].length; x++) {
+                if (map[y][x] === spawnPointId) return { x, y };
+            }
+        }
+        return null;
     }
 
     // Locate entrance (2) or exit (3) in the map grid
@@ -42,6 +241,16 @@ export default class MapManager extends Phaser.Scene {
             }
         }
         console.warn(type === 'Ent' ? "Missing Entrance" : "Missing Exit");
+        return null;
+    }
+
+    // Find exit location (value 3)
+    findExitLocation(map) {
+        for (let y = 0; y < map.length; y++) {
+            for (let x = 0; x < map[0].length; x++) {
+                if (map[y][x] === 3) return { x, y };
+            }
+        }
         return null;
     }
 
@@ -57,19 +266,22 @@ export default class MapManager extends Phaser.Scene {
             return [];
         }
 
-        // Debug path drawing
-        const graphics = this.add.graphics();
-        const drawPath = this.add.path(
-            cur.x * tileSize + tileSize / 2,
-            cur.y * tileSize + tileSize / 2
-        );
         const key = (x, y) => `${x},${y}`;
+        let graphics;
+        let drawPath;
+
+        if (this.showDebugPaths) {
+            graphics = this.add.graphics();
+            drawPath = this.add.path(
+                cur.x * tileSize + tileSize / 2,
+                cur.y * tileSize + tileSize / 2
+            );
+        }
 
         // Traverse connected path tiles
         while (cur) {
             path.push(cur);
             visited.add(key(cur.x, cur.y));
-
             if (map[cur.y][cur.x] === 3) break;
             let next = null;
 
@@ -100,13 +312,18 @@ export default class MapManager extends Phaser.Scene {
             cur = next;
             if (!cur) break;
 
-            drawPath.lineTo(
-                cur.x * tileSize + tileSize / 2,
-                cur.y * tileSize + tileSize / 2
-            );
+            if (this.showDebugPaths) {
+                drawPath.lineTo(
+                    cur.x * tileSize + tileSize / 2,
+                    cur.y * tileSize + tileSize / 2
+                );
+            }
         }
-        graphics.lineStyle(3, 0xffffff, 1);
-        drawPath.draw(graphics);
+
+        if (this.showDebugPaths) {
+            graphics.lineStyle(3, 0xffffff, 1);
+            drawPath.draw(graphics);
+        }
         return path;
     }
 

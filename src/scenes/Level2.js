@@ -6,12 +6,14 @@ export default class Level2 extends Phaser.Scene {
         super({ key: 'Level2' });
     }
 
-    static level = 2;  
+    static level = 2;
+    static showDebugGrid = false;
+    static showDebugPaths = false;
 
     static mapData = [
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [2,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [2,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,3],
@@ -20,7 +22,7 @@ export default class Level2 extends Phaser.Scene {
         [0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,1,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [4,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     ];
@@ -42,25 +44,30 @@ export default class Level2 extends Phaser.Scene {
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     ];
 
-    // Wave format: array of [count, enemyIndex] pairs per wave
-    // Enemy indices: 0=Oni, 1=flying_fly, 2=Minotaur
+    // Wave format: one object per wave with enemy groups.
+    // Each enemy group can specify type, count, and spawnPoint.
+    // Enemy types: 0=Oni, 1=Yokai, 2=Skeleton, 3=Orc, 4=Firespawn, 5=Plent, 6=CurseWanderer, 7=Slime
 
     static waveData = [
-        { enemies: [{ type: 0, count: 2 }] },
-        { enemies: [{ type: 1, count: 3 }] },
-        { enemies: [{ type: 2, count: 2 }, { type: 0, count: 2 }] },
-        { enemies: [{ type: 0, count: 3 }, { type: 1, count: 2 }] },
-        { enemies: [{ type: 2, count: 3 }, { type: 1, count: 3 }] },
-        { enemies: [{ type: 1, count: 4 }, { type: 0, count: 2 }] },
-        { enemies: [{ type: 2, count: 3 }, { type: 0, count: 3 }, { type: 1, count: 1 }] },
-        { enemies: [{ type: 0, count: 4 }, { type: 1, count: 4 }] }
+        { enemies: [{ type: 0, count: 6, spawnPoint: 2 }] },
+        { enemies: [{ type: 1, count: 9, spawnPoint: 4 }] },
+        { enemies: [{ type: 2, count: 6, spawnPoint: 5 }, { type: 4, count: 6, spawnPoint: 2 }] },
+        { enemies: [{ type: 5, count: 9, spawnPoint: 4 }, { type: 2, count: 6, spawnPoint: 5 }] },
+        { enemies: [{ type: 2, count: 9, spawnPoint: 2 }, { type: 3, count: 9, spawnPoint: 4 }] },
+        { enemies: [{ type: 6, count: 12, spawnPoint: 5 }, { type: 1, count: 6, spawnPoint: 2 }] },
+        { enemies: [{ type: 7, count: 9, spawnPoint: 4 }, { type: 0, count: 9, spawnPoint: 5 }, { type: 1, count: 4, spawnPoint: 2 }] },
+        { enemies: [{ type: 3, count: 12, spawnPoint: 2 }, { type: 7, count: 12, spawnPoint: 4 }] },
+        { enemies: [{ type: 4, count: 16, spawnPoint: 4 }, { type: 6, count: 12, spawnPoint: 5 }, { type: 3, count: 8, spawnPoint: 2 }] },
+        { enemies: [{ type: 6, count: 9, spawnPoint: 4 }, { type: 3, count: 15, spawnPoint: 5 }, { type: 5, count: 4, spawnPoint: 2 }] },
     ];
 
     static tileTypes = {
         0: 'snow',   
         1: 'sPath',   
         2: 'sPath',   
-        3: 'sPath'    
+        3: 'sPath',   
+        4: 'sPath',   
+        5: 'sPath'
     };
 
     static decoTypes = {
@@ -71,6 +78,7 @@ export default class Level2 extends Phaser.Scene {
         this.load.image('snow', 'assets/tiles/level2/snow.png');
         this.load.image('sPath', 'assets/tiles/level2/snow_path.png');
         this.load.image('rock', 'assets/decorations/level2/snowy_rock.png');
+        this.load.image('SpawnPoint', 'assets/Tower Placement/SpawnPoint.png');
         
         this.audioManager = new AudioManager(this);
         this.audioManager.preloadAudio();
