@@ -39,7 +39,7 @@ export default class AudioManager {
         // Apply both config volume and manager volume level, respecting mute state
         const finalVolume = config.volume * this.volume * (this.isMuted ? 0 : 1);
         
-        //console.log(`🔊 Playing audio: ${audioKey}`, { loop: config.loop, finalVolume, muted: this.isMuted });
+        console.log(`🔊 Playing audio: ${audioKey}`, { loop: config.loop, finalVolume, muted: this.isMuted });
         this.scene.sound.play(audioKey, {
             loop: config.loop,
             volume: finalVolume
@@ -72,12 +72,10 @@ export default class AudioManager {
     }
 
     playLevelMusic() {
-        // Only stop and restart if different music is playing
-        if (this.currentlyPlayingMusic !== 'levelMusic') {
-            this.stopAll();
-            this.playAudio('levelMusic');
-            this.currentlyPlayingMusic = 'levelMusic';
-        }
+        // Always stop and restart level music to ensure it plays (fixes replay issues)
+        this.stopAll();
+        this.playAudio('levelMusic');
+        this.currentlyPlayingMusic = 'levelMusic';
     }
 
     playWinMusic() {

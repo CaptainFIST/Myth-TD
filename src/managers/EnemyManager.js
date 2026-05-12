@@ -66,17 +66,21 @@ export default class EnemyManager {
     }
 
     createAnimations() {
-        const { anims } = this.scene;
+        const { anims, textures } = this.scene;
         EnemyManager.allEnemyData.forEach(([name, , , , , lastFrame]) => {
             const key = `${name}_walk`;
-            // Only create animation if it doesn't already exist
-            if (!anims.exists(key)) {
-                anims.create({
-                    key,
-                    frames: anims.generateFrameNumbers(name, { start: 0, end: lastFrame }),
-                    frameRate: 8,
-                    repeat: -1
-                });
+            // Only create animation if it doesn't already exist and texture is loaded
+            if (!anims.exists(key) && textures.exists(name)) {
+                try {
+                    anims.create({
+                        key,
+                        frames: anims.generateFrameNumbers(name, { start: 0, end: lastFrame }),
+                        frameRate: 8,
+                        repeat: -1
+                    });
+                } catch (e) {
+                    console.warn(`Failed to create animation ${key}:`, e);
+                }
             }
         });
     }

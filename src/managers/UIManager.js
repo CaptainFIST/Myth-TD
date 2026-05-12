@@ -462,27 +462,10 @@ export default class UIManager extends Phaser.Scene {
 
     showCatalogPopup() {
         this.audioManager.playButtonPress();
-        
-        // Catalog data (same as Catalog scene)
-        const TOWER_AFFINITIES = {
-            'Izanami': 'Physical',
-            'Kitsune': 'Neutral',
-            'Nattvolva': 'Dark',
-            'Promachus': 'Fire',
-            'Satyr': 'Air',
-            'Susanoo': 'Water'
-        };
 
-        const ENEMY_AFFINITIES = {
-            'Oni': 'Physical',
-            'CurseWanderer': 'Neutral',
-            'Firespawn': 'Fire',
-            'Orc': 'Neutral',
-            'Yokai': 'Air',
-            'Slime': 'Water',
-            'Plent': 'Dark',
-            'Skeleton': 'Dark'
-        };
+        const AFFINITY_BY_ID = ['Neutral', 'Physical', 'Air', 'Water', 'Fire', 'Dark'];
+        const towerData = TowerManager.allTowerData.filter(([name]) => name !== 'Shrine');
+        const enemyData = EnemyManager.allEnemyData;
 
         const centerX = this.scale.width / 2;
         const centerY = this.scale.height / 2;
@@ -493,56 +476,87 @@ export default class UIManager extends Phaser.Scene {
             .setInteractive().setDepth(catalogDepth);
 
         // Create popup background
-        const popupW = 1000, popupH = 650;
+        const popupW = 1200, popupH = 750;
         const popupBg = this.add.rectangle(centerX, centerY, popupW, popupH, 0x0f1534)
             .setStrokeStyle(2, UIConfig.colors.primary).setDepth(catalogDepth);
 
         // Title
         const title = this.add.text(centerX, centerY - popupH / 2 + 25, 'CATALOG', {
-            fontSize: '48px',
+            fontSize: '52px',
             color: '#64d5ff',
             fontStyle: 'bold'
         }).setOrigin(0.5).setDepth(catalogDepth);
+
+        // Content container with scroll mask
+        const contentX = centerX - popupW / 2 + 20;
+        const contentY = centerY - popupH / 2 + 120;
+        const contentWidth = popupW - 40;
+        const contentHeight = popupH - 180;
+        const contentMask = this.add.graphics().fillRect(contentX, contentY, contentWidth, contentHeight).setDepth(catalogDepth);
+        const contentContainer = this.add.container(contentX, contentY).setDepth(catalogDepth);
+        contentContainer.setMask(contentMask.createGeometryMask());
 
         // Left column - TOWERS
-        const leftColX = centerX - popupW / 4;
-        const towerTitle = this.add.text(leftColX, centerY - popupH / 2 + 70, 'TOWERS', {
+        const leftColX = 100;
+        const towerTitle = this.add.text(leftColX, 0, 'TOWERS', {
             fontSize: '32px',
             color: '#64d5ff',
             fontStyle: 'bold'
-        }).setOrigin(0.5).setDepth(catalogDepth);
-
-        let towerText = '';
-        Object.entries(TOWER_AFFINITIES).forEach(([tower, affinity]) => {
-            towerText += `${tower}\n[${affinity}]\n\n`;
-        });
-
-        const towerContent = this.add.text(leftColX, centerY - popupH / 2 + 140, towerText, {
-            fontSize: '20px',
-            color: '#a8daff',
-            wordWrap: { width: 350 },
-            align: 'center'
         }).setOrigin(0.5, 0).setDepth(catalogDepth);
+        contentContainer.add(towerTitle);
+
+        const towerText = towerData.map(([towerName, damage, range, attackSpeed, , , affinityID]) => {
+            const affinity = AFFINITY_BY_ID[affinityID] || 'Neutral';
+            return `${towerName}\n[${affinity}]\nDamage: ${damage}\nRange: ${range}\nAttack Speed: ${attackSpeed.toFixed(2)}`;
+        }).join('\n\n');
+
+        const towerContent = this.add.text(leftColX, 50, towerText, {
+            fontSize: '22px',
+            color: '#a8daff',
+            wordWrap: { width: 400 },
+            align: 'left'
+        }).setOrigin(0, 0).setDepth(catalogDepth);
+        contentContainer.add(towerContent);
 
         // Right column - ENEMIES
-        const rightColX = centerX + popupW / 4;
-        const enemyTitle = this.add.text(rightColX, centerY - popupH / 2 + 70, 'ENEMIES', {
+        const rightColX = 680;
+        const enemyTitle = this.add.text(rightColX, 0, 'ENEMIES', {
             fontSize: '32px',
             color: '#64d5ff',
             fontStyle: 'bold'
-        }).setOrigin(0.5).setDepth(catalogDepth);
-
-        let enemyText = '';
-        Object.entries(ENEMY_AFFINITIES).forEach(([enemy, defense]) => {
-            enemyText += `${enemy}\n[${defense}]\n\n`;
-        });
-
-        const enemyContent = this.add.text(rightColX, centerY - popupH / 2 + 140, enemyText, {
-            fontSize: '20px',
-            color: '#a8daff',
-            wordWrap: { width: 350 },
-            align: 'center'
         }).setOrigin(0.5, 0).setDepth(catalogDepth);
+        contentContainer.add(enemyTitle);
+
+        const enemyText = enemyData.map(([enemyName, , health, speed, reward]) => {
+            const affinityEntry = EnemyManager.enemyAffinity.find(([name]) => name === enemyName);
+            const affinityID = affinityEntry ? affinityEntry[1] : 0;
+            const defenseType = AFFINITY_BY_ID[affinityID] || 'Neutral';
+            return `${enemyName}\n[${defenseType}]\nHealth: ${health}\nSpeed: ${speed.toFixed(2)}\nReward: ${reward}`;
+        }).join('\n\n');
+
+        const enemyContent = this.add.text(rightColX, 50, enemyText, {
+            fontSize: '22px',
+            color: '#a8daff',
+            wordWrap: { width: 400 },
+            align: 'left'
+        }).setOrigin(0, 0).setDepth(catalogDepth);
+        contentContainer.add(enemyContent);
+
+        const totalContentHeight = Math.max(towerContent.height, enemyContent.height) + 60;
+        let scroll = 0;
+        const maxScroll = Math.max(0, totalContentHeight - contentHeight);
+
+        const updateScroll = (delta) => {
+            scroll = Phaser.Math.Clamp(scroll + delta, 0, maxScroll);
+            contentContainer.y = contentY - scroll;
+        };
+
+        this.input.on('wheel', (pointer, currentlyOver, dx, dy) => {
+            if (pointer.worldX >= contentX && pointer.worldX <= contentX + contentWidth &&
+                pointer.worldY >= contentY && pointer.worldY <= contentY + contentHeight) {
+                updateScroll(dy * 1.5);
+            }
+        });
 
         // Close button
         const btnW = 120, btnH = 40;
@@ -564,10 +578,8 @@ export default class UIManager extends Phaser.Scene {
             overlay.destroy();
             popupBg.destroy();
             title.destroy();
-            towerTitle.destroy();
-            towerContent.destroy();
-            enemyTitle.destroy();
-            enemyContent.destroy();
+            contentMask.destroy();
+            contentContainer.destroy(true);
             closeBtn.destroy();
             closeText.destroy();
         };
