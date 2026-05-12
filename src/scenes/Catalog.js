@@ -1,40 +1,33 @@
 import AudioManager from '../managers/AudioManager.js';
 import SaveManager from '../managers/SaveManager.js';
+import TowerManager from '../managers/TowerManager.js';
+import EnemyManager from '../managers/EnemyManager.js';
 
 export default class Catalog extends Phaser.Scene {
     constructor() {
         super('Catalog');
     }
 
-    // Affinity definitions
-    static TOWER_AFFINITIES = {
-        'Izanami': 'Physical',
-        'Kitsune': 'Neutral',
-        'Nattvolva': 'Dark',
-        'Promachus': 'Fire',
-        'Satyr': 'Air',
-        'Susanoo': 'Water'
-    };
+    static AFFINITY_BY_ID = ['Neutral', 'Physical', 'Air', 'Water', 'Fire', 'Dark'];
 
-    static ENEMY_AFFINITIES = {
-        'Oni': 'Physical',
-        'CurseWanderer': 'Neutral',
-        'Firespawn': 'Fire',
-        'Orc': 'Neutral',
-        'Yokai': 'Air',
-        'Slime': 'Water',
-        'Plent': 'Dark',
-        'Skeleton': 'Dark'
-    };
+    static TOWER_AFFINITIES = Object.fromEntries(
+        TowerManager.allTowerData
+            .filter(([name]) => name !== 'Shrine')
+            .map(([name, , , , , , affinityID]) => [name, Catalog.AFFINITY_BY_ID[affinityID]])
+    );
+
+    static ENEMY_AFFINITIES = Object.fromEntries(
+        EnemyManager.enemyAffinity.map(([name, affinityID]) => [name, Catalog.AFFINITY_BY_ID[affinityID]])
+    );
 
     // Damage coefficient table [Tower Affinity][Enemy Defense Type]
     static DAMAGE_COEFFICIENTS = {
-        'Neutral': { 'Neutral': 1, 'Physical': 0.75, 'Air': 0.75, 'Water': 0.75, 'Fire': 0.75, 'Dark': 0.75 },
-        'Physical': { 'Neutral': 1, 'Physical': 1.5, 'Air': 0.5, 'Water': 0.5, 'Fire': 0.5, 'Dark': 0.5 },
-        'Air': { 'Neutral': 1, 'Physical': 0.5, 'Air': 1.5, 'Water': 0.5, 'Fire': 0.5, 'Dark': 0.5 },
-        'Water': { 'Neutral': 1, 'Physical': 0.5, 'Air': 0.5, 'Water': 1.5, 'Fire': 0.5, 'Dark': 0.5 },
-        'Fire': { 'Neutral': 1, 'Physical': 0.5, 'Air': 0.5, 'Water': 0.5, 'Fire': 1.5, 'Dark': 0.5 },
-        'Dark': { 'Neutral': 1, 'Physical': 0.5, 'Air': 0.5, 'Water': 0.5, 'Fire': 0.5, 'Dark': 1.5 }
+        'Neutral': { 'Neutral': 1.0, 'Physical': 1.0, 'Air': 1.0, 'Water': 1.0, 'Fire': 1.0, 'Dark': 1.0 },
+        'Physical': { 'Neutral': 0.75, 'Physical': 1.5, 'Air': 0.3, 'Water': 0.3, 'Fire': 0.3, 'Dark': 0.3 },
+        'Air': { 'Neutral': 0.75, 'Physical': 0.3, 'Air': 1.5, 'Water': 0.3, 'Fire': 0.3, 'Dark': 0.3 },
+        'Water': { 'Neutral': 0.75, 'Physical': 0.3, 'Air': 0.3, 'Water': 1.5, 'Fire': 0.3, 'Dark': 0.3 },
+        'Fire': { 'Neutral': 0.75, 'Physical': 0.3, 'Air': 0.3, 'Water': 0.3, 'Fire': 1.5, 'Dark': 0.3 },
+        'Dark': { 'Neutral': 0.75, 'Physical': 0.75, 'Air': 0.75, 'Water': 0.75, 'Fire': 0.75, 'Dark': 2.0 }
     };
 
     // Logical elemental weaknesses
@@ -77,19 +70,19 @@ export default class Catalog extends Phaser.Scene {
         const container = this.add.container(0, 0);
 
         const mainTitle = this.add.text(width / 2, 40, 'CATALOG', {
-            fontSize: '72px',
+            fontSize: '84px',
             color: '#64d5ff',
             fontStyle: 'bold',
             stroke: '#0a3f5c',
-            strokeThickness: 5
+            strokeThickness: 6
         }).setOrigin(0.5);
         container.add(mainTitle);
 
         // Column layout
         const leftColumnX = width / 4;
         const rightColumnX = 3 * width / 4;
-        const towerCardW = 480, towerCardH = 240;
-        const enemyCardW = 480, enemyCardH = 240;
+        const towerCardW = 620, towerCardH = 380;
+        const enemyCardW = 620, enemyCardH = 380;
         const gap = 35;
 
         // Left column title - TOWERS
@@ -113,46 +106,51 @@ export default class Catalog extends Phaser.Scene {
         let maxYPos = 280;
 
         // Create tower cards on the left
-        const towerNames = Object.keys(Catalog.TOWER_AFFINITIES);
-        towerNames.forEach(towerName => {
-            const affinity = Catalog.TOWER_AFFINITIES[towerName];
+        const towerData = TowerManager.allTowerData.filter(([name]) => name !== 'Shrine');
+        towerData.forEach(([towerName, damage, range, attackSpeed, , , affinityID]) => {
+            const affinity = Catalog.AFFINITY_BY_ID[affinityID];
             const affinityColor = this.getAffinityColor(affinity);
 
             const card = this.add.rectangle(leftColumnX, towerYPos, towerCardW, towerCardH, 0x0f1534, 0.7)
                 .setStrokeStyle(2, affinityColor);
             container.add(card);
 
-            // Tower icon
             const iconKey = `${towerName}_Icon`;
             const icon = this.add.image(leftColumnX - towerCardW / 2 + 60, towerYPos - 35, iconKey)
                 .setDisplaySize(70, 70);
             container.add(icon);
 
-            // Tower name
-            const nameText = this.add.text(leftColumnX - towerCardW / 2 + 140, towerYPos - 55, towerName, {
+            const nameText = this.add.text(leftColumnX - towerCardW / 2 + 140, towerYPos - 60, towerName, {
                 fontSize: '28px',
                 color: '#a8daff',
                 fontStyle: 'bold'
             });
             container.add(nameText);
 
-            // Affinity
-            const affinityText = this.add.text(leftColumnX - towerCardW / 2 + 140, towerYPos - 20, `Affinity: ${affinity}`, {
+            const affinityText = this.add.text(leftColumnX - towerCardW / 2 + 140, towerYPos - 25, `Affinity: ${affinity}`, {
                 fontSize: '20px',
                 color: affinityColor,
                 fontStyle: 'bold'
             });
             container.add(affinityText);
 
-            // Damage coefficients
+            const statText = `Damage: ${damage}\nRange: ${range}\nAttack Speed: ${attackSpeed.toFixed(2)}`;
+            const statsDisplay = this.add.text(leftColumnX - towerCardW / 2 + 140, towerYPos + 10, statText, {
+                fontSize: '22px',
+                color: '#a8daff',
+                fontStyle: 'bold',
+                wordWrap: { width: towerCardW - 160 }
+            });
+            container.add(statsDisplay);
+
             const coeffs = Catalog.DAMAGE_COEFFICIENTS[affinity];
             let coeffText = 'Damage vs:\n';
             Object.keys(coeffs).forEach(defType => {
                 const coeff = coeffs[defType];
-                coeffText += `${defType}: ${coeff}x    `;
+                coeffText += `${defType}: ${coeff.toFixed(2)}x    `;
             });
-            const coeffDisplay = this.add.text(leftColumnX - towerCardW / 2 + 140, towerYPos + 10, coeffText, {
-                fontSize: '18px',
+            const coeffDisplay = this.add.text(leftColumnX - towerCardW / 2 + 140, towerYPos + 90, coeffText, {
+                fontSize: '20px',
                 color: '#06b6d4',
                 fontStyle: 'bold',
                 wordWrap: { width: towerCardW - 160 }
@@ -164,46 +162,49 @@ export default class Catalog extends Phaser.Scene {
         });
 
         // Create enemy cards on the right
-        const enemyNames = Object.keys(Catalog.ENEMY_AFFINITIES);
-        enemyNames.forEach(enemyName => {
-            const defenseType = Catalog.ENEMY_AFFINITIES[enemyName];
+        const enemyData = EnemyManager.allEnemyData;
+        enemyData.forEach(([enemyName, , health, speed, reward]) => {
+            const affinityEntry = EnemyManager.enemyAffinity.find(([name]) => name === enemyName);
+            const affinityID = affinityEntry ? affinityEntry[1] : 0;
+            const defenseType = Catalog.AFFINITY_BY_ID[affinityID];
             const defenseColor = this.getAffinityColor(defenseType);
 
             const card = this.add.rectangle(rightColumnX, enemyYPos, enemyCardW, enemyCardH, 0x0f1534, 0.7)
                 .setStrokeStyle(2, defenseColor);
             container.add(card);
 
-            // Enemy sprite (frame 0)
             const sprite = this.add.sprite(rightColumnX - enemyCardW / 2 + 60, enemyYPos - 35, enemyName, 0)
                 .setDisplaySize(70, 70);
             container.add(sprite);
 
-            // Enemy name
-            const nameText = this.add.text(rightColumnX - enemyCardW / 2 + 140, enemyYPos - 55, enemyName, {
+            const nameText = this.add.text(rightColumnX - enemyCardW / 2 + 140, enemyYPos - 60, enemyName, {
                 fontSize: '28px',
                 color: '#a8daff',
                 fontStyle: 'bold'
             });
             container.add(nameText);
 
-            // Defense type
-            const defenseText = this.add.text(rightColumnX - enemyCardW / 2 + 140, enemyYPos - 20, `Defense: ${defenseType}`, {
+            const defenseText = this.add.text(rightColumnX - enemyCardW / 2 + 140, enemyYPos - 25, `Defense: ${defenseType}`, {
                 fontSize: '20px',
                 color: defenseColor,
                 fontStyle: 'bold'
             });
             container.add(defenseText);
 
-            // Weak to
+            const statText = `Health: ${health}\nSpeed: ${speed.toFixed(2)}\nReward: ${reward}`;
+            const statsDisplay = this.add.text(rightColumnX - enemyCardW / 2 + 140, enemyYPos + 5, statText, {
+                fontSize: '22px',
+                color: '#a8daff',
+                fontStyle: 'bold',
+                wordWrap: { width: enemyCardW - 160 }
+            });
+            container.add(statsDisplay);
+
             let weakTo = 'Weak to: ';
             const weaknesses = Catalog.ELEMENTAL_WEAKNESSES[defenseType] || [];
-            if (weaknesses.length > 0) {
-                weakTo += weaknesses.join(', ');
-            } else {
-                weakTo += 'None';
-            }
+            weakTo += weaknesses.length > 0 ? weaknesses.join(', ') : 'None';
 
-            const weakDisplay = this.add.text(rightColumnX - enemyCardW / 2 + 140, enemyYPos + 10, weakTo, {
+            const weakDisplay = this.add.text(rightColumnX - enemyCardW / 2 + 140, enemyYPos + 75, weakTo, {
                 fontSize: '16px',
                 color: '#22C55E',
                 wordWrap: { width: enemyCardW - 160 }

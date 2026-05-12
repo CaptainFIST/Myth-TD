@@ -117,5 +117,24 @@ export default class Tutorial extends Phaser.Scene {
         
         txt.setInteractive({ useHandCursor: true })
             .on('pointerdown', () => btn.emit('pointerdown'));
+
+        const backBtn = this.add.rectangle(100, height - 60, 180, 50, 0x1a1f3e)
+            .setStrokeStyle(2, 0x64d5ff)
+            .setInteractive({ useHandCursor: true });
+        const backText = this.add.text(100, height - 60, '← BACK', {
+            fontSize: '22px',
+            color: '#fff',
+            fontStyle: 'bold'
+        }).setOrigin(0.5);
+
+        backBtn.on('pointerover', () => { backBtn.setFillStyle(0x2d3560); backText.setScale(1.05); });
+        backBtn.on('pointerout', () => { backBtn.setFillStyle(0x1a1f3e); backText.setScale(1); });
+        backBtn.on('pointerdown', () => {
+            this.audioManager.playButtonPress();
+            this.scene.start('MainMenu');
+        });
+
+        backText.setInteractive({ useHandCursor: true })
+            .on('pointerdown', () => backBtn.emit('pointerdown'));
     }
 }
