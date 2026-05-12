@@ -115,30 +115,41 @@ export default class TowerManager {
             const idleKey = `${name}_idle`;
             const attackKey = `${name}_attack`;
 
+            // Check if texture exists before creating animations
+            const textureExists = this.scene.textures.exists(name);
+            
             // Idle loop animation
-            if (!this.scene.anims.exists(idleKey)) {
-                this.scene.anims.create({
-                    key: idleKey,
-                    frames: this.scene.anims.generateFrameNumbers(name, {
-                        start: 0,
-                        end: idleEnd
-                    }),
-                    frameRate: 6,
-                    repeat: -1
-                });
+            if (textureExists && !this.scene.anims.exists(idleKey)) {
+                try {
+                    this.scene.anims.create({
+                        key: idleKey,
+                        frames: this.scene.anims.generateFrameNumbers(name, {
+                            start: 0,
+                            end: idleEnd
+                        }),
+                        frameRate: 6,
+                        repeat: -1
+                    });
+                } catch (e) {
+                    console.warn(`Failed to create animation ${idleKey}:`, e);
+                }
             }
 
             // Attack animation (plays once)
-            if (!this.scene.anims.exists(attackKey)) {
-                this.scene.anims.create({
-                    key: attackKey,
-                    frames: this.scene.anims.generateFrameNumbers(name, {
-                        start: idleEnd + 1,
-                        end: attackEnd
-                    }),
-                    frameRate: 12,
-                    repeat: 0
-                });
+            if (textureExists && !this.scene.anims.exists(attackKey)) {
+                try {
+                    this.scene.anims.create({
+                        key: attackKey,
+                        frames: this.scene.anims.generateFrameNumbers(name, {
+                            start: idleEnd + 1,
+                            end: attackEnd
+                        }),
+                        frameRate: 12,
+                        repeat: 0
+                    });
+                } catch (e) {
+                    console.warn(`Failed to create animation ${attackKey}:`, e);
+                }
             }
         });
     }
