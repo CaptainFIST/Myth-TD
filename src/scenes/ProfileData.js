@@ -62,12 +62,12 @@ export default class ProfileData extends Phaser.Scene {
         }).setOrigin(0.5);
 
         const audioY = height / 2 - 60;
-        this.add.text(width / 2 - 50, audioY - 50, 'STATS', {
-            fontSize: '28px',
-            color: '#64d5ff',
-            fontStyle: 'bold',
-            fontFamily: 'Arial, sans-serif'
-        }).setOrigin(0, 0);
+        // this.add.text(width / 2 - 50, audioY - 50, 'STATS', {
+        //     fontSize: '28px',
+        //     color: '#64d5ff',
+        //     fontStyle: 'bold',
+        //     fontFamily: 'Arial, sans-serif'
+        // }).setOrigin(0, 0);
         console.log(SaveManager.getSlot());
 
 
@@ -84,9 +84,9 @@ export default class ProfileData extends Phaser.Scene {
         ];
         
         eStats.forEach((text, i) => {
-        const t = this.add.text(width / 2 - 500, (audioY + 100) + i * 40, text, {
+        const t = this.add.text(width / 2 - 500, (audioY - 100) + i * 40, text, {
             fontSize: '28px',
-            color: '#64d5ff',
+            color: 'white',
             fontStyle: 'bold',
             fontFamily: 'Arial, sans-serif'
         });
@@ -98,10 +98,10 @@ export default class ProfileData extends Phaser.Scene {
         const isUnlocked = !!this.unlockAchieve[id];
 
         const x = (width / 2 + 50) + (i % 4) * 200;
-        const y = (audioY) + Math.floor(i / 4) * 120;
+        const y = (audioY - 100) + Math.floor(i / 4) * 120;
 
         const bg = this.add.rectangle(x, y, 180, 100,
-            isUnlocked ? 0x2ecc71 : 0x555555
+            isUnlocked ? 0x2ecc71 : 0xFF0000
         ).setOrigin(0);
 
         const name = this.add.text(x + 10, y + 10, data.name, {
